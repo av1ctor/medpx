@@ -1,0 +1,30 @@
+{
+  "canisters": {
+    "medpres_backend": {
+      "candid": "src/medpres_backend/medpres_backend.did",
+      "package": "medpres_backend",
+      "type": "rust"
+    },
+    "medpres_frontend": {
+      "dependencies": [
+        "medpres_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/medpres_frontend/src/index.html"
+      },
+      "source": [
+        "src/medpres_frontend/assets",
+        "dist/medpres_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
