@@ -1,7 +1,7 @@
 use candid::CandidType;
-use serde::{Serialize, Deserialize};
+use serde::Deserialize;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(CandidType, Clone, Deserialize)]
 pub struct Patient {
     pub id: String,
     pub name: String,
@@ -18,7 +18,7 @@ pub struct PatientRequest {
     birth_date: u64,
 }
 
-#[derive(CandidType, Serialize)]
+#[derive(CandidType)]
 pub struct PatientResponse {
     id: String,
     name: String,

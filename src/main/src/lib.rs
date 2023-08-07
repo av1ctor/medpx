@@ -1,5 +1,6 @@
-use std::{cell::RefCell, collections::{BTreeMap, BTreeSet}};
+use std::cell::RefCell;
 use candid::{Principal, CandidType};
+use db::DB;
 use doctor::{Doctor, DoctorRequest, DoctorResponse};
 use ic_cdk::{caller, trap};
 use patient::{Patient, PatientRequest, PatientResponse};
@@ -9,6 +10,7 @@ use serde::Deserialize;
 pub mod doctor;
 pub mod patient;
 pub mod prescription;
+pub mod db;
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {
@@ -18,11 +20,7 @@ struct State {
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
-    static DOCTORS: RefCell<BTreeMap<Principal, Doctor>> = RefCell::new(BTreeMap::new());
-    static PATIENTS: RefCell<BTreeMap<Principal, Patient>> = RefCell::new(BTreeMap::new());
-    static PRESCRIPTIONS: RefCell<BTreeMap<String, Prescription>> = RefCell::new(BTreeMap::new());
-    static DOCTOR_PRESCRIPTIONS: RefCell<BTreeMap<Principal, BTreeSet<String>>> = RefCell::new(BTreeMap::new());
-    static PATIENT_PRESCRIPTIONS: RefCell<BTreeMap<Principal, BTreeSet<String>>> = RefCell::new(BTreeMap::new());
+    static DB: RefCell<DB> = RefCell::default();
 }
 
 fn _gen_id(
@@ -34,32 +32,6 @@ fn _gen_id(
     });
 
     ulid::Ulid::from_parts(ic_cdk::api::time(), counter).to_string()
-}
-
-fn _find_patient(
-    principal: &Principal 
-) -> Result<Patient, String> {
-    PATIENTS.with(|rc| {
-        let patients = rc.borrow();
-        if !patients.contains_key(principal) {
-            return Err("Unknown patient".to_string());
-        }
-
-        Ok(patients[principal].clone())
-    })
-}
-
-fn _find_doctor(
-    principal: &Principal 
-) -> Result<Doctor, String> {
-    DOCTORS.with(|rc| {
-        let doctors = rc.borrow();
-        if !doctors.contains_key(principal) {
-            return Err("Unknown doctor".to_string());
-        }
-
-        Ok(doctors[principal].clone())
-    })
 }
 
 #[ic_cdk::init]
@@ -86,12 +58,12 @@ fn pre_upgrade() {
         };
     });
     
-    DOCTORS.with(|rc| {
-        if let Err(err) = ic_cdk::storage::stable_save::<(&BTreeMap<Principal, Doctor>,)>((
+    DB.with(|rc| {
+        if let Err(err) = ic_cdk::storage::stable_save::<(&DB,)>((
             &rc.borrow(),
         )) {
             trap(&format!(
-                "An error occurred when saving DOCTORS to stable memory (pre_upgrade): {:?}",
+                "An error occurred when saving DB to stable memory (pre_upgrade): {:?}",
                 err
             ));
         };
@@ -113,6 +85,20 @@ fn post_upgrade() {
             }
         }
     });
+
+    DB.with(|rc| {
+        match ic_cdk::storage::stable_restore::<(DB, )>() {
+            Ok((s_, )) => {
+                rc.replace(s_);
+            }
+            Err(err) => {
+                trap(&format!(
+                    "An error occurred when loading DB from stable memory (post_upgrade): {:?}",
+                    err
+                ));
+            }
+        }
+    });
 }
 
 #[ic_cdk::update]
@@ -121,21 +107,13 @@ fn doctor_create(
 ) -> Result<DoctorResponse, String> {
     let caller = &caller();
 
-    DOCTORS.with(|rc| {
-        let mut doctors = rc.borrow_mut();
-        if doctors.contains_key(caller) {
-            return Err("Doctor already exists".to_string());
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let doctor = Doctor::new(&req);
+        match db.doctor_insert(caller, &doctor) {
+            Ok(()) => Ok(doctor.into()),
+            Err(msg) => Err(msg)
         }
-
-        let doc = Doctor::new(&req);
-        doctors.insert(*caller, doc.clone());
-
-        DOCTOR_PRESCRIPTIONS.with(|rc| {
-            let mut doc_presc = rc.borrow_mut();
-            doc_presc.insert(*caller, BTreeSet::new());
-        });
-
-        Ok(doc.into())
     })
 }
 
@@ -145,21 +123,13 @@ fn patient_create(
 ) -> Result<PatientResponse, String> {
     let caller = &caller();
 
-    PATIENTS.with(|rc| {
-        let mut patients = rc.borrow_mut();
-        if patients.contains_key(caller) {
-            return Err("Patient already exists".to_string());
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let patient = Patient::new(&req);
+        match db.patient_insert(caller, &patient) {
+            Ok(()) => Ok(patient.into()),
+            Err(msg) => Err(msg)
         }
-
-        let pat = Patient::new(&req);
-        patients.insert(*caller, pat.clone());
-
-        PATIENT_PRESCRIPTIONS.with(|rc| {
-            let mut pat_presc = rc.borrow_mut();
-            pat_presc.insert(*caller, BTreeSet::new());
-        });
-    
-        Ok(pat.into())
     })
 }
 
@@ -173,47 +143,30 @@ fn prescription_create(
         return Err("Forbidden".to_string());
     }
 
-    let mut doctor = match _find_doctor(&req.doctor) {
-        Err(err) => return Err(err),
-        Ok(patient) => patient
-    };
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
 
-    let mut patient = match _find_patient(&req.patient) {
-        Err(err) => return Err(err),
-        Ok(patient) => patient
-    };
+        let mut doctor = match db.doctor_find_by_id(&req.doctor) {
+            Err(msg) => return Err(msg),
+            Ok(patient) => patient
+        };
+    
+        let mut patient = match db.patient_find_by_id(&req.patient) {
+            Err(msg) => return Err(msg),
+            Ok(patient) => patient
+        };
 
-    let id = _gen_id();
-    let prescription = PRESCRIPTIONS.with(|rc| {
-        let mut prescriptions = rc.borrow_mut();
-        prescriptions.insert(id.clone(), Prescription::new(&id, &req));
-        prescriptions[&id].clone()
-    });
+        let id = _gen_id();
+        let prescription = Prescription::new(&id, &req);
 
-    DOCTOR_PRESCRIPTIONS.with(|rc| {
-        let mut doc_presc = rc.borrow_mut();
-        let prescriptions = doc_presc.get_mut(&req.doctor).expect("Unknown doctor");
-        prescriptions.insert(id.clone());
-    });
-
-    PATIENT_PRESCRIPTIONS.with(|rc| {
-        let mut pat_presc = rc.borrow_mut();
-        let prescriptions = pat_presc.get_mut(&req.patient).expect("Unknown patient");
-        prescriptions.insert(id.clone());
-    });
-
-    DOCTORS.with(|rc| {
-        let mut doctors = rc.borrow_mut();
-        doctor.num_prescriptions += 1;
-        doctors.insert(req.doctor, doctor);
-    });
-
-    PATIENTS.with(|rc| {
-        let mut patients = rc.borrow_mut();
-        patient.num_prescriptions += 1;
-        patients.insert(req.patient, patient);
-    });
-
-    Ok(prescription.into())
+        db.prescription_insert(
+            &id, 
+            &prescription, 
+            &mut doctor, 
+            &mut patient
+        );
+        
+        Ok(prescription.into())
+    })
 }
 

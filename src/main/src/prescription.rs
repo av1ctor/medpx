@@ -1,14 +1,14 @@
 use candid::{Principal, CandidType};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Clone)]
+#[derive(CandidType, Clone, Deserialize)]
 pub struct Prescription {
-    id: String,
-    doctor: Principal,
-    patient: Principal,
-    contents: Vec<u8>,
-    created_at: u64,
-    expires_at: Option<u64>,
+    pub id: String,
+    pub doctor: Principal,
+    pub patient: Principal,
+    pub contents: Vec<u8>,
+    pub created_at: u64,
+    pub expires_at: Option<u64>,
 }
 
 #[derive(CandidType, Clone, Deserialize)]
@@ -19,7 +19,7 @@ pub struct PrescriptionRequest {
     pub expires_at: Option<u64>,
 }
 
-#[derive(CandidType, Clone, Serialize)]
+#[derive(CandidType, Clone)]
 pub struct PrescriptionResponse {
     doctor: Principal,
     patient: Principal,
