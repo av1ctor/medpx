@@ -1,20 +1,20 @@
 {
   "canisters": {
-    "medpres_backend": {
-      "candid": "src/medpres_backend/medpres_backend.did",
-      "package": "medpres_backend",
+    "main": {
+      "candid": "src/main/main.did",
+      "package": "main",
       "type": "rust"
     },
-    "medpres_frontend": {
+    "site": {
       "dependencies": [
-        "medpres_backend"
+        "main"
       ],
       "frontend": {
-        "entrypoint": "src/medpres_frontend/src/index.html"
+        "entrypoint": "src/site/src/index.html"
       },
       "source": [
-        "src/medpres_frontend/assets",
-        "dist/medpres_frontend/"
+        "src/site/assets",
+        "dist/site/"
       ],
       "type": "assets"
     }

@@ -1,9 +1,7 @@
 [package]
-name = "medpres_backend"
+name = "main"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 crate-type = ["cdylib"]
@@ -11,4 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 candid = "0.8"
 ic-cdk = "0.7"
+ic-cdk-macros = "0.7"
 ic-cdk-timers = "0.1" # Feel free to remove this dependency if you don't need timers
+serde = "1.0"
+ulid = {version = "1.0.0", features = [], default-features = false}

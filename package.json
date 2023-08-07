@@ -1,5 +1,5 @@
 {
-  "name": "medpres_frontend",
+  "name": "site",
   "version": "0.2.0",
   "description": "Internet Computer starter application",
   "keywords": [
@@ -14,7 +14,7 @@
     "start": "webpack serve --mode development --env development",
     "deploy:local": "dfx deploy --network=local",
     "deploy:ic": "dfx deploy --network=ic",
-    "generate": "dfx generate medpres_backend"
+    "generate": "dfx generate main"
   },
   "dependencies": {
     "@dfinity/agent": "^0.18.1",
@@ -37,7 +37,7 @@
     "webpack-dev-server": "^4.8.1"
   },
   "engines": {
-    "node": "^12 || ^14 || ^16 || ^18"
+    "node": "^19"
   },
   "browserslist": [
     "last 2 chrome version",
