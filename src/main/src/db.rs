@@ -31,6 +31,20 @@ impl DB {
         }
     }
 
+    pub fn doctor_update(
+        &mut self,
+        principal: &Principal,
+        doctor: &Doctor
+    ) -> Result<(), String> {
+        if !self.doctors.contains_key(principal) {
+            Err("Unknown Doctor".to_string())
+        }
+        else {
+            self.doctors.insert(principal.clone(), doctor.clone());
+            Ok(())
+        }
+    }
+
     pub fn doctor_find_by_id(
         &self,
         principal: &Principal 
@@ -60,6 +74,20 @@ impl DB {
         }
     }
 
+    pub fn patient_update(
+        &mut self,
+        principal: &Principal,
+        patient: &Patient
+    ) -> Result<(), String> {
+        if !self.patients.contains_key(principal) {
+            Err("Unknown Patient".to_string())
+        }
+        else {
+            self.patients.insert(principal.clone(), patient.clone());
+            Ok(())
+        }
+    }
+
     pub fn patient_find_by_id(
         &self,
         principal: &Principal
@@ -77,9 +105,7 @@ impl DB {
     pub fn prescription_insert(
         &mut self,
         id: &String,
-        prescription: &Prescription,
-        doctor: &mut Doctor,
-        patient: &mut Patient
+        prescription: &Prescription
     ) {
         self.prescriptions.insert(id.clone(), prescription.clone());
         
@@ -88,12 +114,6 @@ impl DB {
 
         let prescriptions = self.patient_prescriptions.get_mut(&prescription.patient).unwrap();
         prescriptions.insert(id.clone());
-
-        doctor.num_prescriptions += 1;
-        self.doctors.insert(prescription.doctor, doctor.clone());
-
-        patient.num_prescriptions += 1;
-        self.patients.insert(prescription.patient, patient.clone());
     }
     
 }

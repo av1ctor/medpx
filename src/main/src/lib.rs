@@ -159,13 +159,14 @@ fn prescription_create(
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req);
 
-        db.prescription_insert(
-            &id, 
-            &prescription, 
-            &mut doctor, 
-            &mut patient
-        );
-        
+        db.prescription_insert(&id, &prescription);
+
+        doctor.num_prescriptions += 1;
+        _ = db.doctor_update(&prescription.doctor, &doctor);
+
+        patient.num_prescriptions += 1;
+        _ = db.patient_update(&prescription.patient, &patient);
+
         Ok(prescription.into())
     })
 }
