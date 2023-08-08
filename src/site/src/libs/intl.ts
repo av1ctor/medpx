@@ -1,0 +1,22 @@
+export interface Lang {
+    locale: string;
+    title: string;
+    flag: string;
+}
+
+export const languages: Lang[] = [
+    {locale: 'en', flag: 'us', title: 'English'},
+];
+
+export const loadMessages = async (locale: string) => {
+    if(locale === 'en') {
+        return {};
+    }
+
+    const res = await fetch(`/lang/${locale}.json`);
+    if(!res.ok) {
+        return {};
+    }
+
+    return await res.json();
+};
