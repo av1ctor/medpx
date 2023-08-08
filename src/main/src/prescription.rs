@@ -8,6 +8,8 @@ pub struct Prescription {
     pub patient: Principal,
     pub contents: Vec<u8>,
     pub created_at: u64,
+    pub deleted_at: Option<u64>,
+    pub deleted_by: Option<Principal>,
     pub expires_at: Option<u64>,
 }
 
@@ -38,6 +40,8 @@ impl Prescription {
             patient: e.patient, 
             contents: e.contents.clone(), 
             created_at: ic_cdk::api::time(), 
+            deleted_at: None,
+            deleted_by: None,
             expires_at: e.expires_at, 
         }
     }

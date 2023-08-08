@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::{doctor::Doctor, patient::Patient, prescription::Prescription};
+use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
@@ -10,6 +10,7 @@ pub struct DB {
     pub prescriptions: BTreeMap<String, Prescription>,
     pub doctor_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
     pub patient_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
+    pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
 }
 
 impl DB {

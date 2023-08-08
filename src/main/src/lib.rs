@@ -10,6 +10,7 @@ use serde::Deserialize;
 pub mod doctor;
 pub mod patient;
 pub mod prescription;
+pub mod prescription_template;
 pub mod db;
 
 #[derive(Default, CandidType, Deserialize)]
