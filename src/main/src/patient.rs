@@ -9,6 +9,7 @@ pub struct Patient {
     pub num_prescriptions: u32,
     pub credits: u128,
     pub created_at: u64,
+    pub created_by: Principal,
     pub updated_at: Option<u64>,
     pub updated_by: Option<Principal>,
     pub deleted_at: Option<u64>,
@@ -31,7 +32,8 @@ pub struct PatientResponse {
 
 impl Patient {
     pub fn new(
-        e: &PatientRequest
+        e: &PatientRequest,
+        caller: &Principal
     ) -> Self {
         Self {
             id: e.id.clone(),
@@ -40,10 +42,22 @@ impl Patient {
             num_prescriptions: 0,
             credits: 0,
             created_at: ic_cdk::api::time(),
+            created_by: caller.clone(),
             updated_at: None,
             updated_by: None,
             deleted_at: None,
             deleted_by: None,
+        }
+    }
+
+    pub fn update(
+        &self,
+        caller: &Principal
+    ) -> Self {
+        Self {
+            updated_at: Some(ic_cdk::api::time()),
+            updated_by: Some(caller.clone()),
+            ..self.clone()
         }
     }
 }

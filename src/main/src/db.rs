@@ -1,10 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate};
+use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate, staff::Staff};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
+    pub staff: BTreeMap<Principal, Staff>,
     pub doctors: BTreeMap<Principal, Doctor>,
     pub patients: BTreeMap<Principal, Patient>,
     pub prescriptions: BTreeMap<String, Prescription>,
@@ -14,6 +15,49 @@ pub struct DB {
 }
 
 impl DB {
+    /**
+     * staff table
+     */
+    pub fn staff_insert(
+        &mut self,
+        k: &Principal,
+        v: &Staff
+    ) -> Result<(), String> {
+        if self.staff.contains_key(k) {
+            Err("Staff member already exists".to_string())
+        }
+        else {
+            self.staff.insert(k.clone(), v.clone());
+            Ok(())
+        }
+    }
+
+    pub fn staff_update(
+        &mut self,
+        k: &Principal,
+        v: &Staff
+    ) -> Result<(), String> {
+        if !self.staff.contains_key(k) {
+            Err("Staff member not found".to_string())
+        }
+        else {
+            self.staff.insert(k.clone(), v.clone());
+            Ok(())
+        }
+    }
+
+    pub fn staff_find_by_id(
+        &self,
+        k: &Principal 
+    ) -> Option<Staff> {
+        if !self.staff.contains_key(k) {
+            None
+        }
+        else {
+            Some(self.staff[k].clone())
+        }
+    }
+
     /**
      * doctors table
      */

@@ -2,12 +2,16 @@ use candid::{CandidType, Principal};
 use serde::Deserialize;
 
 #[derive(CandidType, Clone, Deserialize)]
-pub struct Doctor {
-    pub id: String,
+pub enum StaffRole {
+    Admin,
+    Contributor,
+    Member,
+}
+
+#[derive(CandidType, Clone, Deserialize)]
+pub struct Staff {
     pub name: String,
-    pub num_prescriptions: u32,
-    pub prescription_template: Option<String>,
-    pub credits: u128,
+    pub role: StaffRole,
     pub created_at: u64,
     pub created_by: Principal,
     pub updated_at: Option<u64>,
@@ -16,31 +20,26 @@ pub struct Doctor {
     pub deleted_by: Option<Principal>,
 }
 
-#[derive(CandidType, Deserialize)]
-pub struct DoctorRequest {
-    id: String,
+#[derive(CandidType, Clone, Deserialize)]
+pub struct StaffRequest {
     name: String,
-    prescription_template: Option<String>,
+    role: StaffRole,
 }
 
-#[derive(CandidType)]
-pub struct DoctorResponse {
-    id: String,
+#[derive(CandidType, Clone, Deserialize)]
+pub struct StaffResponse {
     name: String,
-    prescription_template: Option<String>,
+    role: StaffRole,
 }
 
-impl Doctor {
+impl Staff {
     pub fn new(
-        e: &DoctorRequest,
+        e: &StaffRequest,
         caller: &Principal
     ) -> Self {
         Self {
-            id: e.id.clone(),
             name: e.name.clone(),
-            prescription_template: None,
-            num_prescriptions: 0,
-            credits: 0,
+            role: e.role.clone(),
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),
             updated_at: None,
@@ -62,14 +61,14 @@ impl Doctor {
     }
 }
 
-impl From<Doctor> for DoctorResponse {
+impl From<Staff> for StaffResponse {
     fn from(
-        e: Doctor
+        e: Staff
     ) -> Self {
         Self { 
-            id: e.id,
             name: e.name, 
-            prescription_template: e.prescription_template,
+            role: e.role,
         }
     }
 }
+

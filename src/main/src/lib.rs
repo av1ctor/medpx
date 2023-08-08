@@ -6,9 +6,12 @@ use ic_cdk::{caller, trap};
 use patient::{Patient, PatientRequest, PatientResponse};
 use prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
 use serde::Deserialize;
+use staff::{StaffRequest, Staff, StaffResponse};
 
 pub mod doctor;
 pub mod patient;
+pub mod staff;
+pub mod user;
 pub mod prescription;
 pub mod prescription_template;
 pub mod db;
@@ -88,7 +91,7 @@ fn doctor_create(
 
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
-        let doctor = Doctor::new(&req);
+        let doctor = Doctor::new(&req, caller);
         match db.doctor_insert(caller, &doctor) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
@@ -104,9 +107,25 @@ fn patient_create(
 
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
-        let patient = Patient::new(&req);
+        let patient = Patient::new(&req, caller);
         match db.patient_insert(caller, &patient) {
             Ok(()) => Ok(patient.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn staff_create(
+    req: StaffRequest
+) -> Result<StaffResponse, String> {
+    let caller = &caller();
+
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let staff = Staff::new(&req, caller);
+        match db.staff_insert(caller, &staff) {
+            Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
         }
     })
