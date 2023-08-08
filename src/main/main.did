@@ -1,3 +1,56 @@
+type DoctorRequest = record {
+    id: text;
+    name: text;
+};
+
+type DoctorResponse = record {
+    id: text;
+    name: text;
+};
+
+type DoctorResponseResult = variant {
+    Err: text;
+    Ok: DoctorResponse;
+};
+
+type PatientRequest = record {
+    id: text;
+    name: text;
+    birth_date: nat64;
+};
+
+type PatientResponse = record {
+    id: text;
+    name: text;
+    birth_date: nat64;
+};
+
+type PatientResponseResult = variant {
+    Err: text;
+    Ok: PatientResponse;
+};
+
+type PrescriptionRequest = record {
+    doctor: principal;
+    patient: principal;
+    contents: vec nat8;
+    expires_at: opt nat64;
+};
+
+type PrescriptionResponse = record {
+    doctor: principal;
+    patient: principal;
+    contents: vec nat8;
+    expires_at: opt nat64;
+};
+
+type PrescriptionResponseResult = variant {
+    Err: text;
+    Ok: PrescriptionResponse;
+};
+
 service : {
-    "greet": (text) -> (text) query;
+    doctor_create: (DoctorRequest) -> (DoctorResponseResult);
+    patient_create: (PatientRequest) -> (PatientResponseResult);
+    prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
 }

@@ -1,4 +1,4 @@
-import { medpres_backend } from "../../declarations/medpres_backend";
+import { medpres_backend } from "../../declarations/main";
 
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();

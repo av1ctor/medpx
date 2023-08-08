@@ -18,42 +18,43 @@ impl DB {
      */
     pub fn doctor_insert(
         &mut self,
-        principal: &Principal,
-        doctor: &Doctor
+        k: &Principal,
+        v: &Doctor
     ) -> Result<(), String> {
-        if self.doctors.contains_key(principal) {
+        if self.doctors.contains_key(k) {
             Err("Doctor already exists".to_string())
         }
         else {
-            self.doctors.insert(principal.clone(), doctor.clone());
-            self.doctor_prescriptions.insert(principal.clone(), BTreeSet::new());
+            self.doctors.insert(k.clone(), v.clone());
+            self.doctor_prescriptions.insert(k.clone(), BTreeSet::new());
             Ok(())
         }
     }
 
     pub fn doctor_update(
         &mut self,
-        principal: &Principal,
-        doctor: &Doctor
+        k: &Principal,
+        v: &Doctor
     ) -> Result<(), String> {
-        if !self.doctors.contains_key(principal) {
-            Err("Unknown Doctor".to_string())
+        if !self.doctors.contains_key(k) {
+            Err("Doctor not found".to_string())
         }
         else {
-            self.doctors.insert(principal.clone(), doctor.clone());
+            self.doctors.insert(k.clone(), v.clone());
             Ok(())
         }
     }
 
     pub fn doctor_find_by_id(
         &self,
-        principal: &Principal 
-    ) -> Result<Doctor, String> {
-        if !self.doctors.contains_key(principal) {
-            return Err("Unknown doctor".to_string());
+        k: &Principal 
+    ) -> Option<Doctor> {
+        if !self.doctors.contains_key(k) {
+            None
         }
-
-        Ok(self.doctors[principal].clone())
+        else {
+            Some(self.doctors[k].clone())
+        }
     }
 
     /**
@@ -61,42 +62,43 @@ impl DB {
      */
     pub fn patient_insert(
         &mut self,
-        principal: &Principal,
-        patient: &Patient
+        k: &Principal,
+        v: &Patient
     ) -> Result<(), String> {
-        if self.patients.contains_key(principal) {
+        if self.patients.contains_key(k) {
             Err("Patient already exists".to_string())
         }
         else {
-            self.patients.insert(principal.clone(), patient.clone());
-            self.patient_prescriptions.insert(principal.clone(), BTreeSet::new());
+            self.patients.insert(k.clone(), v.clone());
+            self.patient_prescriptions.insert(k.clone(), BTreeSet::new());
             Ok(())
         }
     }
 
     pub fn patient_update(
         &mut self,
-        principal: &Principal,
-        patient: &Patient
+        k: &Principal,
+        v: &Patient
     ) -> Result<(), String> {
-        if !self.patients.contains_key(principal) {
-            Err("Unknown Patient".to_string())
+        if !self.patients.contains_key(k) {
+            Err("Patient not found".to_string())
         }
         else {
-            self.patients.insert(principal.clone(), patient.clone());
+            self.patients.insert(k.clone(), v.clone());
             Ok(())
         }
     }
 
     pub fn patient_find_by_id(
         &self,
-        principal: &Principal
-    ) -> Result<Patient, String> {
-        if !self.patients.contains_key(principal) {
-            return Err("Unknown patient".to_string());
+        k: &Principal
+    ) -> Option<Patient> {
+        if !self.patients.contains_key(k) {
+            None
         }
-
-        Ok(self.patients[principal].clone())
+        else {
+            Some(self.patients[k].clone())             
+        }
     }
 
     /**
@@ -104,16 +106,22 @@ impl DB {
      */
     pub fn prescription_insert(
         &mut self,
-        id: &String,
-        prescription: &Prescription
-    ) {
-        self.prescriptions.insert(id.clone(), prescription.clone());
+        k: &String,
+        v: &Prescription
+    ) -> Result<(), String> {
+        if self.prescriptions.contains_key(k) {
+            return Err("Prescription already exists".to_string());
+        }
         
-        let prescriptions = self.doctor_prescriptions.get_mut(&prescription.doctor).unwrap();
-        prescriptions.insert(id.clone());
+        self.prescriptions.insert(k.clone(), v.clone());
+        
+        let doc_prescriptions = self.doctor_prescriptions.get_mut(&v.doctor).ok_or_else(|| "Doctor not found")?;
+        doc_prescriptions.insert(k.clone());
 
-        let prescriptions = self.patient_prescriptions.get_mut(&prescription.patient).unwrap();
-        prescriptions.insert(id.clone());
+        let pat_prescriptions = self.patient_prescriptions.get_mut(&v.patient).ok_or_else(|| "Patient not found")?;
+        pat_prescriptions.insert(k.clone());
+
+        Ok(())
     }
     
 }

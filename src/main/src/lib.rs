@@ -40,64 +40,42 @@ fn init(
     ic_cdk::setup();
 
     STATE.with(|rc| {
-        let mut s = rc.borrow_mut();
-        s.owner = Some(caller());
+        let mut state = rc.borrow_mut();
+        state.owner = Some(caller());
     });
 }
 
 #[ic_cdk::pre_upgrade]
 fn pre_upgrade() {
-    STATE.with(|rc| {
-        if let Err(err) = ic_cdk::storage::stable_save::<(&State,)>((
-            &rc.borrow(),
-        )) {
-            trap(&format!(
-                "An error occurred when saving STATE to stable memory (pre_upgrade): {:?}",
-                err
-            ));
-        };
-    });
-    
-    DB.with(|rc| {
-        if let Err(err) = ic_cdk::storage::stable_save::<(&DB,)>((
-            &rc.borrow(),
-        )) {
-            trap(&format!(
-                "An error occurred when saving DB to stable memory (pre_upgrade): {:?}",
-                err
-            ));
-        };
+    STATE.with(|state| {
+        DB.with(|db| {
+            if let Err(err) = ic_cdk::storage::stable_save::<(&State, &DB)>((&state.borrow(), &db.borrow())) {
+                trap(&format!(
+                    "An error occurred when saving to stable memory (pre_upgrade): {:?}",
+                    err
+                ));
+            };
+        });
     });
 }
 
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
-    STATE.with(|rc| {
-        match ic_cdk::storage::stable_restore::<(State, )>() {
-            Ok((s_, )) => {
-                rc.replace(s_);
+    STATE.with(|state| {
+        DB.with(|db| {
+            match ic_cdk::storage::stable_restore::<(State, DB)>() {
+                Ok((state_, db_)) => {
+                    state.replace(state_);
+                    db.replace(db_);
+                }
+                Err(err) => {
+                    trap(&format!(
+                        "An error occurred when loading from stable memory (post_upgrade): {:?}",
+                        err
+                    ));
+                }
             }
-            Err(err) => {
-                trap(&format!(
-                    "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
-                    err
-                ));
-            }
-        }
-    });
-
-    DB.with(|rc| {
-        match ic_cdk::storage::stable_restore::<(DB, )>() {
-            Ok((s_, )) => {
-                rc.replace(s_);
-            }
-            Err(err) => {
-                trap(&format!(
-                    "An error occurred when loading DB from stable memory (post_upgrade): {:?}",
-                    err
-                ));
-            }
-        }
+        });
     });
 }
 
@@ -147,19 +125,21 @@ fn prescription_create(
         let mut db = rc.borrow_mut();
 
         let mut doctor = match db.doctor_find_by_id(&req.doctor) {
-            Err(msg) => return Err(msg),
-            Ok(patient) => patient
+            None => return Err("Doctor not found".to_string()),
+            Some(patient) => patient
         };
     
         let mut patient = match db.patient_find_by_id(&req.patient) {
-            Err(msg) => return Err(msg),
-            Ok(patient) => patient
+            None => return Err("Patient not found".to_string()),
+            Some(patient) => patient
         };
 
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req);
 
-        db.prescription_insert(&id, &prescription);
+        if let Err(msg) = db.prescription_insert(&id, &prescription) {
+            return Err(msg);
+        };
 
         doctor.num_prescriptions += 1;
         _ = db.doctor_update(&prescription.doctor, &doctor);
