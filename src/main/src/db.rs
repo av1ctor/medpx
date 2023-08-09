@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate, staff::Staff};
+use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate, staff::Staff, key::Key};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
@@ -12,6 +12,8 @@ pub struct DB {
     pub doctor_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
     pub patient_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
     pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
+    pub key_principal: BTreeMap<String, Principal>,
+    pub principal_keys: BTreeMap<Principal, BTreeSet<Key>>,
 }
 
 impl DB {
@@ -167,6 +169,29 @@ impl DB {
         pat_prescriptions.insert(k.clone());
 
         Ok(())
+    }
+
+    /**
+     * key table
+     */
+    pub fn key_insert(
+        &mut self,
+        k: &Principal,
+        v: &Key
+    ) -> Result<(), String> {
+        if !self.principal_keys.contains_key(k) {
+            self.principal_keys.insert(k.clone(), BTreeSet::new());
+        }
+        
+        let keys = self.principal_keys.get_mut(k).unwrap();
+        if keys.contains(v) {
+            Err("Key already exists".to_string())
+        }
+        else {
+            keys.insert(v.clone());
+            self.key_principal.insert(v.value.clone(), k.clone());
+            Ok(())
+        }
     }
     
 }

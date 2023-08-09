@@ -3,6 +3,7 @@ use candid::{Principal, CandidType};
 use db::DB;
 use doctor::{Doctor, DoctorRequest, DoctorResponse};
 use ic_cdk::{caller, trap};
+use key::{KeyRequest, KeyResponse, Key};
 use patient::{Patient, PatientRequest, PatientResponse};
 use prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
 use serde::Deserialize;
@@ -14,6 +15,7 @@ pub mod staff;
 pub mod user;
 pub mod prescription;
 pub mod prescription_template;
+pub mod key;
 pub mod db;
 
 #[derive(Default, CandidType, Deserialize)]
@@ -126,6 +128,22 @@ fn staff_create(
         let staff = Staff::new(&req, caller);
         match db.staff_insert(caller, &staff) {
             Ok(()) => Ok(staff.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn key_create(
+    req: KeyRequest
+) -> Result<KeyResponse, String> {
+    let caller = &caller();
+
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let key = Key::new(&req, caller);
+        match db.key_insert(caller, &key) {
+            Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
         }
     })
