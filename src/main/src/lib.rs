@@ -9,10 +9,12 @@ use patient::{Patient, PatientRequest, PatientResponse};
 use prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
 use serde::Deserialize;
 use staff::{StaffRequest, Staff, StaffResponse};
+use thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
 
 pub mod doctor;
 pub mod patient;
 pub mod staff;
+pub mod thirdparty;
 pub mod user;
 pub mod prescription;
 pub mod prescription_auth;
@@ -130,6 +132,22 @@ fn staff_create(
         let staff = Staff::new(&req, caller);
         match db.staff_insert(caller, &staff) {
             Ok(()) => Ok(staff.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn thirdparty_create(
+    req: ThirdPartyRequest
+) -> Result<ThirdPartyResponse, String> {
+    let caller = &caller();
+
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let thirdparty = ThirdParty::new(&req, caller);
+        match db.thirdparty_insert(caller, &thirdparty) {
+            Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
         }
     })

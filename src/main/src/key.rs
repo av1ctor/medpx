@@ -15,19 +15,20 @@ pub enum KeyKind {
     PhoneNumber,
     IdCardNumber,
     DriverLicenseNumber,
+    // FIXME: unique statewide?
     DoctorLicenseNumber,
 }
 
 impl fmt::Display for KeyKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            KeyKind::EmailAddress => write!(f, "EMAIL"),
-            KeyKind::PassportNumber => write!(f, "PASSPORT"),
-            KeyKind::Random => write!(f, "RANDOM"),
-            KeyKind::PhoneNumber => write!(f, "PHONE"),
-            KeyKind::IdCardNumber => write!(f, "IDCARD"),
-            KeyKind::DriverLicenseNumber => write!(f, "DRIVER"),
-            KeyKind::DoctorLicenseNumber => write!(f, "DOCTOR"),
+            KeyKind::EmailAddress => write!(f, "EAD"),
+            KeyKind::PassportNumber => write!(f, "PPN"),
+            KeyKind::Random => write!(f, "RND"),
+            KeyKind::PhoneNumber => write!(f, "PON"),
+            KeyKind::IdCardNumber => write!(f, "ICN"),
+            KeyKind::DriverLicenseNumber => write!(f, "DLN"),
+            KeyKind::DoctorLicenseNumber => write!(f, "DOC"),
         }
     }
 }

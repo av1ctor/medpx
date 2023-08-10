@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
@@ -8,6 +9,7 @@ use crate::prescription_template::PrescriptionTemplate;
 use crate::staff::{Staff, StaffId};
 use crate::key::{Key, KeyId};
 use crate::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
+use crate::thirdparty::{ThirdPartyId, ThirdParty};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
@@ -19,11 +21,13 @@ pub struct DB {
     // patients tables
     pub patients: BTreeMap<PatientId, Patient>,
     pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    // third party tables
+    pub thirdparty: BTreeMap<ThirdPartyId, ThirdParty>,
     // prescription authorizations tables
-    pub authorizations: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
+    pub prescrition_auths: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
     // prescriptions tables
     pub prescriptions: BTreeMap<PrescriptionId, Prescription>,
-    pub prescription_authorizations_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
+    pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
     // prescription templates tables
     pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
     // keys tables
@@ -165,6 +169,49 @@ impl DB {
     }
 
     /**
+     * third party table
+     */
+    pub fn thirdparty_insert(
+        &mut self,
+        k: &ThirdPartyId,
+        v: &ThirdParty
+    ) -> Result<(), String> {
+        if self.thirdparty.contains_key(k) {
+            Err("Third party already exists".to_string())
+        }
+        else {
+            self.thirdparty.insert(k.clone(), v.clone());
+            Ok(())
+        }
+    }
+
+    pub fn thirdparty_update(
+        &mut self,
+        k: &ThirdPartyId,
+        v: &ThirdParty
+    ) -> Result<(), String> {
+        if !self.thirdparty.contains_key(k) {
+            Err("Third party not found".to_string())
+        }
+        else {
+            self.thirdparty.insert(k.clone(), v.clone());
+            Ok(())
+        }
+    }
+
+    pub fn thirdparty_find_by_id(
+        &self,
+        k: &ThirdPartyId 
+    ) -> Option<ThirdParty> {
+        if !self.thirdparty.contains_key(k) {
+            None
+        }
+        else {
+            Some(self.thirdparty[k].clone())
+        }
+    }
+
+    /**
      * prescriptions table
      */
     pub fn prescription_insert(
@@ -178,10 +225,12 @@ impl DB {
         
         self.prescriptions.insert(k.clone(), v.clone());
         
-        let doc_prescriptions = self.doctor_prescriptions_rel.get_mut(&v.doctor).ok_or_else(|| "Doctor not found")?;
+        let doc_prescriptions = self.doctor_prescriptions_rel
+            .get_mut(&v.doctor).ok_or_else(|| "Doctor not found")?;
         doc_prescriptions.insert(k.clone());
 
-        let pat_prescriptions = self.patient_prescriptions_rel.get_mut(&v.patient).ok_or_else(|| "Patient not found")?;
+        let pat_prescriptions = self.patient_prescriptions_rel
+            .get_mut(&v.patient).ok_or_else(|| "Patient not found")?;
         pat_prescriptions.insert(k.clone());
 
         Ok(())
@@ -201,7 +250,7 @@ impl DB {
         }
         
         let keys = self.principal_keys_rel.get_mut(k).unwrap();
-        if keys.iter().any(|e| self.keys[e] == v.clone()) {
+        if keys.iter().any(|e| self.keys[e].cmp(v) == Ordering::Equal) {
             Err("Key already exists".to_string())
         }
         else {
@@ -222,16 +271,16 @@ impl DB {
     ) -> Result<(), String> {
         let k = &v.prescription_id;
         
-        if !self.prescription_authorizations_rel.contains_key(k) {
-            self.prescription_authorizations_rel.insert(k.clone(), BTreeSet::new());
+        if !self.prescription_auths_rel.contains_key(k) {
+            self.prescription_auths_rel.insert(k.clone(), BTreeSet::new());
         }
         
-        let auths = self.prescription_authorizations_rel.get_mut(k).unwrap();
-        if auths.iter().any(|e| self.authorizations[e] == v.clone()) {
+        let auths = self.prescription_auths_rel.get_mut(k).unwrap();
+        if auths.iter().any(|e| self.prescrition_auths[e].cmp(v) == Ordering::Equal) {
             Err("Authorization already exists".to_string())
         }
         else {
-            self.authorizations.insert(id.clone(), v.clone());
+            self.prescrition_auths.insert(id.clone(), v.clone());
             auths.insert(id.clone());
             Ok(())
         }
