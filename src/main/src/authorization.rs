@@ -1,24 +1,23 @@
-use candid::{CandidType, Principal};
+use candid::{Principal, CandidType};
 use serde::Deserialize;
 
-pub type KeyId = String;
+pub type AuthorizationId = String;
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
-pub enum KeyKind {
-    PhoneNumber,
-    EmailAddress,
-    IdCardNumber,
-    DriverLicenseNumber,
-    PassportNumber,
-    DoctorLicenseNumber,
-    Random,
+pub enum AuthorizantionKind {
+    Read,
+    Write,
+    ReadWrite,
+    All,
 }
 
 #[derive(CandidType, Clone, Deserialize)]
-pub struct Key {
-    pub id: KeyId,
-    pub kind: KeyKind,
-    pub value: String,
+pub struct Authorization {
+    pub id: String,
+    pub kind: AuthorizantionKind,
+    pub from: Principal,
+    pub to: Principal,
+    pub expires_at: Option<u64>,
     pub created_at: u64,
     pub created_by: Principal,
     pub updated_at: Option<u64>,
@@ -28,41 +27,48 @@ pub struct Key {
 }
 
 #[derive(CandidType, Deserialize)]
-pub struct KeyRequest {
-    pub kind: KeyKind,
-    pub value: String,
+pub struct AuthorizationRequest {
+    pub kind: AuthorizantionKind,
+    pub to: Principal,
+    pub expires_at: Option<u64>,
 }
 
 #[derive(CandidType)]
-pub struct KeyResponse {
-    id: KeyId,
-    kind: KeyKind,
-    value: String,
+pub struct AuthorizationResponse {
+    pub id: String,
+    pub kind: AuthorizantionKind,
+    pub from: Principal,
+    pub to: Principal,
+    pub expires_at: Option<u64>,
 }
 
-impl Eq for Key {
+impl Eq for Authorization {
 }
 
-impl PartialEq for Key {
+impl PartialEq for Authorization {
     fn eq(
         &self, 
         other: &Self
     ) -> bool {
-        self.kind == other.kind && self.value == other.value
+        self.kind == other.kind && self.from == other.from && self.to == other.to
     }
 }
 
-impl PartialOrd for Key {
+impl PartialOrd for Authorization {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match self.kind.partial_cmp(&other.kind) {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord,
         }
-        self.value.partial_cmp(&other.value)
+        match self.from.partial_cmp(&other.from) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
+        self.to.partial_cmp(&other.to)
     }
 }
 
-impl Ord for Key {
+impl Ord for Authorization {
     fn cmp(
         &self, 
         other: &Self
@@ -71,20 +77,26 @@ impl Ord for Key {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord.unwrap(),
         }
-        self.value.cmp(&other.value)
+        match self.from.cmp(&other.from) {
+            core::cmp::Ordering::Equal => {}
+            ord => return ord,
+        }
+        self.to.cmp(&other.to)
     }
 }
 
-impl Key {
+impl Authorization {
     pub fn new(
         id: &String,
-        e: &KeyRequest,
+        e: &AuthorizationRequest,
         caller: &Principal
     ) -> Self {
         Self {
             id: id.clone(),
             kind: e.kind.clone(),
-            value: e.value.clone(),
+            from: caller.clone(),
+            to: e.to.clone(),
+            expires_at: e.expires_at,
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),
             updated_at: None,
@@ -106,14 +118,16 @@ impl Key {
     }
 }
 
-impl From<Key> for KeyResponse {
+impl From<Authorization> for AuthorizationResponse {
     fn from(
-        e: Key
+        e: Authorization
     ) -> Self {
         Self { 
             id: e.id,
             kind: e.kind,
-            value: e.value, 
+            from: e.from, 
+            to: e.to, 
+            expires_at: e.expires_at,
         }
     }
 }

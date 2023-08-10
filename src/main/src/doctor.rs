@@ -1,9 +1,12 @@
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
+pub type DoctorId = Principal;
+
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Doctor {
-    pub id: String,
+    pub id: DoctorId,
+    pub license_num: String,
     pub name: String,
     pub num_prescriptions: u32,
     pub prescription_template: Option<String>,
@@ -18,14 +21,15 @@ pub struct Doctor {
 
 #[derive(CandidType, Deserialize)]
 pub struct DoctorRequest {
-    id: String,
+    license_num: String,
     name: String,
     prescription_template: Option<String>,
 }
 
 #[derive(CandidType)]
 pub struct DoctorResponse {
-    id: String,
+    id: DoctorId,
+    license_num: String,
     name: String,
     prescription_template: Option<String>,
 }
@@ -36,7 +40,8 @@ impl Doctor {
         caller: &Principal
     ) -> Self {
         Self {
-            id: e.id.clone(),
+            id: caller.clone(),
+            license_num: e.license_num.clone(),
             name: e.name.clone(),
             prescription_template: None,
             num_prescriptions: 0,
@@ -68,6 +73,7 @@ impl From<Doctor> for DoctorResponse {
     ) -> Self {
         Self { 
             id: e.id,
+            license_num: e.license_num,
             name: e.name, 
             prescription_template: e.prescription_template,
         }

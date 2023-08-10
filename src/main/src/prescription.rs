@@ -1,16 +1,17 @@
 use candid::{Principal, CandidType};
 use serde::Deserialize;
 
+pub type PrescriptionId = String;
+
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Prescription {
-    pub id: String,
+    pub id: PrescriptionId,
     pub doctor: Principal,
     pub patient: Principal,
     pub contents: Vec<u8>,
     pub created_at: u64,
     pub deleted_at: Option<u64>,
     pub deleted_by: Option<Principal>,
-    pub expires_at: Option<u64>,
 }
 
 #[derive(CandidType, Clone, Deserialize)]
@@ -18,15 +19,14 @@ pub struct PrescriptionRequest {
     pub doctor: Principal,
     pub patient: Principal,
     pub contents: Vec<u8>,
-    pub expires_at: Option<u64>,
 }
 
 #[derive(CandidType, Clone)]
 pub struct PrescriptionResponse {
+    id: PrescriptionId,
     doctor: Principal,
     patient: Principal,
     contents: Vec<u8>,
-    expires_at: Option<u64>,
 }
 
 impl Prescription {
@@ -42,7 +42,6 @@ impl Prescription {
             created_at: ic_cdk::api::time(), 
             deleted_at: None,
             deleted_by: None,
-            expires_at: e.expires_at, 
         }
     }
 }
@@ -52,10 +51,10 @@ impl From<Prescription> for PrescriptionResponse {
         e: Prescription
     ) -> Self {
         Self { 
+            id: e.id,
             doctor: e.doctor, 
             patient: e.patient, 
             contents: e.contents, 
-            expires_at: e.expires_at, 
         }
     }
 }

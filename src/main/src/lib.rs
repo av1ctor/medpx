@@ -14,6 +14,7 @@ pub mod patient;
 pub mod staff;
 pub mod user;
 pub mod prescription;
+pub mod authorization;
 pub mod prescription_template;
 pub mod key;
 pub mod db;
@@ -141,8 +142,9 @@ fn key_create(
 
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
-        let key = Key::new(&req, caller);
-        match db.key_insert(caller, &key) {
+        let id = _gen_id();
+        let key = Key::new(&id, &req, caller);
+        match db.key_insert(&id, caller, &key) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
         }

@@ -1,6 +1,8 @@
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
+pub type StaffId = Principal;
+
 #[derive(CandidType, Clone, Deserialize)]
 pub enum StaffRole {
     Admin,
@@ -10,6 +12,7 @@ pub enum StaffRole {
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Staff {
+    pub id: StaffId,
     pub name: String,
     pub role: StaffRole,
     pub created_at: u64,
@@ -28,6 +31,7 @@ pub struct StaffRequest {
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct StaffResponse {
+    id: StaffId,
     name: String,
     role: StaffRole,
 }
@@ -38,6 +42,7 @@ impl Staff {
         caller: &Principal
     ) -> Self {
         Self {
+            id: caller.clone(),
             name: e.name.clone(),
             role: e.role.clone(),
             created_at: ic_cdk::api::time(),
@@ -66,6 +71,7 @@ impl From<Staff> for StaffResponse {
         e: Staff
     ) -> Self {
         Self { 
+            id: e.id,
             name: e.name, 
             role: e.role,
         }

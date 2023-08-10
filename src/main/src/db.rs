@@ -1,19 +1,35 @@
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::{doctor::Doctor, patient::Patient, prescription::Prescription, prescription_template::PrescriptionTemplate, staff::Staff, key::Key};
+use crate::doctor::{Doctor, DoctorId};
+use crate::patient::{Patient, PatientId};
+use crate::prescription::{Prescription, PrescriptionId};
+use crate::prescription_template::PrescriptionTemplate;
+use crate::staff::{Staff, StaffId};
+use crate::key::{Key, KeyId};
+use crate::authorization::{Authorization, AuthorizationId};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
-    pub staff: BTreeMap<Principal, Staff>,
-    pub doctors: BTreeMap<Principal, Doctor>,
-    pub patients: BTreeMap<Principal, Patient>,
-    pub prescriptions: BTreeMap<String, Prescription>,
-    pub doctor_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
-    pub patient_prescriptions: BTreeMap<Principal, BTreeSet<String>>,
+    // staff tables
+    pub staff: BTreeMap<StaffId, Staff>,
+    // doctors tables
+    pub doctors: BTreeMap<DoctorId, Doctor>,
+    pub doctor_prescriptions: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
+    // patients tables
+    pub patients: BTreeMap<PatientId, Patient>,
+    pub patient_prescriptions: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    // authorizations tables
+    pub authorizations: BTreeMap<AuthorizationId, Authorization>,
+    // prescriptions tables
+    pub prescriptions: BTreeMap<PrescriptionId, Prescription>,
+    pub prescription_authorizations: BTreeMap<PrescriptionId, BTreeSet<AuthorizationId>>,
+    // prescription templates tables
     pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
-    pub key_principal: BTreeMap<String, Principal>,
-    pub principal_keys: BTreeMap<Principal, BTreeSet<Key>>,
+    // keys tables
+    pub keys: BTreeMap<KeyId, Key>,
+    pub principal_keys: BTreeMap<Principal, BTreeSet<KeyId>>,
+    pub key_principal: BTreeMap<KeyId, Principal>,
 }
 
 impl DB {
@@ -22,7 +38,7 @@ impl DB {
      */
     pub fn staff_insert(
         &mut self,
-        k: &Principal,
+        k: &StaffId,
         v: &Staff
     ) -> Result<(), String> {
         if self.staff.contains_key(k) {
@@ -36,7 +52,7 @@ impl DB {
 
     pub fn staff_update(
         &mut self,
-        k: &Principal,
+        k: &StaffId,
         v: &Staff
     ) -> Result<(), String> {
         if !self.staff.contains_key(k) {
@@ -50,7 +66,7 @@ impl DB {
 
     pub fn staff_find_by_id(
         &self,
-        k: &Principal 
+        k: &StaffId 
     ) -> Option<Staff> {
         if !self.staff.contains_key(k) {
             None
@@ -65,7 +81,7 @@ impl DB {
      */
     pub fn doctor_insert(
         &mut self,
-        k: &Principal,
+        k: &DoctorId,
         v: &Doctor
     ) -> Result<(), String> {
         if self.doctors.contains_key(k) {
@@ -80,7 +96,7 @@ impl DB {
 
     pub fn doctor_update(
         &mut self,
-        k: &Principal,
+        k: &DoctorId,
         v: &Doctor
     ) -> Result<(), String> {
         if !self.doctors.contains_key(k) {
@@ -94,7 +110,7 @@ impl DB {
 
     pub fn doctor_find_by_id(
         &self,
-        k: &Principal 
+        k: &DoctorId 
     ) -> Option<Doctor> {
         if !self.doctors.contains_key(k) {
             None
@@ -109,7 +125,7 @@ impl DB {
      */
     pub fn patient_insert(
         &mut self,
-        k: &Principal,
+        k: &PatientId,
         v: &Patient
     ) -> Result<(), String> {
         if self.patients.contains_key(k) {
@@ -124,7 +140,7 @@ impl DB {
 
     pub fn patient_update(
         &mut self,
-        k: &Principal,
+        k: &PatientId,
         v: &Patient
     ) -> Result<(), String> {
         if !self.patients.contains_key(k) {
@@ -138,7 +154,7 @@ impl DB {
 
     pub fn patient_find_by_id(
         &self,
-        k: &Principal
+        k: &PatientId
     ) -> Option<Patient> {
         if !self.patients.contains_key(k) {
             None
@@ -153,7 +169,7 @@ impl DB {
      */
     pub fn prescription_insert(
         &mut self,
-        k: &String,
+        k: &PrescriptionId,
         v: &Prescription
     ) -> Result<(), String> {
         if self.prescriptions.contains_key(k) {
@@ -172,10 +188,11 @@ impl DB {
     }
 
     /**
-     * key table
+     * keys table
      */
     pub fn key_insert(
         &mut self,
+        id: &KeyId,
         k: &Principal,
         v: &Key
     ) -> Result<(), String> {
@@ -184,12 +201,37 @@ impl DB {
         }
         
         let keys = self.principal_keys.get_mut(k).unwrap();
-        if keys.contains(v) {
+        if keys.iter().any(|e| self.keys[e] == v.clone()) {
             Err("Key already exists".to_string())
         }
         else {
-            keys.insert(v.clone());
-            self.key_principal.insert(v.value.clone(), k.clone());
+            self.keys.insert(id.clone(), v.clone());
+            keys.insert(id.clone());
+            self.key_principal.insert(id.clone(), k.clone());
+            Ok(())
+        }
+    }
+
+    /**
+     * authorizations table
+     */
+    pub fn authorization_insert(
+        &mut self,
+        id: &AuthorizationId,
+        k: &PrescriptionId,
+        v: &Authorization
+    ) -> Result<(), String> {
+        if !self.prescription_authorizations.contains_key(k) {
+            self.prescription_authorizations.insert(k.clone(), BTreeSet::new());
+        }
+        
+        let auths = self.prescription_authorizations.get_mut(k).unwrap();
+        if auths.iter().any(|e| self.authorizations[e] == v.clone()) {
+            Err("Authorization already exists".to_string())
+        }
+        else {
+            self.authorizations.insert(id.clone(), v.clone());
+            auths.insert(id.clone());
             Ok(())
         }
     }
