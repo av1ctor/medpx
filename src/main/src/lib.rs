@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth};
 use candid::{Principal, CandidType};
 use db::DB;
 use doctor::{Doctor, DoctorRequest, DoctorResponse};
@@ -14,7 +15,7 @@ pub mod patient;
 pub mod staff;
 pub mod user;
 pub mod prescription;
-pub mod authorization;
+pub mod prescription_auth;
 pub mod prescription_template;
 pub mod key;
 pub mod db;
@@ -142,7 +143,7 @@ fn key_create(
 
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
-        let id = _gen_id();
+        let id = Key::unique_id(&req.country, &req.kind, &req.value);
         let key = Key::new(&id, &req, caller);
         match db.key_insert(&id, caller, &key) {
             Ok(()) => Ok(key.into()),
@@ -191,3 +192,19 @@ fn prescription_create(
     })
 }
 
+#[ic_cdk::update]
+fn prescription_auth_create(
+    req: PrescritipionAuthRequest
+) -> Result<PrescriptionAuthResponse, String> {
+    let caller = &caller();
+
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        let id = _gen_id();
+        let auth = PrescriptionAuth::new(&id, &req, caller);
+        match db.prescription_auth_insert(&id, &auth) {
+            Ok(()) => Ok(auth.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}

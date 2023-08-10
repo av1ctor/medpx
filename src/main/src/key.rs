@@ -1,3 +1,5 @@
+use std::fmt;
+
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
@@ -5,18 +7,35 @@ pub type KeyId = String;
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
 pub enum KeyKind {
-    PhoneNumber,
+    // unique worldwide 
     EmailAddress,
+    PassportNumber,
+    Random,
+    // unique countrywide
+    PhoneNumber,
     IdCardNumber,
     DriverLicenseNumber,
-    PassportNumber,
     DoctorLicenseNumber,
-    Random,
+}
+
+impl fmt::Display for KeyKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            KeyKind::EmailAddress => write!(f, "EMAIL"),
+            KeyKind::PassportNumber => write!(f, "PASSPORT"),
+            KeyKind::Random => write!(f, "RANDOM"),
+            KeyKind::PhoneNumber => write!(f, "PHONE"),
+            KeyKind::IdCardNumber => write!(f, "IDCARD"),
+            KeyKind::DriverLicenseNumber => write!(f, "DRIVER"),
+            KeyKind::DoctorLicenseNumber => write!(f, "DOCTOR"),
+        }
+    }
 }
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Key {
     pub id: KeyId,
+    pub country: String,
     pub kind: KeyKind,
     pub value: String,
     pub created_at: u64,
@@ -29,6 +48,7 @@ pub struct Key {
 
 #[derive(CandidType, Deserialize)]
 pub struct KeyRequest {
+    pub country: String,
     pub kind: KeyKind,
     pub value: String,
 }
@@ -36,6 +56,7 @@ pub struct KeyRequest {
 #[derive(CandidType)]
 pub struct KeyResponse {
     id: KeyId,
+    country: String,
     kind: KeyKind,
     value: String,
 }
@@ -48,12 +69,18 @@ impl PartialEq for Key {
         &self, 
         other: &Self
     ) -> bool {
-        self.kind == other.kind && self.value == other.value
+        self.kind == other.kind && 
+            self.country == other.country &&
+                self.value == other.value
     }
 }
 
 impl PartialOrd for Key {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self.country.partial_cmp(&other.country) {
+            Some(core::cmp::Ordering::Equal) => {}
+            ord => return ord,
+        }
         match self.kind.partial_cmp(&other.kind) {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord,
@@ -67,6 +94,10 @@ impl Ord for Key {
         &self, 
         other: &Self
     ) -> std::cmp::Ordering {
+        match self.country.cmp(&other.country) {
+            core::cmp::Ordering::Equal => {}
+            ord => return ord,
+        }
         match self.kind.partial_cmp(&other.kind) {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord.unwrap(),
@@ -83,6 +114,7 @@ impl Key {
     ) -> Self {
         Self {
             id: id.clone(),
+            country: e.country.clone(),
             kind: e.kind.clone(),
             value: e.value.clone(),
             created_at: ic_cdk::api::time(),
@@ -104,6 +136,14 @@ impl Key {
             ..self.clone()
         }
     }
+
+    pub fn unique_id(
+        country: &String,
+        kind: &KeyKind,
+        value: &String
+    ) -> String {
+        format!("{}#{}#{}", country, kind, value)
+    }
 }
 
 impl From<Key> for KeyResponse {
@@ -113,6 +153,7 @@ impl From<Key> for KeyResponse {
         Self { 
             id: e.id,
             kind: e.kind,
+            country: e.country,
             value: e.value, 
         }
     }

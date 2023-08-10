@@ -1,10 +1,12 @@
 use candid::{Principal, CandidType};
 use serde::Deserialize;
 
-pub type AuthorizationId = String;
+use crate::prescription::PrescriptionId;
+
+pub type PrescriptionAuthId = String;
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
-pub enum AuthorizantionKind {
+pub enum PrescriptionAuthKind {
     Read,
     Write,
     ReadWrite,
@@ -12,9 +14,10 @@ pub enum AuthorizantionKind {
 }
 
 #[derive(CandidType, Clone, Deserialize)]
-pub struct Authorization {
-    pub id: String,
-    pub kind: AuthorizantionKind,
+pub struct PrescriptionAuth {
+    pub id: PrescriptionAuthId,
+    pub prescription_id: PrescriptionId,
+    pub kind: PrescriptionAuthKind,
     pub from: Principal,
     pub to: Principal,
     pub expires_at: Option<u64>,
@@ -27,25 +30,27 @@ pub struct Authorization {
 }
 
 #[derive(CandidType, Deserialize)]
-pub struct AuthorizationRequest {
-    pub kind: AuthorizantionKind,
+pub struct PrescritipionAuthRequest {
+    pub prescription_id: PrescriptionId,
+    pub kind: PrescriptionAuthKind,
     pub to: Principal,
     pub expires_at: Option<u64>,
 }
 
 #[derive(CandidType)]
-pub struct AuthorizationResponse {
-    pub id: String,
-    pub kind: AuthorizantionKind,
+pub struct PrescriptionAuthResponse {
+    pub id: PrescriptionAuthId,
+    pub prescription_id: PrescriptionId,
+    pub kind: PrescriptionAuthKind,
     pub from: Principal,
     pub to: Principal,
     pub expires_at: Option<u64>,
 }
 
-impl Eq for Authorization {
+impl Eq for PrescriptionAuth {
 }
 
-impl PartialEq for Authorization {
+impl PartialEq for PrescriptionAuth {
     fn eq(
         &self, 
         other: &Self
@@ -54,7 +59,7 @@ impl PartialEq for Authorization {
     }
 }
 
-impl PartialOrd for Authorization {
+impl PartialOrd for PrescriptionAuth {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match self.kind.partial_cmp(&other.kind) {
             Some(core::cmp::Ordering::Equal) => {}
@@ -68,7 +73,7 @@ impl PartialOrd for Authorization {
     }
 }
 
-impl Ord for Authorization {
+impl Ord for PrescriptionAuth {
     fn cmp(
         &self, 
         other: &Self
@@ -85,14 +90,15 @@ impl Ord for Authorization {
     }
 }
 
-impl Authorization {
+impl PrescriptionAuth {
     pub fn new(
         id: &String,
-        e: &AuthorizationRequest,
+        e: &PrescritipionAuthRequest,
         caller: &Principal
     ) -> Self {
         Self {
             id: id.clone(),
+            prescription_id: e.prescription_id.clone(),
             kind: e.kind.clone(),
             from: caller.clone(),
             to: e.to.clone(),
@@ -118,12 +124,13 @@ impl Authorization {
     }
 }
 
-impl From<Authorization> for AuthorizationResponse {
+impl From<PrescriptionAuth> for PrescriptionAuthResponse {
     fn from(
-        e: Authorization
+        e: PrescriptionAuth
     ) -> Self {
         Self { 
             id: e.id,
+            prescription_id: e.prescription_id,
             kind: e.kind,
             from: e.from, 
             to: e.to, 

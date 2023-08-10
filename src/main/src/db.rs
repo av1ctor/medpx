@@ -7,7 +7,7 @@ use crate::prescription::{Prescription, PrescriptionId};
 use crate::prescription_template::PrescriptionTemplate;
 use crate::staff::{Staff, StaffId};
 use crate::key::{Key, KeyId};
-use crate::authorization::{Authorization, AuthorizationId};
+use crate::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {
@@ -15,21 +15,21 @@ pub struct DB {
     pub staff: BTreeMap<StaffId, Staff>,
     // doctors tables
     pub doctors: BTreeMap<DoctorId, Doctor>,
-    pub doctor_prescriptions: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
+    pub doctor_prescriptions_rel: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
     // patients tables
     pub patients: BTreeMap<PatientId, Patient>,
-    pub patient_prescriptions: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
-    // authorizations tables
-    pub authorizations: BTreeMap<AuthorizationId, Authorization>,
+    pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    // prescription authorizations tables
+    pub authorizations: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
     // prescriptions tables
     pub prescriptions: BTreeMap<PrescriptionId, Prescription>,
-    pub prescription_authorizations: BTreeMap<PrescriptionId, BTreeSet<AuthorizationId>>,
+    pub prescription_authorizations_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
     // prescription templates tables
     pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
     // keys tables
     pub keys: BTreeMap<KeyId, Key>,
-    pub principal_keys: BTreeMap<Principal, BTreeSet<KeyId>>,
-    pub key_principal: BTreeMap<KeyId, Principal>,
+    pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
+    pub key_principal: BTreeMap<String, Principal>,
 }
 
 impl DB {
@@ -89,7 +89,7 @@ impl DB {
         }
         else {
             self.doctors.insert(k.clone(), v.clone());
-            self.doctor_prescriptions.insert(k.clone(), BTreeSet::new());
+            self.doctor_prescriptions_rel.insert(k.clone(), BTreeSet::new());
             Ok(())
         }
     }
@@ -133,7 +133,7 @@ impl DB {
         }
         else {
             self.patients.insert(k.clone(), v.clone());
-            self.patient_prescriptions.insert(k.clone(), BTreeSet::new());
+            self.patient_prescriptions_rel.insert(k.clone(), BTreeSet::new());
             Ok(())
         }
     }
@@ -178,10 +178,10 @@ impl DB {
         
         self.prescriptions.insert(k.clone(), v.clone());
         
-        let doc_prescriptions = self.doctor_prescriptions.get_mut(&v.doctor).ok_or_else(|| "Doctor not found")?;
+        let doc_prescriptions = self.doctor_prescriptions_rel.get_mut(&v.doctor).ok_or_else(|| "Doctor not found")?;
         doc_prescriptions.insert(k.clone());
 
-        let pat_prescriptions = self.patient_prescriptions.get_mut(&v.patient).ok_or_else(|| "Patient not found")?;
+        let pat_prescriptions = self.patient_prescriptions_rel.get_mut(&v.patient).ok_or_else(|| "Patient not found")?;
         pat_prescriptions.insert(k.clone());
 
         Ok(())
@@ -196,11 +196,11 @@ impl DB {
         k: &Principal,
         v: &Key
     ) -> Result<(), String> {
-        if !self.principal_keys.contains_key(k) {
-            self.principal_keys.insert(k.clone(), BTreeSet::new());
+        if !self.principal_keys_rel.contains_key(k) {
+            self.principal_keys_rel.insert(k.clone(), BTreeSet::new());
         }
         
-        let keys = self.principal_keys.get_mut(k).unwrap();
+        let keys = self.principal_keys_rel.get_mut(k).unwrap();
         if keys.iter().any(|e| self.keys[e] == v.clone()) {
             Err("Key already exists".to_string())
         }
@@ -215,17 +215,18 @@ impl DB {
     /**
      * authorizations table
      */
-    pub fn authorization_insert(
+    pub fn prescription_auth_insert(
         &mut self,
-        id: &AuthorizationId,
-        k: &PrescriptionId,
-        v: &Authorization
+        id: &PrescriptionAuthId,
+        v: &PrescriptionAuth
     ) -> Result<(), String> {
-        if !self.prescription_authorizations.contains_key(k) {
-            self.prescription_authorizations.insert(k.clone(), BTreeSet::new());
+        let k = &v.prescription_id;
+        
+        if !self.prescription_authorizations_rel.contains_key(k) {
+            self.prescription_authorizations_rel.insert(k.clone(), BTreeSet::new());
         }
         
-        let auths = self.prescription_authorizations.get_mut(k).unwrap();
+        let auths = self.prescription_authorizations_rel.get_mut(k).unwrap();
         if auths.iter().any(|e| self.authorizations[e] == v.clone()) {
             Err("Authorization already exists".to_string())
         }
