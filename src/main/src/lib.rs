@@ -3,6 +3,7 @@ pub mod db;
 
 use std::cell::RefCell;
 use candid::{Principal, CandidType};
+use db::crud::CRUD;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
@@ -90,7 +91,7 @@ fn doctor_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let doctor = Doctor::new(&req, caller);
-        match db.doctor_insert(caller, &doctor) {
+        match db.doctors.insert(caller, &doctor) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -106,7 +107,7 @@ fn patient_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let patient = Patient::new(&req, caller);
-        match db.patient_insert(caller, &patient) {
+        match db.patients.insert(caller, &patient) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
         }
@@ -122,7 +123,7 @@ fn staff_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let staff = Staff::new(&req, caller);
-        match db.staff_insert(caller, &staff) {
+        match db.staff.insert(caller, &staff) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
         }
@@ -138,7 +139,7 @@ fn thirdparty_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let thirdparty = ThirdParty::new(&req, caller);
-        match db.thirdparty_insert(caller, &thirdparty) {
+        match db.thirdparties.insert(caller, &thirdparty) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
         }
@@ -153,9 +154,8 @@ fn key_create(
 
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
-        let id = Key::unique_id(&req.country, &req.kind, &req.value);
-        let key = Key::new(&id, &req, caller);
-        match db.key_insert(&id, caller, &key) {
+        let key = Key::new(&req, caller);
+        match db.key_insert(caller, &key) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
         }
@@ -171,11 +171,11 @@ fn prescription_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
 
-        if db.doctor_find_by_id(caller).is_none() {
+        if db.doctors.find_by_id(caller).is_none() {
             return Err("Doctor not found".to_string());
         }
     
-        if db.patient_find_by_id(&req.patient).is_none() {
+        if db.patients.find_by_id(&req.patient).is_none() {
             return Err("Patient not found".to_string());
         }
 

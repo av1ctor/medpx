@@ -109,12 +109,11 @@ impl Ord for Key {
 
 impl Key {
     pub fn new(
-        id: &String,
         e: &KeyRequest,
         caller: &Principal
     ) -> Self {
         Self {
-            id: id.clone(),
+            id: Key::unique_id(&e.country, &e.kind, &e.value),
             country: e.country.clone(),
             kind: e.kind.clone(),
             value: e.value.clone(),
