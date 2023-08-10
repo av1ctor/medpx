@@ -176,35 +176,23 @@ fn prescription_create(
 ) -> Result<PrescriptionResponse, String> {
     let caller = &caller();
 
-    if !caller.eq(&req.doctor) {
-        return Err("Forbidden".to_string());
-    }
-
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
 
-        let mut doctor = match db.doctor_find_by_id(&req.doctor) {
-            None => return Err("Doctor not found".to_string()),
-            Some(patient) => patient
-        };
+        if db.doctor_find_by_id(caller).is_none() {
+            return Err("Doctor not found".to_string());
+        }
     
-        let mut patient = match db.patient_find_by_id(&req.patient) {
-            None => return Err("Patient not found".to_string()),
-            Some(patient) => patient
-        };
+        if db.patient_find_by_id(&req.patient).is_none() {
+            return Err("Patient not found".to_string());
+        }
 
         let id = _gen_id();
-        let prescription = Prescription::new(&id, &req);
+        let prescription = Prescription::new(&id, &req, caller);
 
         if let Err(msg) = db.prescription_insert(&id, &prescription) {
             return Err(msg);
         };
-
-        doctor.num_prescriptions += 1;
-        _ = db.doctor_update(&prescription.doctor, &doctor);
-
-        patient.num_prescriptions += 1;
-        _ = db.patient_update(&prescription.patient, &patient);
 
         Ok(prescription.into())
     })

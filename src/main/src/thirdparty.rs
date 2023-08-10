@@ -4,8 +4,16 @@ use serde::Deserialize;
 pub type ThirdPartyId = Principal;
 
 #[derive(CandidType, Clone, Deserialize)]
+pub enum ThirdPartyKind {
+    Hospital,
+    DrogStore,
+    Other,
+}
+
+#[derive(CandidType, Clone, Deserialize)]
 pub struct ThirdParty {
     pub id: ThirdPartyId,
+    pub kind: ThirdPartyKind,
     pub name: String,
     pub created_at: u64,
     pub created_by: Principal,
@@ -17,12 +25,14 @@ pub struct ThirdParty {
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct ThirdPartyRequest {
+    kind: ThirdPartyKind,
     name: String,
 }
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct ThirdPartyResponse {
     id: ThirdPartyId,
+    kind: ThirdPartyKind,
     name: String,
 }
 
@@ -33,6 +43,7 @@ impl ThirdParty {
     ) -> Self {
         Self {
             id: caller.clone(),
+            kind: e.kind.clone(),
             name: e.name.clone(),
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),
@@ -61,6 +72,7 @@ impl From<ThirdParty> for ThirdPartyResponse {
     ) -> Self {
         Self { 
             id: e.id,
+            kind: e.kind,
             name: e.name, 
         }
     }

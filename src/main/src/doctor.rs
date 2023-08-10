@@ -1,6 +1,8 @@
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
+use crate::prescription_template::PrescriptionTemplateId;
+
 pub type DoctorId = Principal;
 
 #[derive(CandidType, Clone, Deserialize)]
@@ -8,7 +10,6 @@ pub struct Doctor {
     pub id: DoctorId,
     pub license_num: String,
     pub name: String,
-    pub num_prescriptions: u32,
     pub prescription_template: Option<String>,
     pub credits: u128,
     pub created_at: u64,
@@ -23,7 +24,7 @@ pub struct Doctor {
 pub struct DoctorRequest {
     license_num: String,
     name: String,
-    prescription_template: Option<String>,
+    prescription_template: Option<PrescriptionTemplateId>,
 }
 
 #[derive(CandidType)]
@@ -31,7 +32,7 @@ pub struct DoctorResponse {
     id: DoctorId,
     license_num: String,
     name: String,
-    prescription_template: Option<String>,
+    prescription_template: Option<PrescriptionTemplateId>,
 }
 
 impl Doctor {
@@ -44,7 +45,6 @@ impl Doctor {
             license_num: e.license_num.clone(),
             name: e.name.clone(),
             prescription_template: None,
-            num_prescriptions: 0,
             credits: 0,
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),

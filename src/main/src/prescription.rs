@@ -12,6 +12,7 @@ pub struct Prescription {
     pub patient: PatientId,
     pub contents: Vec<u8>,
     pub created_at: u64,
+    pub created_by: Principal,
     pub deleted_at: Option<u64>,
     pub deleted_by: Option<Principal>,
 }
@@ -33,14 +34,16 @@ pub struct PrescriptionResponse {
 impl Prescription {
     pub fn new(
         id: &String,
-        e: &PrescriptionRequest
+        e: &PrescriptionRequest,
+        caller: &Principal
     ) -> Self {
         Self { 
             id: id.clone(),
-            doctor: e.doctor, 
+            doctor: caller.clone(), 
             patient: e.patient, 
             contents: e.contents.clone(), 
             created_at: ic_cdk::api::time(), 
+            created_by: caller.clone(),
             deleted_at: None,
             deleted_by: None,
         }

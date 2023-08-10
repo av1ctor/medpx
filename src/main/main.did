@@ -1,11 +1,14 @@
 type DoctorRequest = record {
-    id: text;
+    license_num: text;
     name: text;
+    prescription_template: opt text;
 };
 
 type DoctorResponse = record {
     id: text;
+    license_num: text;
     name: text;
+    prescription_template: opt text;
 };
 
 type DoctorResponseResult = variant {
@@ -14,7 +17,6 @@ type DoctorResponseResult = variant {
 };
 
 type PatientRequest = record {
-    id: text;
     name: text;
     birth_date: nat64;
 };
@@ -30,18 +32,88 @@ type PatientResponseResult = variant {
     Ok: PatientResponse;
 };
 
+type StaffRole = variant {
+    Admin;
+    Contributor;
+    Member;
+};
+
+type StaffRequest = record {
+    name: text;
+    role: StaffRole;
+};
+
+type StaffResponse = record {
+    id: text;
+    name: text;
+    role: StaffRole;
+};
+
+type StaffResponseResult = variant {
+    Err: text;
+    Ok: StaffResponse;
+};
+
+type ThirdPartyKind = variant {
+    Hospital;
+    DrogStore;
+    Other;
+};
+
+type ThirdPartyRequest = record {
+    kind: ThirdPartyKind;
+    name: text;
+};
+
+type ThirdPartyResponse = record {
+    id: text;
+    kind: ThirdPartyKind;
+    name: text;
+};
+
+type ThirdPartyResponseResult = variant {
+    Err: text;
+    Ok: ThirdPartyResponse;
+};
+
+type KeyKind = variant {
+    EmailAddress;
+    PassportNumber;
+    Random;
+    PhoneNumber;
+    IdCardNumber;
+    DriverLicenseNumber;
+    DoctorLicenseNumber;
+};
+
+type KeyRequest = record {
+    contry: text;
+    kind: KeyKind;
+    value: text;
+};
+
+type KeyResponse = record {
+    id: text;
+    contry: text;
+    kind: KeyKind;
+    value: text;
+};
+
+type KeyResponseResult = variant {
+    Err: text;
+    Ok: KeyResponse;
+};
+
 type PrescriptionRequest = record {
-    doctor: principal;
     patient: principal;
     contents: vec nat8;
-    expires_at: opt nat64;
 };
 
 type PrescriptionResponse = record {
+    id: text;
     doctor: principal;
     patient: principal;
     contents: vec nat8;
-    expires_at: opt nat64;
 };
 
 type PrescriptionResponseResult = variant {
@@ -49,8 +121,39 @@ type PrescriptionResponseResult = variant {
     Ok: PrescriptionResponse;
 };
 
+type PrescriptionAuthKind = variant {
+    Read;
+    Write;
+    ReadWrite;
+    All;
+};
+
+type PrescriptionAuthRequest = record {
+    prescription_id: text;
+    kind: PrescriptionAuthKind;
+    to: text;
+    expires_at: opt nat64;
+};
+
+type PrescriptionAuthResponse = record {
+    prescription_id: text;
+    kind: PrescriptionAuthKind;
+    from: text;
+    to: text;
+    expires_at: opt nat64;
+};
+
+type PrescriptionAuthResponseResult = variant {
+    Err: text;
+    Ok: PrescriptionAuthResponse;
+};
+
 service : {
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     patient_create: (PatientRequest) -> (PatientResponseResult);
+    staff_create: (StaffRequest) -> (StaffResponseResult);
+    thirdparty_create: (ThirdPartyRequest) -> (ThirdPartyResponseResult);
+    key_create: (KeyRequest) -> (KeyResponseResult);
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
+    prescription_auth_create: (PrescriptionAuthRequest) -> (PrescriptionAuthResponseResult);
 }
