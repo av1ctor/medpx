@@ -1,26 +1,18 @@
-use std::cell::RefCell;
-use prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth};
-use candid::{Principal, CandidType};
-use db::DB;
-use doctor::{Doctor, DoctorRequest, DoctorResponse};
-use ic_cdk::{caller, trap};
-use key::{KeyRequest, KeyResponse, Key};
-use patient::{Patient, PatientRequest, PatientResponse};
-use prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
-use serde::Deserialize;
-use staff::{StaffRequest, Staff, StaffResponse};
-use thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
-
-pub mod doctor;
-pub mod patient;
-pub mod staff;
-pub mod thirdparty;
-pub mod user;
-pub mod prescription;
-pub mod prescription_auth;
-pub mod prescription_template;
-pub mod key;
+pub mod models;
 pub mod db;
+
+use std::cell::RefCell;
+use candid::{Principal, CandidType};
+use ic_cdk::{caller, trap};
+use serde::Deserialize;
+use db::DB;
+use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth};
+use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
+use models::key::{KeyRequest, KeyResponse, Key};
+use models::patient::{Patient, PatientRequest, PatientResponse};
+use models::prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
+use models::staff::{StaffRequest, Staff, StaffResponse};
+use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {

@@ -1,7 +1,7 @@
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
-use crate::prescription_template::PrescriptionTemplateId;
+use crate::models::prescription_template::PrescriptionTemplateId;
 
 pub type DoctorId = Principal;
 

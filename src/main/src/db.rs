@@ -2,14 +2,14 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use candid::{CandidType, Principal};
 use serde::Deserialize;
-use crate::doctor::{Doctor, DoctorId};
-use crate::patient::{Patient, PatientId};
-use crate::prescription::{Prescription, PrescriptionId};
-use crate::prescription_template::PrescriptionTemplate;
-use crate::staff::{Staff, StaffId};
-use crate::key::{Key, KeyId};
-use crate::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
-use crate::thirdparty::{ThirdPartyId, ThirdParty};
+use crate::models::doctor::{Doctor, DoctorId};
+use crate::models::patient::{Patient, PatientId};
+use crate::models::prescription::{Prescription, PrescriptionId};
+use crate::models::prescription_template::PrescriptionTemplate;
+use crate::models::staff::{Staff, StaffId};
+use crate::models::key::{Key, KeyId};
+use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
+use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct DB {

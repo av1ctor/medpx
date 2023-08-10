@@ -1,7 +1,7 @@
 use candid::{Principal, CandidType};
 use serde::Deserialize;
 
-use crate::prescription::PrescriptionId;
+use crate::models::prescription::PrescriptionId;
 
 pub type PrescriptionAuthId = String;
 

@@ -1,7 +1,7 @@
 use candid::{Principal, CandidType};
 use serde::Deserialize;
 
-use crate::{doctor::DoctorId, patient::PatientId};
+use crate::models::{doctor::DoctorId, patient::PatientId};
 
 pub type PrescriptionId = String;
 
