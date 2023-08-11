@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 use candid::CandidType;
 use serde::Deserialize;
-use crate::{models::patient::{PatientId, Patient}, db::crud::CRUD};
+use crate::{models::patient::{PatientId, Patient}, db::traits::crud::CRUD};
 
 #[derive(CandidType, Clone, Deserialize, Default)]
 pub struct PatientTable {
-    data: BTreeMap<PatientId, Patient>,
+    pub data: BTreeMap<PatientId, Patient>,
 }
 
 impl CRUD<PatientId, Patient> for PatientTable {

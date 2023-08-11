@@ -1,12 +1,12 @@
-use std::collections::BTreeMap;
-use candid::CandidType;
-use serde::Deserialize;
-use crate::{models::doctor::{DoctorId, Doctor}, db::crud::CRUD};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Principal}};
+use crate::models::doctor::{DoctorId, Doctor};
 
-#[derive(CandidType, Clone, Deserialize, Default)]
-pub struct DoctorTable {
-    data: BTreeMap<DoctorId, Doctor>
-}
+pub type DoctorTable = Table<DoctorId, Doctor>;
+
+impl TableAllocator<DoctorId, Doctor> for DoctorTable {}
+impl TableSerializer<DoctorId, Doctor> for DoctorTable {}
+impl TableDeserializer<DoctorId, Doctor> for DoctorTable {}
+impl TableSubscribed<DoctorId, Doctor> for DoctorTable {}
 
 impl CRUD<DoctorId, Doctor> for DoctorTable {
     fn insert(
@@ -14,11 +14,12 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         k: &DoctorId,
         v: &Doctor
     ) -> Result<(), String> {
-        if self.data.contains_key(k) {
-            Err("Doctor already exists".to_string())
+        if self.data.0.contains_key(k) {
+            Err("Duplicated definition".to_string())
         }
         else {
-            self.data.insert(k.clone(), v.clone());
+            self.data.0.insert(k.clone(), v.clone());
+            Self::alert(&self.subs, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -28,11 +29,12 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         k: &DoctorId,
         v: &Doctor
     ) -> Result<(), String> {
-        if !self.data.contains_key(k) {
-            Err("Doctor not found".to_string())
+        if !self.data.0.contains_key(k) {
+            Err("Not found".to_string())
         }
         else {
-            self.data.insert(k.clone(), v.clone());
+            self.data.0.insert(k.clone(), v.clone());
+            Self::alert(&self.subs, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -41,11 +43,11 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         &self,
         k: &DoctorId
     ) -> Option<Doctor> {
-        if !self.data.contains_key(k) {
+        if !self.data.0.contains_key(k) {
             None
         }
         else {
-            Some(self.data[k].clone())
+            Some(self.data.0[k].clone())
         }
     }
 
@@ -53,14 +55,15 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         &self,
         k: &DoctorId
     ) -> &Doctor {
-        self.data.get(k).unwrap()
+        self.data.0.get(k).unwrap()
     }
 
     fn delete(
         &mut self,
         k: &DoctorId
     ) -> Result<(), String> {
-        _ = self.data.remove(k);
+        _ = self.data.0.remove(k);
+        Self::alert(&self.subs, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

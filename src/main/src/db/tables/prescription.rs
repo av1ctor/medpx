@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use candid::CandidType;
 use serde::Deserialize;
-use crate::{models::prescription::{PrescriptionId, Prescription}, db::crud::CRUD};
+use crate::{models::prescription::{PrescriptionId, Prescription}, db::traits::crud::CRUD};
 
 #[derive(CandidType, Clone, Deserialize, Default)]
 pub struct PrescriptionTable {

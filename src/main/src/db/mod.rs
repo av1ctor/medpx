@@ -1,50 +1,79 @@
-pub mod crud;
+pub mod traits;
 pub mod tables;
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
-use candid::{CandidType, Principal};
-use serde::Deserialize;
+use candid::Principal;
+use ic_cdk::api::stable::{StableWriter, StableReader};
 use crate::models::doctor::DoctorId;
 use crate::models::patient::PatientId;
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_template::PrescriptionTemplate;
 use crate::models::key::{Key, KeyId};
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
-use self::crud::CRUD;
+use self::traits::crud::CRUD;
 use self::tables::doctor::DoctorTable;
 use self::tables::key::KeyTable;
 use self::tables::patient::PatientTable;
 use self::tables::prescription::PrescriptionTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
+use self::traits::table::{TableAllocator, TableSerializer, TableDeserializer};
 
-#[derive(Default, CandidType, Deserialize)]
 pub struct DB {
-    // staff tables
     pub staff: StaffTable,
-    // doctors tables
     pub doctors: DoctorTable,
-    pub doctor_prescriptions_rel: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
-    // patients tables
     pub patients: PatientTable,
-    pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
-    // third party tables
     pub thirdparties: ThirdPartyTable,
-    // prescription authorizations tables
-    pub prescrition_auths: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
-    // prescriptions tables
     pub prescriptions: PrescriptionTable,
+    pub doctor_prescriptions_rel: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
+    pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    pub prescrition_auths: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
     pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    // prescription templates tables
     pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
-    // keys tables
     pub keys: KeyTable,
     pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
     pub key_principal: BTreeMap<String, Principal>,
 }
 
 impl DB {
+    pub fn new(
+    ) -> Self {
+        let doctors = DoctorTable::new();
+        
+        Self {
+            doctors,
+            staff: todo!(),
+            patients: todo!(),
+            thirdparties: todo!(),
+            prescriptions: todo!(),
+            doctor_prescriptions_rel: todo!(),
+            patient_prescriptions_rel: todo!(),
+            prescrition_auths: todo!(),
+            prescription_auths_rel: todo!(),
+            prescription_templates: todo!(),
+            keys: todo!(),
+            principal_keys_rel: todo!(),
+            key_principal: todo!(),
+        }
+    }
+
+    pub fn serialize(
+        &self,
+        writter: &mut StableWriter
+    ) -> Result<(), String> {
+        DoctorTable::serialize(&self.doctors, writter)?;
+        Ok(())
+    }
+
+    pub fn deserialize(
+        &mut self,
+        reader: &mut StableReader
+    ) -> Result<(), String> {
+        self.doctors.data = DoctorTable::deserialize(&self.doctors, reader)?;
+        Ok(())
+    }
+    
     /**
      * prescriptions table
      */

@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use candid::CandidType;
 use serde::Deserialize;
-use crate::{models::staff::{StaffId, Staff}, db::crud::CRUD};
+use crate::{models::staff::{StaffId, Staff}, db::traits::crud::CRUD};
 
 #[derive(CandidType, Clone, Deserialize, Default)]
 pub struct StaffTable {

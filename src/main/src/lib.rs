@@ -2,8 +2,10 @@ pub mod models;
 pub mod db;
 
 use std::cell::RefCell;
+use std::io::Read;
 use candid::{Principal, CandidType};
-use db::crud::CRUD;
+use db::traits::crud::CRUD;
+use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
@@ -23,7 +25,7 @@ struct State {
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
-    static DB: RefCell<DB> = RefCell::default();
+    static DB: RefCell<DB> = RefCell::new(DB::new());    
 }
 
 fn _gen_id(
@@ -50,35 +52,58 @@ fn init(
 
 #[ic_cdk::pre_upgrade]
 fn pre_upgrade() {
+    let mut writter = stable::StableWriter::default();
+    
+    // must be the first
+    DB.with(|db| {
+        if let Err(err) = db.borrow().serialize(&mut writter) {
+            trap(&format!(
+                "An error occurred when saving DB to stable memory (pre_upgrade): {:?}",
+                err
+            ));
+        }
+    });
+
     STATE.with(|state| {
-        DB.with(|db| {
-            if let Err(err) = ic_cdk::storage::stable_save::<(&State, &DB)>((&state.borrow(), &db.borrow())) {
-                trap(&format!(
-                    "An error occurred when saving to stable memory (pre_upgrade): {:?}",
-                    err
-                ));
-            };
-        });
+        if let Err(err) = candid::write_args::<(&State, ), _>(&mut writter, (&state.borrow(), )) {
+            trap(&format!(
+                "An error occurred when saving STATE to stable memory (pre_upgrade): {:?}",
+                err
+            ));
+        }
     });
 }
 
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
+    let mut reader = stable::StableReader::default();
+
+    DB.with(|db| {
+        if let Err(err) = db.borrow_mut().deserialize(&mut reader) {
+            trap(&format!(
+                "An error occurred when loading DB from stable memory (post_upgrade): {:?}",
+                err
+            ));
+        }
+    });
+
     STATE.with(|state| {
-        DB.with(|db| {
-            match ic_cdk::storage::stable_restore::<(State, DB)>() {
-                Ok((state_, db_)) => {
-                    state.replace(state_);
-                    db.replace(db_);
-                }
-                Err(err) => {
-                    trap(&format!(
-                        "An error occurred when loading from stable memory (post_upgrade): {:?}",
-                        err
-                    ));
-                }
+        let mut buf = Vec::new();
+        if let Err(err) = reader.read_to_end(&mut buf) {
+            trap(&format!(
+                "An error occurred when reading STATE from stable memory (post_upgrade): {:?}",
+                err
+            ));
+        }
+        match candid::decode_args::<'_, (State, )>(&buf) {
+            Ok((state_, )) => state.replace(state_),
+            Err(err) => {
+                trap(&format!(
+                    "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
+                    err
+                )); 
             }
-        });
+        };
     });
 }
 

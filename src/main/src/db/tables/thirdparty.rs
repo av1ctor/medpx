@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use candid::CandidType;
 use serde::Deserialize;
-use crate::{models::thirdparty::{ThirdPartyId, ThirdParty}, db::crud::CRUD};
+use crate::{models::thirdparty::{ThirdPartyId, ThirdParty}, db::traits::crud::CRUD};
 
 #[derive(CandidType, Clone, Deserialize, Default)]
 pub struct ThirdPartyTable {
