@@ -1,12 +1,12 @@
-use std::collections::BTreeMap;
-use candid::CandidType;
-use serde::Deserialize;
-use crate::{models::staff::{StaffId, Staff}, db::traits::crud::CRUD};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Principal}};
+use crate::models::staff::{StaffId, Staff};
 
-#[derive(CandidType, Clone, Deserialize, Default)]
-pub struct StaffTable {
-    data: BTreeMap<StaffId, Staff>,
-}
+pub type StaffTable = Table<StaffId, Staff>;
+
+impl TableAllocator<StaffId, Staff> for StaffTable {}
+impl TableSerializer<StaffId, Staff> for StaffTable {}
+impl TableDeserializer<StaffId, Staff> for StaffTable {}
+impl TableSubscribed<StaffId, Staff> for StaffTable {}
 
 impl CRUD<StaffId, Staff> for StaffTable {
     fn insert(
@@ -14,11 +14,12 @@ impl CRUD<StaffId, Staff> for StaffTable {
         k: &StaffId,
         v: &Staff
     ) -> Result<(), String> {
-        if self.data.contains_key(k) {
-            Err("Staff member already exists".to_string())
+        if self.data.0.contains_key(k) {
+            Err("Duplicated key".to_string())
         }
         else {
-            self.data.insert(k.clone(), v.clone());
+            self.data.0.insert(k.clone(), v.clone());
+            Self::notify(&self.subs, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -28,11 +29,12 @@ impl CRUD<StaffId, Staff> for StaffTable {
         k: &StaffId,
         v: &Staff
     ) -> Result<(), String> {
-        if !self.data.contains_key(k) {
-            Err("Staff member not found".to_string())
+        if !self.data.0.contains_key(k) {
+            Err("Not found".to_string())
         }
         else {
-            self.data.insert(k.clone(), v.clone());
+            self.data.0.insert(k.clone(), v.clone());
+            Self::notify(&self.subs, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -41,11 +43,11 @@ impl CRUD<StaffId, Staff> for StaffTable {
         &self,
         k: &StaffId
     ) -> Option<Staff> {
-        if !self.data.contains_key(k) {
+        if !self.data.0.contains_key(k) {
             None
         }
         else {
-            Some(self.data[k].clone())
+            Some(self.data.0[k].clone())
         }
     }
 
@@ -53,14 +55,15 @@ impl CRUD<StaffId, Staff> for StaffTable {
         &self,
         k: &StaffId
     ) -> &Staff {
-        self.data.get(k).unwrap()
+        self.data.0.get(k).unwrap()
     }
 
     fn delete(
         &mut self,
         k: &StaffId
     ) -> Result<(), String> {
-        _ = self.data.remove(k);
+        _ = self.data.0.remove(k);
+        Self::notify(&self.subs, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

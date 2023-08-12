@@ -1,18 +1,18 @@
 use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Text}};
-use crate::models::key::{KeyId, Key};
+use crate::models::prescription_template::{PrescriptionTemplateId, PrescriptionTemplate};
 
-pub type KeyTable = Table<KeyId, Key>;
+pub type PrescriptionTemplateTable = Table<PrescriptionTemplateId, PrescriptionTemplate>;
 
-impl TableAllocator<KeyId, Key> for KeyTable {}
-impl TableSerializer<KeyId, Key> for KeyTable {}
-impl TableDeserializer<KeyId, Key> for KeyTable {}
-impl TableSubscribed<KeyId, Key> for KeyTable {}
+impl TableAllocator<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
+impl TableSerializer<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
+impl TableDeserializer<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
+impl TableSubscribed<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
 
-impl CRUD<KeyId, Key> for KeyTable {
+impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {
     fn insert(
         &mut self,
-        k: &KeyId,
-        v: &Key
+        k: &PrescriptionTemplateId,
+        v: &PrescriptionTemplate
     ) -> Result<(), String> {
         if self.data.0.contains_key(k) {
             Err("Duplicated key".to_string())
@@ -26,8 +26,8 @@ impl CRUD<KeyId, Key> for KeyTable {
 
     fn update(
         &mut self,
-        k: &KeyId,
-        v: &Key
+        k: &PrescriptionTemplateId,
+        v: &PrescriptionTemplate
     ) -> Result<(), String> {
         if !self.data.0.contains_key(k) {
             Err("Not found".to_string())
@@ -41,8 +41,8 @@ impl CRUD<KeyId, Key> for KeyTable {
 
     fn find_by_id(
         &self,
-        k: &KeyId
-    ) -> Option<Key> {
+        k: &PrescriptionTemplateId
+    ) -> Option<PrescriptionTemplate> {
         if !self.data.0.contains_key(k) {
             None
         }
@@ -53,14 +53,14 @@ impl CRUD<KeyId, Key> for KeyTable {
 
     fn get(
         &self,
-        k: &KeyId
-    ) -> &Key {
+        k: &PrescriptionTemplateId
+    ) -> &PrescriptionTemplate {
         self.data.0.get(k).unwrap()
     }
 
     fn delete(
         &mut self,
-        k: &KeyId
+        k: &PrescriptionTemplateId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
         Self::notify(&self.subs, TableEventKind::Delete, Text(k.clone()));

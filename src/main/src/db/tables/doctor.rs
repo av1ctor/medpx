@@ -15,11 +15,11 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         v: &Doctor
     ) -> Result<(), String> {
         if self.data.0.contains_key(k) {
-            Err("Duplicated definition".to_string())
+            Err("Duplicated key".to_string())
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::alert(&self.subs, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&self.subs, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -34,7 +34,7 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::alert(&self.subs, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&self.subs, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -63,7 +63,7 @@ impl CRUD<DoctorId, Doctor> for DoctorTable {
         k: &DoctorId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::alert(&self.subs, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&self.subs, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

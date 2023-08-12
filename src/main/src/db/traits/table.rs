@@ -47,16 +47,15 @@ pub trait TableSerializer<K: Ord + CandidType, V: CandidType> {
         (&table.data, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
         let arr = ser.serialize_to_vec().unwrap();
         // store size
-        writer.write(&u64::to_le_bytes(arr.len() as u64));
+        writer.write(&u64::to_le_bytes(arr.len() as u64)).map_err(|e| format!("{:?}", e))?;
         // store table
-        writer.write(&arr);
+        writer.write(&arr).map_err(|e| format!("{:?}", e))?;
         Ok(())
     }
 }
 
 pub trait TableDeserializer<K: Ord + CandidType + for<'a> Deserialize<'a>, V: CandidType + for<'a> Deserialize<'a>> {
     fn deserialize(
-        table: &Table<K, V>,
         reader: &mut StableReader
     ) -> Result<TableData<K, V>, String> {
         // load size
@@ -74,7 +73,7 @@ pub trait TableDeserializer<K: Ord + CandidType + for<'a> Deserialize<'a>, V: Ca
 }
 
 pub trait TableSubscribed<K: Ord + CandidType, V: CandidType> {
-    fn alert (
+    fn notify (
         subs: &BTreeMap<TableEventKind, Vec<TableEventCallback>>,
         kind: TableEventKind,
         k: TableEventKey

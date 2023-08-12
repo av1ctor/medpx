@@ -8,9 +8,10 @@ use ic_cdk::api::stable::{StableWriter, StableReader};
 use crate::models::doctor::DoctorId;
 use crate::models::patient::PatientId;
 use crate::models::prescription::{Prescription, PrescriptionId};
-use crate::models::prescription_template::PrescriptionTemplate;
 use crate::models::key::{Key, KeyId};
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
+use self::tables::prescription_auth::PrescriptionAuthTable;
+use self::tables::prescription_template::PrescriptionTemplateTable;
 use self::traits::crud::CRUD;
 use self::tables::doctor::DoctorTable;
 use self::tables::key::KeyTable;
@@ -26,12 +27,12 @@ pub struct DB {
     pub patients: PatientTable,
     pub thirdparties: ThirdPartyTable,
     pub prescriptions: PrescriptionTable,
+    pub prescrition_auths: PrescriptionAuthTable,
+    pub prescription_templates: PrescriptionTemplateTable,
+    pub keys: KeyTable,
     pub doctor_prescriptions_rel: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
     pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
-    pub prescrition_auths: BTreeMap<PrescriptionAuthId, PrescriptionAuth>,
     pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    pub prescription_templates: BTreeMap<String, PrescriptionTemplate>,
-    pub keys: KeyTable,
     pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
     pub key_principal: BTreeMap<String, Principal>,
 }
@@ -40,19 +41,26 @@ impl DB {
     pub fn new(
     ) -> Self {
         let doctors = DoctorTable::new();
+        let staff = StaffTable::new();
+        let patients = PatientTable::new();
+        let thirdparties = ThirdPartyTable::new();
+        let prescriptions = PrescriptionTable::new();
+        let keys = KeyTable::new();
+        let prescrition_auths = PrescriptionAuthTable::new();
+        let prescription_templates = PrescriptionTemplateTable::new();
         
         Self {
             doctors,
-            staff: todo!(),
-            patients: todo!(),
-            thirdparties: todo!(),
-            prescriptions: todo!(),
+            staff,
+            patients,
+            thirdparties,
+            prescriptions,
+            keys,
+            prescrition_auths,
+            prescription_templates,
             doctor_prescriptions_rel: todo!(),
             patient_prescriptions_rel: todo!(),
-            prescrition_auths: todo!(),
             prescription_auths_rel: todo!(),
-            prescription_templates: todo!(),
-            keys: todo!(),
             principal_keys_rel: todo!(),
             key_principal: todo!(),
         }
@@ -70,7 +78,7 @@ impl DB {
         &mut self,
         reader: &mut StableReader
     ) -> Result<(), String> {
-        self.doctors.data = DoctorTable::deserialize(&self.doctors, reader)?;
+        self.doctors.data = DoctorTable::deserialize(reader)?;
         Ok(())
     }
     
@@ -140,11 +148,11 @@ impl DB {
         }
         
         let auths = self.prescription_auths_rel.get_mut(k).unwrap();
-        if auths.iter().any(|e| self.prescrition_auths[e].cmp(v) == Ordering::Equal) {
+        if auths.iter().any(|e| self.prescrition_auths.get(e).cmp(v) == Ordering::Equal) {
             Err("Authorization already exists".to_string())
         }
         else {
-            self.prescrition_auths.insert(k.clone(), v.clone());
+            self.prescrition_auths.insert(k, v)?;
             auths.insert(k.clone());
             Ok(())
         }
