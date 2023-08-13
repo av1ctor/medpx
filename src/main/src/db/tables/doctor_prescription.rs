@@ -95,11 +95,5 @@ impl TableSubscriber for DoctorPrescriptionTable {
                 },
             }
         }
-        
-        
-
-        /*
-        
-        */
     }
 }

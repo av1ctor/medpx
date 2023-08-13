@@ -1,5 +1,5 @@
 use std::{cell::RefCell, rc::Rc};
-use crate::db::traits::{crud::CRUD, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber, TableData, TableSubs, Table, TableAllocatable}};
+use crate::db::traits::{crud::CRUD, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::{Text, Principal}, TableSubscriber, Table, TableAllocatable}};
 use crate::models::prescription::{PrescriptionId, Prescription};
 
 pub type PrescriptionTable = Table<PrescriptionId, Prescription>;
@@ -27,7 +27,7 @@ impl CRUD<PrescriptionId, Prescription> for PrescriptionTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Create, vec![Text(k.clone())]);
+            Self::notify(&self.subs.0, TableEventKind::Create, vec![Text(k.clone()), Principal(v.doctor.clone())]);
             Ok(())
         }
     }
@@ -42,7 +42,7 @@ impl CRUD<PrescriptionId, Prescription> for PrescriptionTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Update, vec![Text(k.clone())]);
+            Self::notify(&self.subs.0, TableEventKind::Update, vec![Text(k.clone()), Principal(v.doctor.clone())]);
             Ok(())
         }
     }
@@ -70,8 +70,8 @@ impl CRUD<PrescriptionId, Prescription> for PrescriptionTable {
         &mut self,
         k: &PrescriptionId
     ) -> Result<(), String> {
-        _ = self.data.0.remove(k);
-        Self::notify(&self.subs.0, TableEventKind::Delete, vec![Text(k.clone())]);
+        let v = self.data.0.remove(k).unwrap();
+        Self::notify(&self.subs.0, TableEventKind::Delete, vec![Text(k.clone()), Principal(v.doctor.clone())]);
         Ok(())
     }
 }
