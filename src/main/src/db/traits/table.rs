@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, cell::RefCell, rc::Rc};
 use candid::{CandidType, ser::IDLBuilder, utils::ArgumentEncoder, Principal};
 use ic_cdk::api::stable::{StableWriter, StableReader};
 use serde::Deserialize;
@@ -20,27 +20,31 @@ pub enum TableEventKey {
 pub struct TableData<K, V> (pub BTreeMap<K, V>)
     where K: Ord + CandidType, V: CandidType, Self: Sized;
 
-pub struct Table<'a, K, V> 
+pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
+
+pub struct Table<K, V>
     where K: Ord + CandidType, V: CandidType {
     pub data: TableData<K, V>,
-    pub subs: Vec<&'a mut dyn TableSubscriber>,
+    pub subs: TableSubs,
 }
-pub trait TableAllocatable<'a, K: Ord + CandidType, V: CandidType> {
+
+pub trait TableAllocatable<K: Ord + CandidType, V: CandidType> {
     fn new(
-    ) -> Table<'a, K, V> {
-        Table { 
-            data: TableData(BTreeMap::new()), 
-            subs: Vec::new(), 
+    ) -> Table<K, V> {
+        Table {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
         }
     }
 }
+
 pub trait TableSerializable<K: Ord + CandidType, V: CandidType> {
     fn serialize(
-        table: &Table<K, V>,
+        data: &TableData<K, V>,
         writer: &mut StableWriter
     ) -> Result<(), String> {
         let mut ser = IDLBuilder::new();
-        (&table.data, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
+        (data, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
         let arr = ser.serialize_to_vec().unwrap();
         // store size
         writer.write(&u64::to_le_bytes(arr.len() as u64)).map_err(|e| format!("{:?}", e))?;
@@ -74,18 +78,18 @@ pub trait TableSubscriber {
         key: TableEventKey
     );
 }
-pub trait TableSubscribable<'a, K: Ord + CandidType, V: CandidType> {
+pub trait TableSubscribable {
     fn subscribe(
-        &'a mut self,
-        tb: &'static mut dyn TableSubscriber
+        &mut self,
+        tb: Rc<RefCell<dyn TableSubscriber>>
     );
 
     fn notify (
-        subs: &mut Vec<&'a mut dyn TableSubscriber>,
+        subs: &Vec<Rc<RefCell<dyn TableSubscriber>>>,
         kind: TableEventKind,
         key: TableEventKey
     ) {
-        subs.iter_mut().for_each(|c| c.on(kind.clone(), key.clone()));
+        subs.iter().for_each(|c| c.borrow_mut().on(kind.clone(), key.clone()));
     }
 }
 

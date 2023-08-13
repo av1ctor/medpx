@@ -1,21 +1,22 @@
+use std::{cell::RefCell, rc::Rc};
 use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
 use crate::models::staff::{StaffId, Staff};
 
-pub type StaffTable<'a> = Table<'a, StaffId, Staff>;
+pub type StaffTable = Table<StaffId, Staff>;
 
-impl TableAllocatable<'_, StaffId, Staff> for StaffTable<'_> {}
-impl TableSerializable<StaffId, Staff> for StaffTable<'_> {}
-impl TableDeserializable<StaffId, Staff> for StaffTable<'_> {}
-impl TableSubscribable<'_, StaffId, Staff> for StaffTable<'_> {
+impl TableAllocatable<StaffId, Staff> for StaffTable {}
+impl TableSerializable<StaffId, Staff> for StaffTable {}
+impl TableDeserializable<StaffId, Staff> for StaffTable {}
+impl TableSubscribable for StaffTable {
     fn subscribe(
         &mut self,
-        tb: &'static mut dyn TableSubscriber
+        tb: Rc<RefCell<dyn TableSubscriber>>
     ) {
-        self.subs.push(tb);
+        self.subs.0.push(tb);
     }
 }
 
-impl CRUD<StaffId, Staff> for StaffTable<'_> {
+impl CRUD<StaffId, Staff> for StaffTable {
     fn insert(
         &mut self,
         k: &StaffId,
@@ -26,7 +27,7 @@ impl CRUD<StaffId, Staff> for StaffTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -41,7 +42,7 @@ impl CRUD<StaffId, Staff> for StaffTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -70,7 +71,7 @@ impl CRUD<StaffId, Staff> for StaffTable<'_> {
         k: &StaffId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&mut self.subs, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&self.subs.0, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

@@ -1,13 +1,12 @@
 pub mod traits;
 pub mod tables;
 
-use std::cmp::Ordering;
-use std::collections::{BTreeMap, BTreeSet};
+use std::cell::RefCell;
+use std::rc::Rc;
 use candid::Principal;
 use ic_cdk::api::stable::{StableWriter, StableReader};
-use crate::models::patient::PatientId;
 use crate::models::prescription::{Prescription, PrescriptionId};
-use crate::models::key::{Key, KeyId};
+use crate::models::key::Key;
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 use self::tables::doctor_prescription::DoctorPrescriptionTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
@@ -19,66 +18,75 @@ use self::tables::patient::PatientTable;
 use self::tables::prescription::PrescriptionTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
-use self::traits::table::{TableAllocatable, TableSerializable, TableDeserializable, TableSubscribable};
+use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
 
 
 pub struct DB {
-    pub staff: StaffTable<'static>,
-    pub doctors: DoctorTable<'static>,
-    pub patients: PatientTable<'static>,
-    pub thirdparties: ThirdPartyTable<'static>,
-    pub prescriptions: PrescriptionTable<'static>,
-    pub prescrition_auths: PrescriptionAuthTable<'static>,
-    pub prescription_templates: PrescriptionTemplateTable<'static>,
-    pub keys: KeyTable<'static>,
-    pub doctor_prescriptions_rel: DoctorPrescriptionTable<'static>,
-    pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
-    pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
-    pub key_principal: BTreeMap<String, Principal>,
+    pub doctors: Rc<RefCell<DoctorTable>>,
+    pub patients: Rc<RefCell<PatientTable>>,
+    pub staff: Rc<RefCell<StaffTable>>,
+    pub thirdparties: Rc<RefCell<ThirdPartyTable>>,
+    pub prescriptions: Rc<RefCell<PrescriptionTable>>,
+    pub prescription_auths: Rc<RefCell<PrescriptionAuthTable>>,
+    pub prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
+    pub keys: Rc<RefCell<KeyTable>>,
+    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
+    //pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
+    //pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
+    //pub key_principal: BTreeMap<String, Principal>,
 }
 
 impl DB {
     pub fn new(
+        doctors: Rc<RefCell<DoctorTable>>,
+        patients: Rc<RefCell<PatientTable>>,
+        staff: Rc<RefCell<StaffTable>>,
+        thirdparties: Rc<RefCell<ThirdPartyTable>>,
+        prescriptions: Rc<RefCell<PrescriptionTable>>,
+        keys: Rc<RefCell<KeyTable>>,
+        prescrition_auths: Rc<RefCell<PrescriptionAuthTable>>,
+        prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
+        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
     ) -> Self {
-        let doctors = DoctorTable::new();
-        let staff = StaffTable::new();
-        let patients = PatientTable::new();
-        let thirdparties = ThirdPartyTable::new();
-        let doctor_prescriptions_rel = DoctorPrescriptionTable::<'static>::new();
-        let prescriptions = PrescriptionTable::<'static>::new();
-        let keys = KeyTable::new();
-        let prescrition_auths = PrescriptionAuthTable::new();
-        let prescription_templates = PrescriptionTemplateTable::new();
         
         Self {
             doctors,
-            staff,
             patients,
+            staff,
             thirdparties,
             prescriptions,
             keys,
-            prescrition_auths,
+            prescription_auths: prescrition_auths,
             prescription_templates,
             doctor_prescriptions_rel,
-            patient_prescriptions_rel: todo!(),
-            prescription_auths_rel: todo!(),
-            principal_keys_rel: todo!(),
-            key_principal: todo!(),
+            //patient_prescriptions_rel: todo!(),
+            //prescription_auths_rel: todo!(),
+            //principal_keys_rel: todo!(),
+            //key_principal: todo!(),
         }
     }
 
     pub fn init(
-        &'static mut self
+        &mut self
     ) {
-        self.prescriptions.subscribe(&mut self.doctor_prescriptions_rel);
+        
+        self.prescriptions.borrow_mut().subscribe(self.doctor_prescriptions_rel.clone());
+        
     }
 
     pub fn serialize(
         &self,
         writter: &mut StableWriter
     ) -> Result<(), String> {
-        DoctorTable::serialize(&self.doctors, writter)?;
+        DoctorTable::serialize(&self.doctors.borrow().data, writter)?;
+        PatientTable::serialize(&self.patients.borrow().data, writter)?;
+        StaffTable::serialize(&self.staff.borrow().data, writter)?;
+        ThirdPartyTable::serialize(&self.thirdparties.borrow().data, writter)?;
+        KeyTable::serialize(&self.keys.borrow().data, writter)?;
+        PrescriptionTable::serialize(&self.prescriptions.borrow().data, writter)?;
+        PrescriptionAuthTable::serialize(&self.prescription_auths.borrow().data, writter)?;
+        PrescriptionTemplateTable::serialize(&self.prescription_templates.borrow().data, writter)?;
         Ok(())
     }
 
@@ -86,7 +94,14 @@ impl DB {
         &mut self,
         reader: &mut StableReader
     ) -> Result<(), String> {
-        self.doctors.data = DoctorTable::deserialize(reader)?;
+        self.doctors.borrow_mut().data = DoctorTable::deserialize(reader)?;
+        self.patients.borrow_mut().data = PatientTable::deserialize(reader)?;
+        self.staff.borrow_mut().data = StaffTable::deserialize(reader)?;
+        self.thirdparties.borrow_mut().data = ThirdPartyTable::deserialize(reader)?;
+        self.keys.borrow_mut().data = KeyTable::deserialize(reader)?;
+        self.prescriptions.borrow_mut().data = PrescriptionTable::deserialize(reader)?;
+        self.prescription_auths.borrow_mut().data = PrescriptionAuthTable::deserialize(reader)?;
+        self.prescription_templates.borrow_mut().data = PrescriptionTemplateTable::deserialize(reader)?;
         Ok(())
     }
     
@@ -98,15 +113,15 @@ impl DB {
         k: &PrescriptionId,
         v: &Prescription
     ) -> Result<(), String> {
-        self.prescriptions.insert(k, v)?;
+        self.prescriptions.borrow_mut().insert(k, v)?;
         
-        if !self.patient_prescriptions_rel.contains_key(&v.patient) {
+        /*if !self.patient_prescriptions_rel.contains_key(&v.patient) {
             self.patient_prescriptions_rel.insert(v.patient.clone(), BTreeSet::new());
         }
 
         let pat_prescriptions = self.patient_prescriptions_rel
             .get_mut(&v.patient).unwrap();
-        pat_prescriptions.insert(k.clone());
+        pat_prescriptions.insert(k.clone());*/
 
         Ok(())
     }
@@ -119,7 +134,7 @@ impl DB {
         k: &Principal,
         v: &Key
     ) -> Result<(), String> {
-        if !self.principal_keys_rel.contains_key(k) {
+        /*if !self.principal_keys_rel.contains_key(k) {
             self.principal_keys_rel.insert(k.clone(), BTreeSet::new());
         }
         
@@ -130,9 +145,9 @@ impl DB {
         else {
             self.keys.insert(&v.id, v)?;
             keys.insert(v.id.clone());
-            self.key_principal.insert(v.id.clone(), k.clone());
+            self.key_principal.insert(v.id.clone(), k.clone());*/
             Ok(())
-        }
+        //}
     }
 
     /**
@@ -143,7 +158,7 @@ impl DB {
         k: &PrescriptionAuthId,
         v: &PrescriptionAuth
     ) -> Result<(), String> {
-        if !self.prescription_auths_rel.contains_key(k) {
+        /*if !self.prescription_auths_rel.contains_key(k) {
             self.prescription_auths_rel.insert(k.clone(), BTreeSet::new());
         }
         
@@ -153,9 +168,9 @@ impl DB {
         }
         else {
             self.prescrition_auths.insert(k, v)?;
-            auths.insert(k.clone());
+            auths.insert(k.clone());*/
             Ok(())
-        }
+        //}
     }
     
 }

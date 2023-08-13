@@ -1,21 +1,22 @@
+use std::{cell::RefCell, rc::Rc};
 use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber}};
 use crate::models::key::{KeyId, Key};
 
-pub type KeyTable<'a> = Table<'a, KeyId, Key>;
+pub type KeyTable = Table<KeyId, Key>;
 
-impl TableAllocatable<'_, KeyId, Key> for KeyTable<'_> {}
-impl TableSerializable<KeyId, Key> for KeyTable<'_> {}
-impl TableDeserializable<KeyId, Key> for KeyTable<'_> {}
-impl TableSubscribable<'_, KeyId, Key> for KeyTable<'_> {
+impl TableAllocatable<KeyId, Key> for KeyTable {}
+impl TableSerializable<KeyId, Key> for KeyTable {}
+impl TableDeserializable<KeyId, Key> for KeyTable {}
+impl TableSubscribable for KeyTable {
     fn subscribe(
         &mut self,
-        tb: &'static mut dyn TableSubscriber
+        tb: Rc<RefCell<dyn TableSubscriber>>
     ) {
-        self.subs.push(tb);
+        self.subs.0.push(tb);
     }
 }
 
-impl CRUD<KeyId, Key> for KeyTable<'_> {
+impl CRUD<KeyId, Key> for KeyTable {
     fn insert(
         &mut self,
         k: &KeyId,
@@ -26,7 +27,7 @@ impl CRUD<KeyId, Key> for KeyTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Create, Text(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Create, Text(k.clone()));
             Ok(())
         }
     }
@@ -41,7 +42,7 @@ impl CRUD<KeyId, Key> for KeyTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Update, Text(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Update, Text(k.clone()));
             Ok(())
         }
     }
@@ -70,7 +71,7 @@ impl CRUD<KeyId, Key> for KeyTable<'_> {
         k: &KeyId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&mut self.subs, TableEventKind::Delete, Text(k.clone()));
+        Self::notify(&self.subs.0, TableEventKind::Delete, Text(k.clone()));
         Ok(())
     }
 }

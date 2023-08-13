@@ -1,21 +1,22 @@
+use std::{rc::Rc, cell::RefCell};
 use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
-pub type ThirdPartyTable<'a> = Table<'a, ThirdPartyId, ThirdParty>;
+pub type ThirdPartyTable = Table<ThirdPartyId, ThirdParty>;
 
-impl TableAllocatable<'_, ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {}
-impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {}
-impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {}
-impl TableSubscribable<'_, ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {
+impl TableAllocatable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableSubscribable for ThirdPartyTable {
     fn subscribe(
         &mut self,
-        tb: &'static mut dyn TableSubscriber
+        tb: Rc<RefCell<dyn TableSubscriber>>
     ) {
-        self.subs.push(tb);
+        self.subs.0.push(tb);
     }
 }
 
-impl CRUD<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {
+impl CRUD<ThirdPartyId, ThirdParty> for ThirdPartyTable {
     fn insert(
         &mut self,
         k: &ThirdPartyId,
@@ -26,7 +27,7 @@ impl CRUD<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -41,7 +42,7 @@ impl CRUD<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&mut self.subs, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -70,7 +71,7 @@ impl CRUD<ThirdPartyId, ThirdParty> for ThirdPartyTable<'_> {
         k: &ThirdPartyId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&mut self.subs, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&self.subs.0, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

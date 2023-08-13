@@ -3,6 +3,7 @@ pub mod db;
 
 use std::cell::RefCell;
 use std::io::Read;
+use std::rc::Rc;
 use candid::{Principal, CandidType};
 use db::traits::crud::CRUD;
 use ic_cdk::api::stable;
@@ -13,9 +14,20 @@ use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthRespon
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
 use models::key::{KeyRequest, KeyResponse, Key};
 use models::patient::{Patient, PatientRequest, PatientResponse};
-use models::prescription::{Prescription, PrescriptionRequest, PrescriptionResponse};
+use models::prescription::{PrescriptionRequest, PrescriptionResponse};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
+
+use crate::db::tables::doctor::DoctorTable;
+use crate::db::tables::doctor_prescription::DoctorPrescriptionTable;
+use crate::db::tables::key::KeyTable;
+use crate::db::tables::patient::PatientTable;
+use crate::db::tables::prescription::PrescriptionTable;
+use crate::db::traits::table::TableAllocatable;
+use crate::db::tables::prescription_auth::PrescriptionAuthTable;
+use crate::db::tables::prescription_template::PrescriptionTemplateTable;
+use crate::db::tables::staff::StaffTable;
+use crate::db::tables::thirdparty::ThirdPartyTable;
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {
@@ -25,7 +37,17 @@ struct State {
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
-    static DB: RefCell<DB> = RefCell::new(DB::new());    
+    static DB: RefCell<DB> = RefCell::new(DB::new(
+        Rc::new(RefCell::new(DoctorTable::new())), 
+        Rc::new(RefCell::new(PatientTable::new())), 
+        Rc::new(RefCell::new(StaffTable::new())), 
+        Rc::new(RefCell::new(ThirdPartyTable::new())), 
+        Rc::new(RefCell::new(PrescriptionTable::new())), 
+        Rc::new(RefCell::new(KeyTable::new())), 
+        Rc::new(RefCell::new(PrescriptionAuthTable::new())), 
+        Rc::new(RefCell::new(PrescriptionTemplateTable::new())),
+        Rc::new(RefCell::new(DoctorPrescriptionTable::new()))
+    ));    
 }
 
 fn _gen_id(
@@ -119,9 +141,8 @@ fn doctor_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let doctor = Doctor::new(&req, caller);
-        match db.doctors.insert(caller, &doctor) {
+        match rc.borrow_mut().doctors.borrow_mut().insert(caller, &doctor) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -137,10 +158,11 @@ fn patient_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let patient = Patient::new(&req, caller);
-        match db.patients.insert(caller, &patient) {
+        Err("".to_string())
+        /*match db.patients.insert(caller, &patient) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
-        }
+        }*/
     })
 }
 
@@ -153,10 +175,11 @@ fn staff_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let staff = Staff::new(&req, caller);
-        match db.staff.insert(caller, &staff) {
+        Err("".to_string())
+        /*match db.staff.insert(caller, &staff) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
-        }
+        }*/
     })
 }
 
@@ -169,10 +192,11 @@ fn thirdparty_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let thirdparty = ThirdParty::new(&req, caller);
-        match db.thirdparties.insert(caller, &thirdparty) {
+        Err("".to_string())
+        /*match db.thirdparties.insert(caller, &thirdparty) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
-        }
+        }*/
     })
 }
 
@@ -185,10 +209,11 @@ fn key_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
         let key = Key::new(&req, caller);
-        match db.key_insert(caller, &key) {
+        Err("".to_string())
+        /*match db.key_insert(caller, &key) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
-        }
+        }*/
     })
 }
 
@@ -201,7 +226,8 @@ fn prescription_create(
     DB.with(|rc| {
         let mut db = rc.borrow_mut();
 
-        if db.doctors.find_by_id(caller).is_none() {
+        Err("".to_string())
+        /*if db.doctors.find_by_id(caller).is_none() {
             return Err("Doctor not found".to_string());
         }
     
@@ -216,7 +242,7 @@ fn prescription_create(
             return Err(msg);
         };
 
-        Ok(prescription.into())
+        Ok(prescription.into())*/
     })
 }
 
@@ -230,9 +256,10 @@ fn prescription_auth_create(
         let mut db = rc.borrow_mut();
         let id = _gen_id();
         let auth = PrescriptionAuth::new(&id, &req, caller);
-        match db.prescription_auth_insert(&id, &auth) {
+        Err("".to_string())
+        /*match db.prescription_auth_insert(&id, &auth) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
-        }
+        }*/
     })
 }
