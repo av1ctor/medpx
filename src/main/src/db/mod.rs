@@ -5,11 +5,11 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 use candid::Principal;
 use ic_cdk::api::stable::{StableWriter, StableReader};
-use crate::models::doctor::DoctorId;
 use crate::models::patient::PatientId;
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::key::{Key, KeyId};
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
+use self::tables::doctor_prescription::DoctorPrescriptionTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
 use self::traits::crud::CRUD;
@@ -19,18 +19,19 @@ use self::tables::patient::PatientTable;
 use self::tables::prescription::PrescriptionTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
-use self::traits::table::{TableAllocator, TableSerializer, TableDeserializer};
+use self::traits::table::{TableAllocatable, TableSerializable, TableDeserializable, TableSubscribable};
+
 
 pub struct DB {
-    pub staff: StaffTable,
-    pub doctors: DoctorTable,
-    pub patients: PatientTable,
-    pub thirdparties: ThirdPartyTable,
-    pub prescriptions: PrescriptionTable,
-    pub prescrition_auths: PrescriptionAuthTable,
-    pub prescription_templates: PrescriptionTemplateTable,
-    pub keys: KeyTable,
-    pub doctor_prescriptions_rel: BTreeMap<DoctorId, BTreeSet<PrescriptionId>>,
+    pub staff: StaffTable<'static>,
+    pub doctors: DoctorTable<'static>,
+    pub patients: PatientTable<'static>,
+    pub thirdparties: ThirdPartyTable<'static>,
+    pub prescriptions: PrescriptionTable<'static>,
+    pub prescrition_auths: PrescriptionAuthTable<'static>,
+    pub prescription_templates: PrescriptionTemplateTable<'static>,
+    pub keys: KeyTable<'static>,
+    pub doctor_prescriptions_rel: DoctorPrescriptionTable<'static>,
     pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
     pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
     pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
@@ -44,7 +45,8 @@ impl DB {
         let staff = StaffTable::new();
         let patients = PatientTable::new();
         let thirdparties = ThirdPartyTable::new();
-        let prescriptions = PrescriptionTable::new();
+        let doctor_prescriptions_rel = DoctorPrescriptionTable::<'static>::new();
+        let prescriptions = PrescriptionTable::<'static>::new();
         let keys = KeyTable::new();
         let prescrition_auths = PrescriptionAuthTable::new();
         let prescription_templates = PrescriptionTemplateTable::new();
@@ -58,12 +60,18 @@ impl DB {
             keys,
             prescrition_auths,
             prescription_templates,
-            doctor_prescriptions_rel: todo!(),
+            doctor_prescriptions_rel,
             patient_prescriptions_rel: todo!(),
             prescription_auths_rel: todo!(),
             principal_keys_rel: todo!(),
             key_principal: todo!(),
         }
+    }
+
+    pub fn init(
+        &'static mut self
+    ) {
+        self.prescriptions.subscribe(&mut self.doctor_prescriptions_rel);
     }
 
     pub fn serialize(
@@ -92,14 +100,6 @@ impl DB {
     ) -> Result<(), String> {
         self.prescriptions.insert(k, v)?;
         
-        if !self.doctor_prescriptions_rel.contains_key(&v.doctor) {
-            self.doctor_prescriptions_rel.insert(v.doctor.clone(), BTreeSet::new());
-        }
-        
-        let doc_prescriptions = self.doctor_prescriptions_rel
-            .get_mut(&v.doctor).unwrap();
-        doc_prescriptions.insert(k.clone());
-
         if !self.patient_prescriptions_rel.contains_key(&v.patient) {
             self.patient_prescriptions_rel.insert(v.patient.clone(), BTreeSet::new());
         }

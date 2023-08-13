@@ -1,14 +1,21 @@
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Principal}};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
 use crate::models::staff::{StaffId, Staff};
 
-pub type StaffTable = Table<StaffId, Staff>;
+pub type StaffTable<'a> = Table<'a, StaffId, Staff>;
 
-impl TableAllocator<StaffId, Staff> for StaffTable {}
-impl TableSerializer<StaffId, Staff> for StaffTable {}
-impl TableDeserializer<StaffId, Staff> for StaffTable {}
-impl TableSubscribed<StaffId, Staff> for StaffTable {}
+impl TableAllocatable<'_, StaffId, Staff> for StaffTable<'_> {}
+impl TableSerializable<StaffId, Staff> for StaffTable<'_> {}
+impl TableDeserializable<StaffId, Staff> for StaffTable<'_> {}
+impl TableSubscribable<'_, StaffId, Staff> for StaffTable<'_> {
+    fn subscribe(
+        &mut self,
+        tb: &'static mut dyn TableSubscriber
+    ) {
+        self.subs.push(tb);
+    }
+}
 
-impl CRUD<StaffId, Staff> for StaffTable {
+impl CRUD<StaffId, Staff> for StaffTable<'_> {
     fn insert(
         &mut self,
         k: &StaffId,
@@ -19,7 +26,7 @@ impl CRUD<StaffId, Staff> for StaffTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -34,7 +41,7 @@ impl CRUD<StaffId, Staff> for StaffTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -63,7 +70,7 @@ impl CRUD<StaffId, Staff> for StaffTable {
         k: &StaffId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&mut self.subs, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

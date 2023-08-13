@@ -16,29 +16,25 @@ pub enum TableEventKey {
     Principal(Principal),
 }
 
-pub type TableEventCallback = fn (key: TableEventKey) -> ();
-
 #[derive(CandidType, Deserialize)]
 pub struct TableData<K, V> (pub BTreeMap<K, V>)
     where K: Ord + CandidType, V: CandidType, Self: Sized;
 
-pub struct Table<K, V> 
+pub struct Table<'a, K, V> 
     where K: Ord + CandidType, V: CandidType {
     pub data: TableData<K, V>,
-    pub subs: BTreeMap<TableEventKind, Vec<TableEventCallback>>,
+    pub subs: Vec<&'a mut dyn TableSubscriber>,
 }
-
-pub trait TableAllocator<K: Ord + CandidType, V: CandidType> {
+pub trait TableAllocatable<'a, K: Ord + CandidType, V: CandidType> {
     fn new(
-    ) -> Table<K, V> {
+    ) -> Table<'a, K, V> {
         Table { 
             data: TableData(BTreeMap::new()), 
-            subs: BTreeMap::new(), 
+            subs: Vec::new(), 
         }
     }
 }
-
-pub trait TableSerializer<K: Ord + CandidType, V: CandidType> {
+pub trait TableSerializable<K: Ord + CandidType, V: CandidType> {
     fn serialize(
         table: &Table<K, V>,
         writer: &mut StableWriter
@@ -54,7 +50,7 @@ pub trait TableSerializer<K: Ord + CandidType, V: CandidType> {
     }
 }
 
-pub trait TableDeserializer<K: Ord + CandidType + for<'a> Deserialize<'a>, V: CandidType + for<'a> Deserialize<'a>> {
+pub trait TableDeserializable<K: Ord + CandidType + for<'a> Deserialize<'a>, V: CandidType + for<'a> Deserialize<'a>> {
     fn deserialize(
         reader: &mut StableReader
     ) -> Result<TableData<K, V>, String> {
@@ -63,22 +59,33 @@ pub trait TableDeserializer<K: Ord + CandidType + for<'a> Deserialize<'a>, V: Ca
         reader.read(&mut size_buf).map_err(|e| format!("{:?}", e))?;
         let size = u64::from_le_bytes(size_buf);
         // load table
-        let mut bytes = vec![0u8; size as usize];
-        reader.read(&mut bytes).map_err(|e| format!("{:?}", e))?;
+        let mut table_buf = vec![0u8; size as usize];
+        reader.read(&mut table_buf).map_err(|e| format!("{:?}", e))?;
         // decode table
-        let res = candid::decode_args::<'_, (TableData<K, V>, )>(&bytes)
+        let res = candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
             .map_err(|e| format!("{:?}", e))?;
         Ok(res.0)
     }
 }
-
-pub trait TableSubscribed<K: Ord + CandidType, V: CandidType> {
-    fn notify (
-        subs: &BTreeMap<TableEventKind, Vec<TableEventCallback>>,
+pub trait TableSubscriber {
+    fn on(
+        &mut self,
         kind: TableEventKind,
-        k: TableEventKey
-    ) -> () {
-        subs.get(&kind).unwrap().iter()
-            .for_each(|f| f(k.clone()));
+        key: TableEventKey
+    );
+}
+pub trait TableSubscribable<'a, K: Ord + CandidType, V: CandidType> {
+    fn subscribe(
+        &'a mut self,
+        tb: &'static mut dyn TableSubscriber
+    );
+
+    fn notify (
+        subs: &mut Vec<&'a mut dyn TableSubscriber>,
+        kind: TableEventKind,
+        key: TableEventKey
+    ) {
+        subs.iter_mut().for_each(|c| c.on(kind.clone(), key.clone()));
     }
 }
+

@@ -1,14 +1,21 @@
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Text}};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber}};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
 
-pub type PrescriptionAuthTable = Table<PrescriptionAuthId, PrescriptionAuth>;
+pub type PrescriptionAuthTable<'a> = Table<'a, PrescriptionAuthId, PrescriptionAuth>;
 
-impl TableAllocator<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
-impl TableSerializer<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
-impl TableDeserializer<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
-impl TableSubscribed<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
+impl TableAllocatable<'_, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable<'_> {}
+impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable<'_> {}
+impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable<'_> {}
+impl TableSubscribable<'_, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable<'_> {
+    fn subscribe(
+        &mut self,
+        tb: &'static mut dyn TableSubscriber
+    ) {
+        self.subs.push(tb);
+    }
+}
 
-impl CRUD<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {
+impl CRUD<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable<'_> {
     fn insert(
         &mut self,
         k: &PrescriptionAuthId,
@@ -19,7 +26,7 @@ impl CRUD<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Create, Text(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Create, Text(k.clone()));
             Ok(())
         }
     }
@@ -34,7 +41,7 @@ impl CRUD<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Update, Text(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Update, Text(k.clone()));
             Ok(())
         }
     }
@@ -63,7 +70,7 @@ impl CRUD<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {
         k: &PrescriptionAuthId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs, TableEventKind::Delete, Text(k.clone()));
+        Self::notify(&mut self.subs, TableEventKind::Delete, Text(k.clone()));
         Ok(())
     }
 }

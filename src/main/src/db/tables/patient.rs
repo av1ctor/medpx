@@ -1,14 +1,21 @@
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Principal}};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
 use crate::models::patient::{PatientId, Patient};
 
-pub type PatientTable = Table<PatientId, Patient>;
+pub type PatientTable<'a> = Table<'a, PatientId, Patient>;
 
-impl TableAllocator<PatientId, Patient> for PatientTable {}
-impl TableSerializer<PatientId, Patient> for PatientTable {}
-impl TableDeserializer<PatientId, Patient> for PatientTable {}
-impl TableSubscribed<PatientId, Patient> for PatientTable {}
+impl TableAllocatable<'_, PatientId, Patient> for PatientTable<'_> {}
+impl TableSerializable<PatientId, Patient> for PatientTable<'_> {}
+impl TableDeserializable<PatientId, Patient> for PatientTable<'_> {}
+impl TableSubscribable<'_, PatientId, Patient> for PatientTable<'_> {
+    fn subscribe(
+        &mut self,
+        tb: &'static mut dyn TableSubscriber
+    ) {
+        self.subs.push(tb);
+    }
+}
 
-impl CRUD<PatientId, Patient> for PatientTable {
+impl CRUD<PatientId, Patient> for PatientTable<'_> {
     fn insert(
         &mut self,
         k: &PatientId,
@@ -19,7 +26,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -34,7 +41,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -63,7 +70,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         k: &PatientId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&mut self.subs, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }

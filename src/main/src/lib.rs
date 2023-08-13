@@ -48,6 +48,11 @@ fn init(
         let mut state = rc.borrow_mut();
         state.owner = Some(caller());
     });
+
+    DB.with(|rc| {
+        let mut db = rc.borrow_mut();
+        db.init();
+    });
 }
 
 #[ic_cdk::pre_upgrade]
@@ -91,7 +96,7 @@ fn post_upgrade() {
         let mut buf = Vec::new();
         if let Err(err) = reader.read_to_end(&mut buf) {
             trap(&format!(
-                "An error occurred when reading STATE from stable memory (post_upgrade): {:?}",
+                "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
                 err
             ));
         }
@@ -99,7 +104,7 @@ fn post_upgrade() {
             Ok((state_, )) => state.replace(state_),
             Err(err) => {
                 trap(&format!(
-                    "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
+                    "An error occurred when decoding STATE (post_upgrade): {:?}",
                     err
                 )); 
             }

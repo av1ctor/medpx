@@ -1,14 +1,21 @@
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocator, TableSerializer, TableSubscribed, TableDeserializer, TableEventKind, TableEventKey::Text}};
+use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber}};
 use crate::models::prescription_template::{PrescriptionTemplateId, PrescriptionTemplate};
 
-pub type PrescriptionTemplateTable = Table<PrescriptionTemplateId, PrescriptionTemplate>;
+pub type PrescriptionTemplateTable<'a> = Table<'a, PrescriptionTemplateId, PrescriptionTemplate>;
 
-impl TableAllocator<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
-impl TableSerializer<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
-impl TableDeserializer<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
-impl TableSubscribed<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {}
+impl TableAllocatable<'_, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable<'_> {}
+impl TableSerializable<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable<'_> {}
+impl TableDeserializable<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable<'_> {}
+impl TableSubscribable<'_, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable<'_> {
+    fn subscribe(
+        &mut self,
+        tb: &'static mut dyn TableSubscriber
+    ) {
+        self.subs.push(tb);
+    }
+}
 
-impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable {
+impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplateTable<'_> {
     fn insert(
         &mut self,
         k: &PrescriptionTemplateId,
@@ -19,7 +26,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Create, Text(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Create, Text(k.clone()));
             Ok(())
         }
     }
@@ -34,7 +41,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs, TableEventKind::Update, Text(k.clone()));
+            Self::notify(&mut self.subs, TableEventKind::Update, Text(k.clone()));
             Ok(())
         }
     }
@@ -63,7 +70,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         k: &PrescriptionTemplateId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs, TableEventKind::Delete, Text(k.clone()));
+        Self::notify(&mut self.subs, TableEventKind::Delete, Text(k.clone()));
         Ok(())
     }
 }

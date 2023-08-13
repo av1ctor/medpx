@@ -6,3 +6,4 @@ pub mod staff;
 pub mod thirdparty;
 pub mod prescription_auth;
 pub mod prescription_template;
+pub mod doctor_prescription;
