@@ -27,7 +27,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Create, Text(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Create, vec![Text(k.clone())]);
             Ok(())
         }
     }
@@ -42,7 +42,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Update, Text(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Update, vec![Text(k.clone())]);
             Ok(())
         }
     }
@@ -71,7 +71,7 @@ impl CRUD<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplate
         k: &PrescriptionTemplateId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs.0, TableEventKind::Delete, Text(k.clone()));
+        Self::notify(&self.subs.0, TableEventKind::Delete, vec![Text(k.clone())]);
         Ok(())
     }
 }

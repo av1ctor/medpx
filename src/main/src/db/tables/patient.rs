@@ -27,7 +27,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Create, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Create, vec![Principal(k.clone())]);
             Ok(())
         }
     }
@@ -42,7 +42,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Update, Principal(k.clone()));
+            Self::notify(&self.subs.0, TableEventKind::Update, vec![Principal(k.clone())]);
             Ok(())
         }
     }
@@ -71,7 +71,7 @@ impl CRUD<PatientId, Patient> for PatientTable {
         k: &PatientId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs.0, TableEventKind::Delete, Principal(k.clone()));
+        Self::notify(&self.subs.0, TableEventKind::Delete, vec![Principal(k.clone())]);
         Ok(())
     }
 }

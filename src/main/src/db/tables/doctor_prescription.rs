@@ -1,5 +1,5 @@
-use std::{collections::BTreeSet, cell::RefCell, rc::Rc};
-use crate::{db::traits::{crud::CRUD, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::{Principal, self}, TableSubscriber, Table, TableAllocatable}}, models::prescription::PrescriptionId};
+use std::collections::BTreeSet;
+use crate::{db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, Table, TableAllocatable}}, models::prescription::PrescriptionId};
 use crate::models::doctor::DoctorId;
 
 pub type DoctorPrescriptionTable = Table<DoctorId, BTreeSet<PrescriptionId>>;
@@ -7,14 +7,6 @@ pub type DoctorPrescriptionTable = Table<DoctorId, BTreeSet<PrescriptionId>>;
 impl TableAllocatable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
 impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
 impl TableDeserializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
-impl TableSubscribable for DoctorPrescriptionTable {
-    fn subscribe(
-        &mut self,
-        tb: Rc<RefCell<dyn TableSubscriber>>
-    ) {
-        self.subs.0.push(tb);
-    }
-}
 
 impl CRUD<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
     fn insert(
@@ -27,7 +19,6 @@ impl CRUD<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Create, Principal(k.clone()));
             Ok(())
         }
     }
@@ -42,7 +33,6 @@ impl CRUD<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
         }
         else {
             self.data.0.insert(k.clone(), v.clone());
-            Self::notify(&self.subs.0, TableEventKind::Update, Principal(k.clone()));
             Ok(())
         }
     }
@@ -71,7 +61,6 @@ impl CRUD<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
         k: &DoctorId
     ) -> Result<(), String> {
         _ = self.data.0.remove(k);
-        Self::notify(&self.subs.0, TableEventKind::Delete, Principal(k.clone()));
         Ok(())
     }
 }
@@ -80,14 +69,37 @@ impl TableSubscriber for DoctorPrescriptionTable {
     fn on(
         &mut self,
         kind: TableEventKind,
-        key: TableEventKey
+        keys: Vec<TableEventKey>
     ) {
-        /*if !self.data.0.contains_key(&doctor) {
-            self.data.0.insert(doctor.clone(), BTreeSet::new());
+        if let (
+                Text(prescription_key), 
+                Principal(doctor_key)
+            ) = (keys[0].clone(), keys[1].clone()) {
+            match kind {
+                TableEventKind::Create => {
+                    if !self.data.0.contains_key(&doctor_key) {
+                        self.data.0.insert(doctor_key.clone(), BTreeSet::new());
+                    }
+
+                    let doc_prescriptions = self.data.0
+                        .get_mut(&doctor_key).unwrap();
+                    doc_prescriptions.insert(prescription_key.clone());
+                },
+                TableEventKind::Update => {
+                    // assuming doctor_key won't be updated
+                },
+                TableEventKind::Delete => {
+                    let doc_prescriptions = self.data.0
+                        .get_mut(&doctor_key).unwrap();
+                    doc_prescriptions.remove(&prescription_key);
+                },
+            }
         }
         
-        let doc_prescriptions = self.data.0
-            .get_mut(&doctor).unwrap();
-        doc_prescriptions.insert(k.clone());*/
+        
+
+        /*
+        
+        */
     }
 }

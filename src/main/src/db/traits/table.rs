@@ -75,7 +75,7 @@ pub trait TableSubscriber {
     fn on(
         &mut self,
         kind: TableEventKind,
-        key: TableEventKey
+        keys: Vec<TableEventKey>
     );
 }
 pub trait TableSubscribable {
@@ -87,9 +87,9 @@ pub trait TableSubscribable {
     fn notify (
         subs: &Vec<Rc<RefCell<dyn TableSubscriber>>>,
         kind: TableEventKind,
-        key: TableEventKey
+        keys: Vec<TableEventKey>
     ) {
-        subs.iter().for_each(|c| c.borrow_mut().on(kind.clone(), key.clone()));
+        subs.iter().for_each(|c| c.borrow_mut().on(kind.clone(), keys.clone()));
     }
 }
 
