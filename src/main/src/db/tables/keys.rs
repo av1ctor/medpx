@@ -42,6 +42,8 @@ impl TableSerializable<KeyId, Key> for KeysTable {}
 
 impl TableDeserializable<KeyId, Key> for KeysTable {}
 
+impl CrudSubscribable<KeyId, Key> for KeysTable {}
+
 impl TableSubscribable<KeyId, Key> for KeysTable {
     fn get_subs(
         &self
@@ -65,5 +67,3 @@ impl TableSubscribable<KeyId, Key> for KeysTable {
         ]
     }
 }
-
-impl CrudSubscribable<KeyId, Key> for KeysTable {}

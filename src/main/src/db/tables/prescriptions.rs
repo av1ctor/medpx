@@ -42,6 +42,8 @@ impl TableSerializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 
 impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 
+impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {}
+
 impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {
     fn get_subs(
         &self
@@ -65,5 +67,3 @@ impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {
         ]
     }
 }
-
-impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {}

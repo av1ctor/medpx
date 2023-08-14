@@ -23,6 +23,7 @@ use crate::db::tables::keys::KeysTable;
 use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
 use crate::db::tables::patients::PatientsTable;
 use crate::db::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
+use crate::db::tables::prescription_auths_rel::PrescriptionAuthsRelTable;
 use crate::db::tables::prescriptions::PrescriptionsTable;
 use crate::db::tables::principal_keys_rel::PrincipalKeysRelTable;
 use crate::db::traits::table::TableAllocatable;
@@ -50,6 +51,7 @@ thread_local! {
         Rc::new(RefCell::new(PrescriptionTemplatesTable::new())),
         Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new())),
         Rc::new(RefCell::new(PatientPrescriptionsRelTable::new())),
+        Rc::new(RefCell::new(PrescriptionAuthsRelTable::new())),
         Rc::new(RefCell::new(PrincipalKeysRelTable::new())),
         Rc::new(RefCell::new(KeyPrincipalRelTable::new())),
     ));    

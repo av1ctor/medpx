@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible, TableSubs, TableSubscribable, TableEventKey}};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
 
 pub struct PrescriptionAuthsTable {
     pub data: TableData<PrescriptionAuthId, PrescriptionAuth>,
+    pub subs: TableSubs,
 }
 
 impl TableAllocatable<PrescriptionAuthsTable> for PrescriptionAuthsTable {
@@ -12,6 +13,7 @@ impl TableAllocatable<PrescriptionAuthsTable> for PrescriptionAuthsTable {
     ) -> Self {
         Self {
             data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
         }
     }
 }
@@ -42,3 +44,27 @@ impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAut
 impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
 impl Crud<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
+
+impl TableSubscribable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
+    fn get_subs(
+        &self
+    ) -> &TableSubs {
+        &self.subs
+    }
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs {
+        &mut self.subs
+    }
+
+    fn get_keys(
+        k: &PrescriptionAuthId,
+        v: &PrescriptionAuth
+    ) -> Vec<TableEventKey> {
+        vec![
+            TableEventKey::Text(k.clone()), 
+            TableEventKey::Text(v.prescription_id.clone())
+        ]
+    }
+}
