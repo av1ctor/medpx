@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, TableDataAccessible}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, Table}};
 use crate::models::key::{KeyId, Key};
 
 pub struct KeysTable {
@@ -7,7 +7,7 @@ pub struct KeysTable {
     pub subs: TableSubs,
 }
 
-impl TableAllocatable<KeysTable> for KeysTable {
+impl Table<KeyId, Key> for KeysTable {
     fn new(
     ) -> Self {
         Self {
@@ -15,9 +15,7 @@ impl TableAllocatable<KeysTable> for KeysTable {
             subs: TableSubs(Vec::new()),
         }
     }
-}
 
-impl TableDataAccessible<KeyId, Key> for KeysTable {
     fn get_data(
         &self
     ) -> &TableData<KeyId, Key> {

@@ -24,15 +24,14 @@ pub struct TableData<K, V> (pub BTreeMap<K, V>)
 
 pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
 
-pub trait TableAllocatable<T> {
-    fn new(
-    ) -> T;
-}
-
-pub trait TableDataAccessible<K, V>
+pub trait Table<K, V>
     where 
         K: Ord + CandidType, 
         V: CandidType {
+
+    fn new(
+    ) -> Self;
+        
     fn get_data(
         &self
     ) -> &TableData<K, V>;
@@ -51,7 +50,7 @@ pub trait TableSerializable<K, V>
     where 
         K: Ord + CandidType, 
         V: CandidType,
-        Self: TableDataAccessible<K, V> {
+        Self: Table<K, V> {
     fn serialize(
         &self,
         writer: &mut StableWriter
@@ -71,7 +70,7 @@ pub trait TableDeserializable<K, V>
     where 
         K: Ord + CandidType + for<'a> Deserialize<'a>, 
         V: CandidType + for<'a> Deserialize<'a>,
-        Self: TableDataAccessible<K, V> {
+        Self: Table<K, V> {
     fn deserialize(
         &mut self, 
         reader: &mut StableReader

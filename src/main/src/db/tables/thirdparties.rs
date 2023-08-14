@@ -1,22 +1,20 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table}};
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
 pub struct ThirdPartiesTable {
     pub data: TableData<ThirdPartyId, ThirdParty>,
 }
 
-impl TableAllocatable<ThirdPartiesTable> for ThirdPartiesTable {
+impl Table<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     fn new(
     ) -> Self {
         Self {
             data: TableData(BTreeMap::new()),
         }
     }
-}
 
-impl TableDataAccessible<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     fn get_data(
         &self
     ) -> &TableData<ThirdPartyId, ThirdParty> {

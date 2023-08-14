@@ -1,21 +1,19 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::Crud, table::{TableAllocatable, TableSerializable, TableDeserializable, TableData, TableDataAccessible}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table}};
 use crate::models::doctor::{DoctorId, Doctor};
 
 pub struct DoctorsTable {
     pub data: TableData<DoctorId, Doctor>,
 }
 
-impl TableAllocatable<DoctorsTable> for DoctorsTable {
+impl Table<DoctorId, Doctor> for DoctorsTable {
     fn new(
     ) -> Self {
         Self {
             data: TableData(BTreeMap::new()),
         }
     }
-}
 
-impl TableDataAccessible<DoctorId, Doctor> for DoctorsTable {
     fn get_data(
         &self
     ) -> &TableData<DoctorId, Doctor> {

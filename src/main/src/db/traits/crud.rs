@@ -1,11 +1,11 @@
 use candid::CandidType;
-use super::table::{TableSubscribable, TableEventKind, TableDataAccessible};
+use super::table::{TableSubscribable, TableEventKind, Table};
 
 pub trait Crud<K, V> 
     where 
         K: Ord + CandidType, 
         V: CandidType, 
-        Self: TableDataAccessible<K, V> {
+        Self: Table<K, V> {
     
     fn insert(
         &mut self,
@@ -62,7 +62,7 @@ pub trait CrudSubscribable<K, V>
     where 
         K: Ord + CandidType, 
         V: CandidType, 
-        Self: TableDataAccessible<K, V> + TableSubscribable<K, V> {
+        Self: Table<K, V> + TableSubscribable<K, V> {
     fn insert(
         &mut self,
         k: K,
