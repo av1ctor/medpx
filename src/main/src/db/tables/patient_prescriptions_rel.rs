@@ -2,11 +2,11 @@ use std::collections::{BTreeSet, BTreeMap};
 use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData, TableDataAccessible}};
 use crate::models::{patient::PatientId, prescription::PrescriptionId};
 
-pub struct PatientPrescriptionRelTable {
+pub struct PatientPrescriptionsRelTable {
     pub data: TableData<PatientId, BTreeSet<PrescriptionId>>,
 }
 
-impl TableAllocatable<PatientPrescriptionRelTable> for PatientPrescriptionRelTable {
+impl TableAllocatable<PatientPrescriptionsRelTable> for PatientPrescriptionsRelTable {
     fn new(
     ) -> Self {
         Self {
@@ -15,7 +15,7 @@ impl TableAllocatable<PatientPrescriptionRelTable> for PatientPrescriptionRelTab
     }
 }
 
-impl TableDataAccessible<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionRelTable {
+impl TableDataAccessible<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionsRelTable {
     fn get_data(
         &self
     ) -> &TableData<PatientId, BTreeSet<PrescriptionId>> {
@@ -36,13 +36,13 @@ impl TableDataAccessible<PatientId, BTreeSet<PrescriptionId>> for PatientPrescri
     }
 }
 
-impl TableSerializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionRelTable {}
+impl TableSerializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionsRelTable {}
 
-impl TableDeserializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionRelTable {}
+impl TableDeserializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionsRelTable {}
 
-impl Crud<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionRelTable {}
+impl Crud<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionsRelTable {}
 
-impl TableSubscriber for PatientPrescriptionRelTable {
+impl TableSubscriber for PatientPrescriptionsRelTable {
     fn on(
         &mut self,
         kind: TableEventKind,

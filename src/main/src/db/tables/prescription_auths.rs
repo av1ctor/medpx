@@ -3,11 +3,11 @@ use std::collections::BTreeMap;
 use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
 
-pub struct PrescriptionAuthTable {
+pub struct PrescriptionAuthsTable {
     pub data: TableData<PrescriptionAuthId, PrescriptionAuth>,
 }
 
-impl TableAllocatable<PrescriptionAuthTable> for PrescriptionAuthTable {
+impl TableAllocatable<PrescriptionAuthsTable> for PrescriptionAuthsTable {
     fn new(
     ) -> Self {
         Self {
@@ -16,7 +16,7 @@ impl TableAllocatable<PrescriptionAuthTable> for PrescriptionAuthTable {
     }
 }
 
-impl TableDataAccessible<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {
+impl TableDataAccessible<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
     fn get_data(
         &self
     ) -> &TableData<PrescriptionAuthId, PrescriptionAuth> {
@@ -37,8 +37,8 @@ impl TableDataAccessible<PrescriptionAuthId, PrescriptionAuth> for PrescriptionA
     }
 }
 
-impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
+impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
-impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
+impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
-impl Crud<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthTable {}
+impl Crud<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}

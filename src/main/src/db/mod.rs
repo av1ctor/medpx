@@ -5,16 +5,16 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use ic_cdk::api::stable::{StableWriter, StableReader};
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
-use self::tables::doctor_prescription_rel::DoctorPrescriptionRelTable;
+use self::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
 use self::tables::key_principal_rel::KeyPrincipalRelTable;
-use self::tables::patient_prescription_rel::PatientPrescriptionRelTable;
-use self::tables::prescription_auth::PrescriptionAuthTable;
-use self::tables::prescription_template::PrescriptionTemplateTable;
+use self::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
+use self::tables::prescription_auths::PrescriptionAuthsTable;
+use self::tables::prescription_templates::PrescriptionTemplatesTable;
 use self::tables::doctors::DoctorsTable;
 use self::tables::keys::KeysTable;
 use self::tables::patients::PatientsTable;
 use self::tables::prescriptions::PrescriptionsTable;
-use self::tables::principal_keys_rel::PrincipalKeyRelTable;
+use self::tables::principal_keys_rel::PrincipalKeysRelTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparties::ThirdPartiesTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
@@ -25,13 +25,13 @@ pub struct DB {
     pub staff: Rc<RefCell<StaffTable>>,
     pub thirdparties: Rc<RefCell<ThirdPartiesTable>>,
     pub prescriptions: Rc<RefCell<PrescriptionsTable>>,
-    pub prescription_auths: Rc<RefCell<PrescriptionAuthTable>>,
-    pub prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
+    pub prescription_auths: Rc<RefCell<PrescriptionAuthsTable>>,
+    pub prescription_templates: Rc<RefCell<PrescriptionTemplatesTable>>,
     pub keys: Rc<RefCell<KeysTable>>,
-    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
-    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionRelTable>>,
+    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
+    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
     //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    pub principal_keys_rel: Rc<RefCell<PrincipalKeyRelTable>>,
+    pub principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
     pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
 }
 
@@ -43,11 +43,11 @@ impl DB {
         thirdparties: Rc<RefCell<ThirdPartiesTable>>,
         prescriptions: Rc<RefCell<PrescriptionsTable>>,
         keys: Rc<RefCell<KeysTable>>,
-        prescrition_auths: Rc<RefCell<PrescriptionAuthTable>>,
-        prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
-        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
-        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionRelTable>>,
-        principal_keys_rel: Rc<RefCell<PrincipalKeyRelTable>>,
+        prescrition_auths: Rc<RefCell<PrescriptionAuthsTable>>,
+        prescription_templates: Rc<RefCell<PrescriptionTemplatesTable>>,
+        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
+        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
+        principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
         key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
     ) -> Self {
 

@@ -18,16 +18,16 @@ use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescripti
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
 use crate::db::tables::doctors::DoctorsTable;
-use crate::db::tables::doctor_prescription_rel::DoctorPrescriptionRelTable;
+use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
 use crate::db::tables::keys::KeysTable;
 use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
 use crate::db::tables::patients::PatientsTable;
-use crate::db::tables::patient_prescription_rel::PatientPrescriptionRelTable;
+use crate::db::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
 use crate::db::tables::prescriptions::PrescriptionsTable;
-use crate::db::tables::principal_keys_rel::PrincipalKeyRelTable;
+use crate::db::tables::principal_keys_rel::PrincipalKeysRelTable;
 use crate::db::traits::table::TableAllocatable;
-use crate::db::tables::prescription_auth::PrescriptionAuthTable;
-use crate::db::tables::prescription_template::PrescriptionTemplateTable;
+use crate::db::tables::prescription_auths::PrescriptionAuthsTable;
+use crate::db::tables::prescription_templates::PrescriptionTemplatesTable;
 use crate::db::tables::staff::StaffTable;
 use crate::db::tables::thirdparties::ThirdPartiesTable;
 
@@ -46,11 +46,11 @@ thread_local! {
         Rc::new(RefCell::new(ThirdPartiesTable::new())), 
         Rc::new(RefCell::new(PrescriptionsTable::new())), 
         Rc::new(RefCell::new(KeysTable::new())), 
-        Rc::new(RefCell::new(PrescriptionAuthTable::new())), 
-        Rc::new(RefCell::new(PrescriptionTemplateTable::new())),
-        Rc::new(RefCell::new(DoctorPrescriptionRelTable::new())),
-        Rc::new(RefCell::new(PatientPrescriptionRelTable::new())),
-        Rc::new(RefCell::new(PrincipalKeyRelTable::new())),
+        Rc::new(RefCell::new(PrescriptionAuthsTable::new())), 
+        Rc::new(RefCell::new(PrescriptionTemplatesTable::new())),
+        Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new())),
+        Rc::new(RefCell::new(PatientPrescriptionsRelTable::new())),
+        Rc::new(RefCell::new(PrincipalKeysRelTable::new())),
         Rc::new(RefCell::new(KeyPrincipalRelTable::new())),
     ));    
 }
