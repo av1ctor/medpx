@@ -129,8 +129,10 @@ pub trait CrudSubscribable<K, V>
         &mut self,
         k: K
     ) -> Result<(), String> {
-        let v = self.get_data_mut().0.remove(&k).unwrap();
-        self.notify(TableEventKind::Delete, Self::get_keys(&k, &v));
+        let v = self.get_data_mut().0.remove(&k);
+        if let Some(v) = v {
+            self.notify(TableEventKind::Delete, Self::get_keys(&k, &v));
+        }
         Ok(())
     }
 }

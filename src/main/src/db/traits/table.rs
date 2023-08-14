@@ -27,7 +27,8 @@ pub trait TableAllocatable<T> {
     ) -> T;
 }
 
-pub trait TableSerializable<K: Ord + CandidType, V: CandidType> {
+pub trait TableSerializable<K, V>
+    where K: Ord + CandidType, V: CandidType {
     fn serialize(
         data: &TableData<K, V>,
         writer: &mut StableWriter
@@ -43,7 +44,9 @@ pub trait TableSerializable<K: Ord + CandidType, V: CandidType> {
     }
 }
 
-pub trait TableDeserializable<K: Ord + CandidType + for<'a> Deserialize<'a>, V: CandidType + for<'a> Deserialize<'a>> {
+pub trait TableDeserializable<K, V>
+    where K: Ord + CandidType + for<'a> Deserialize<'a>, 
+          V: CandidType + for<'a> Deserialize<'a> {
     fn deserialize(
         reader: &mut StableReader
     ) -> Result<TableData<K, V>, String> {
@@ -88,7 +91,8 @@ pub trait TableSubscribable  {
         kind: TableEventKind,
         keys: Vec<TableEventKey>
     ) {
-        self.get_subs().0.iter().for_each(|c| c.borrow_mut().on(kind.clone(), keys.clone()));
+        self.get_subs().0.iter()
+            .for_each(|c| c.borrow_mut().on(kind.clone(), keys.clone()));
     }
 }
 
