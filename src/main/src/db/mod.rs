@@ -1,5 +1,6 @@
 pub mod traits;
 pub mod tables;
+pub mod migrations;
 
 use std::cell::RefCell;
 use std::rc::Rc;

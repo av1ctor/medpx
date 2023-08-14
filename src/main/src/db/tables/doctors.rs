@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned}};
 use crate::models::doctor::{DoctorId, Doctor};
 
 pub struct DoctorsTable {
@@ -11,7 +11,7 @@ impl Table<DoctorId, Doctor> for DoctorsTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { version: 0.2 },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -43,6 +43,16 @@ impl Table<DoctorId, Doctor> for DoctorsTable {
 }
 
 impl TableSerializable<DoctorId, Doctor> for DoctorsTable {}
+
+impl TableVersioned<DoctorId, Doctor> for DoctorsTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<DoctorId, Doctor>, String> {
+        crate::db::migrations::doctors::migrate(from_version, buf)
+    }
+}
 
 impl TableDeserializable<DoctorId, Doctor> for DoctorsTable {}
 

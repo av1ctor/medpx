@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableData, TableSubs, Table, TableSchema}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableData, TableSubs, Table, TableSchema, TableVersioned}};
 use crate::models::prescription::{PrescriptionId, Prescription};
 
 pub struct PrescriptionsTable {
@@ -45,6 +45,16 @@ impl Table<PrescriptionId, Prescription> for PrescriptionsTable {
 }
 
 impl TableSerializable<PrescriptionId, Prescription> for PrescriptionsTable {}
+
+impl TableVersioned<PrescriptionId, Prescription> for PrescriptionsTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<PrescriptionId, Prescription>, String> {
+        panic!("Not supported")
+    }
+}
 
 impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 

@@ -10,6 +10,7 @@ pub struct Doctor {
     pub id: DoctorId,
     pub license_num: String,
     pub name: String,
+    pub email: String,
     pub prescription_template: Option<String>,
     pub credits: u128,
     pub created_at: u64,
@@ -24,6 +25,7 @@ pub struct Doctor {
 pub struct DoctorRequest {
     license_num: String,
     name: String,
+    email: String,
     prescription_template: Option<PrescriptionTemplateId>,
 }
 
@@ -32,6 +34,7 @@ pub struct DoctorResponse {
     id: DoctorId,
     license_num: String,
     name: String,
+    email: String,
     prescription_template: Option<PrescriptionTemplateId>,
 }
 
@@ -44,6 +47,7 @@ impl Doctor {
             id: caller.clone(),
             license_num: e.license_num.clone(),
             name: e.name.clone(),
+            email: e.email.clone(),
             prescription_template: None,
             credits: 0,
             created_at: ic_cdk::api::time(),
@@ -75,6 +79,7 @@ impl From<Doctor> for DoctorResponse {
             id: e.id,
             license_num: e.license_num,
             name: e.name, 
+            email: e.email,
             prescription_template: e.prescription_template,
         }
     }

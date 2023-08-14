@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned}};
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
 pub struct ThirdPartiesTable {
@@ -44,6 +44,16 @@ impl Table<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
 }
 
 impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+
+impl TableVersioned<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<ThirdPartyId, ThirdParty>, String> {
+        panic!("Not supported")
+    }
+}
 
 impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 

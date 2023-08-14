@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use candid::Principal;
-use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema}}, models::key::KeyId};
+use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned}}, models::key::KeyId};
 
 pub struct KeyPrincipalRelTable {
     pub schema: TableSchema,
@@ -43,6 +43,16 @@ impl Table<KeyId, Principal> for KeyPrincipalRelTable {
 }
 
 impl TableSerializable<KeyId, Principal> for KeyPrincipalRelTable {}
+
+impl TableVersioned<KeyId, Principal> for KeyPrincipalRelTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<KeyId, Principal>, String> {
+        panic!("Not supported")
+    }
+}
 
 impl TableDeserializable<KeyId, Principal> for KeyPrincipalRelTable {}
 

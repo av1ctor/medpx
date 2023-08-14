@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned}};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
 
 pub struct PrescriptionAuthsTable {
@@ -46,6 +46,16 @@ impl Table<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
 }
 
 impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
+
+impl TableVersioned<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<PrescriptionAuthId, PrescriptionAuth>, String> {
+        panic!("Not supported")
+    }
+}
 
 impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 

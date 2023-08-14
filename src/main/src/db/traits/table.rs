@@ -54,6 +54,18 @@ pub trait Table<K, V>
     );
 }
 
+pub trait TableVersioned<K, V>
+    where 
+        K: Ord + CandidType, 
+        V: CandidType,
+        Self: Table<K, V> {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<K, V>, String>;
+}
+
 pub trait TableSerializable<K, V>
     where 
         K: Ord + CandidType, 
@@ -80,7 +92,7 @@ pub trait TableDeserializable<K, V>
     where 
         K: Ord + CandidType + for<'a> Deserialize<'a>, 
         V: CandidType + for<'a> Deserialize<'a>,
-        Self: Table<K, V> {
+        Self: Table<K, V> + TableVersioned<K, V> {
     fn deserialize(
         &mut self, 
         reader: &mut StableReader
@@ -89,9 +101,6 @@ pub trait TableDeserializable<K, V>
         let mut version_buf = [0u8; 4];
         reader.read(&mut version_buf).map_err(|e| format!("{:?}", e))?;
         let version = f32::from_le_bytes(version_buf);
-        if version != self.get_schema().version {
-            return Err("Invalid schema version".to_string());
-        }
         // load size
         let mut size_buf = [0u8; 8];
         reader.read(&mut size_buf).map_err(|e| format!("{:?}", e))?;
@@ -100,9 +109,14 @@ pub trait TableDeserializable<K, V>
         let mut table_buf = vec![0u8; size as usize];
         reader.read(&mut table_buf).map_err(|e| format!("{:?}", e))?;
         // decode table
-        let res = candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
-            .map_err(|e| format!("{:?}", e))?;
-        self.set_data(res.0);
+        let data = if version == self.get_schema().version {
+            candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
+                .map_err(|e| format!("{:?}", e))?.0
+        }
+        else {
+            self.migrate(version, &table_buf)?
+        };
+        self.set_data(data);
         Ok(())
     }
 }
