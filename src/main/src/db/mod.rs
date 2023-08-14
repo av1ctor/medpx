@@ -5,16 +5,16 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use ic_cdk::api::stable::{StableWriter, StableReader};
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
-use self::tables::doctor_prescription::DoctorPrescriptionTable;
-use self::tables::key_principal::KeyPrincipalTable;
-use self::tables::patient_prescription::PatientPrescriptionTable;
+use self::tables::doctor_prescription_rel::DoctorPrescriptionRelTable;
+use self::tables::key_principal_rel::KeyPrincipalRelTable;
+use self::tables::patient_prescription_rel::PatientPrescriptionRelTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
 use self::tables::doctor::DoctorTable;
 use self::tables::key::KeyTable;
 use self::tables::patient::PatientTable;
 use self::tables::prescription::PrescriptionTable;
-use self::tables::principal_keys::PrincipalKeyTable;
+use self::tables::principal_keys_rel::PrincipalKeyRelTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
@@ -28,11 +28,11 @@ pub struct DB {
     pub prescription_auths: Rc<RefCell<PrescriptionAuthTable>>,
     pub prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
     pub keys: Rc<RefCell<KeyTable>>,
-    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
-    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
+    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
+    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionRelTable>>,
     //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    pub principal_keys_rel: Rc<RefCell<PrincipalKeyTable>>,
-    pub key_principal_rel: Rc<RefCell<KeyPrincipalTable>>,
+    pub principal_keys_rel: Rc<RefCell<PrincipalKeyRelTable>>,
+    pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
 }
 
 impl DB {
@@ -45,10 +45,10 @@ impl DB {
         keys: Rc<RefCell<KeyTable>>,
         prescrition_auths: Rc<RefCell<PrescriptionAuthTable>>,
         prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
-        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
-        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
-        principal_keys_rel: Rc<RefCell<PrincipalKeyTable>>,
-        key_principal_rel: Rc<RefCell<KeyPrincipalTable>>,
+        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
+        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionRelTable>>,
+        principal_keys_rel: Rc<RefCell<PrincipalKeyRelTable>>,
+        key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
     ) -> Self {
 
         prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());

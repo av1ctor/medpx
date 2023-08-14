@@ -2,11 +2,11 @@ use std::collections::BTreeMap;
 use candid::Principal;
 use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData, TableDataAccessible}}, models::key::KeyId};
 
-pub struct KeyPrincipalTable {
+pub struct KeyPrincipalRelTable {
     pub data: TableData<KeyId, Principal>,
 }
     
-impl TableAllocatable<KeyPrincipalTable> for KeyPrincipalTable {
+impl TableAllocatable<KeyPrincipalRelTable> for KeyPrincipalRelTable {
     fn new(
     ) -> Self {
         Self {
@@ -15,7 +15,7 @@ impl TableAllocatable<KeyPrincipalTable> for KeyPrincipalTable {
     }
 }
 
-impl TableDataAccessible<KeyId, Principal> for KeyPrincipalTable {
+impl TableDataAccessible<KeyId, Principal> for KeyPrincipalRelTable {
     fn get_data(
         &self
     ) -> &TableData<KeyId, Principal> {
@@ -36,13 +36,13 @@ impl TableDataAccessible<KeyId, Principal> for KeyPrincipalTable {
     }
 }
 
-impl TableSerializable<KeyId, Principal> for KeyPrincipalTable {}
+impl TableSerializable<KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl TableDeserializable<KeyId, Principal> for KeyPrincipalTable {}
+impl TableDeserializable<KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl Crud<KeyId, Principal> for KeyPrincipalTable {}
+impl Crud<KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl TableSubscriber for KeyPrincipalTable {
+impl TableSubscriber for KeyPrincipalRelTable {
     fn on(
         &mut self,
         kind: TableEventKind,
