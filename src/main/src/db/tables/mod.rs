@@ -7,3 +7,4 @@ pub mod thirdparty;
 pub mod prescription_auth;
 pub mod prescription_template;
 pub mod doctor_prescription;
+pub mod patient_prescription;
