@@ -3,11 +3,11 @@ use std::collections::BTreeMap;
 use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
 use crate::models::patient::{PatientId, Patient};
 
-pub struct PatientTable {
+pub struct PatientsTable {
     pub data: TableData<PatientId, Patient>,
 }
 
-impl TableAllocatable<PatientTable> for PatientTable {
+impl TableAllocatable<PatientsTable> for PatientsTable {
     fn new(
     ) -> Self {
         Self {
@@ -16,7 +16,7 @@ impl TableAllocatable<PatientTable> for PatientTable {
     }
 }
 
-impl TableDataAccessible<PatientId, Patient> for PatientTable {
+impl TableDataAccessible<PatientId, Patient> for PatientsTable {
     fn get_data(
         &self
     ) -> &TableData<PatientId, Patient> {
@@ -37,8 +37,8 @@ impl TableDataAccessible<PatientId, Patient> for PatientTable {
     }
 }
 
-impl TableSerializable<PatientId, Patient> for PatientTable {}
+impl TableSerializable<PatientId, Patient> for PatientsTable {}
 
-impl TableDeserializable<PatientId, Patient> for PatientTable {}
+impl TableDeserializable<PatientId, Patient> for PatientsTable {}
 
-impl Crud<PatientId, Patient> for PatientTable {}
+impl Crud<PatientId, Patient> for PatientsTable {}

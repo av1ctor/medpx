@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use crate::db::traits::{crud::CrudSubscribable, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, TableDataAccessible}};
 use crate::models::key::{KeyId, Key};
 
-pub struct KeyTable {
+pub struct KeysTable {
     pub data: TableData<KeyId, Key>,
     pub subs: TableSubs,
 }
 
-impl TableAllocatable<KeyTable> for KeyTable {
+impl TableAllocatable<KeysTable> for KeysTable {
     fn new(
     ) -> Self {
         Self {
@@ -17,7 +17,7 @@ impl TableAllocatable<KeyTable> for KeyTable {
     }
 }
 
-impl TableDataAccessible<KeyId, Key> for KeyTable {
+impl TableDataAccessible<KeyId, Key> for KeysTable {
     fn get_data(
         &self
     ) -> &TableData<KeyId, Key> {
@@ -38,11 +38,11 @@ impl TableDataAccessible<KeyId, Key> for KeyTable {
     }
 }
 
-impl TableSerializable<KeyId, Key> for KeyTable {}
+impl TableSerializable<KeyId, Key> for KeysTable {}
 
-impl TableDeserializable<KeyId, Key> for KeyTable {}
+impl TableDeserializable<KeyId, Key> for KeysTable {}
 
-impl TableSubscribable<KeyId, Key> for KeyTable {
+impl TableSubscribable<KeyId, Key> for KeysTable {
     fn get_subs(
         &self
     ) -> &TableSubs {
@@ -66,4 +66,4 @@ impl TableSubscribable<KeyId, Key> for KeyTable {
     }
 }
 
-impl CrudSubscribable<KeyId, Key> for KeyTable {}
+impl CrudSubscribable<KeyId, Key> for KeysTable {}

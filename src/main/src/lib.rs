@@ -17,19 +17,19 @@ use models::patient::{Patient, PatientRequest, PatientResponse};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
-use crate::db::tables::doctor::DoctorTable;
+use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescription_rel::DoctorPrescriptionRelTable;
-use crate::db::tables::key::KeyTable;
+use crate::db::tables::keys::KeysTable;
 use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
-use crate::db::tables::patient::PatientTable;
+use crate::db::tables::patients::PatientsTable;
 use crate::db::tables::patient_prescription_rel::PatientPrescriptionRelTable;
-use crate::db::tables::prescription::PrescriptionTable;
+use crate::db::tables::prescriptions::PrescriptionsTable;
 use crate::db::tables::principal_keys_rel::PrincipalKeyRelTable;
 use crate::db::traits::table::TableAllocatable;
 use crate::db::tables::prescription_auth::PrescriptionAuthTable;
 use crate::db::tables::prescription_template::PrescriptionTemplateTable;
 use crate::db::tables::staff::StaffTable;
-use crate::db::tables::thirdparty::ThirdPartyTable;
+use crate::db::tables::thirdparties::ThirdPartiesTable;
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {
@@ -40,12 +40,12 @@ struct State {
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
     static DB: RefCell<DB> = RefCell::new(DB::new(
-        Rc::new(RefCell::new(DoctorTable::new())), 
-        Rc::new(RefCell::new(PatientTable::new())), 
+        Rc::new(RefCell::new(DoctorsTable::new())), 
+        Rc::new(RefCell::new(PatientsTable::new())), 
         Rc::new(RefCell::new(StaffTable::new())), 
-        Rc::new(RefCell::new(ThirdPartyTable::new())), 
-        Rc::new(RefCell::new(PrescriptionTable::new())), 
-        Rc::new(RefCell::new(KeyTable::new())), 
+        Rc::new(RefCell::new(ThirdPartiesTable::new())), 
+        Rc::new(RefCell::new(PrescriptionsTable::new())), 
+        Rc::new(RefCell::new(KeysTable::new())), 
         Rc::new(RefCell::new(PrescriptionAuthTable::new())), 
         Rc::new(RefCell::new(PrescriptionTemplateTable::new())),
         Rc::new(RefCell::new(DoctorPrescriptionRelTable::new())),

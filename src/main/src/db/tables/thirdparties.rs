@@ -3,11 +3,11 @@ use std::collections::BTreeMap;
 use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
-pub struct ThirdPartyTable {
+pub struct ThirdPartiesTable {
     pub data: TableData<ThirdPartyId, ThirdParty>,
 }
 
-impl TableAllocatable<ThirdPartyTable> for ThirdPartyTable {
+impl TableAllocatable<ThirdPartiesTable> for ThirdPartiesTable {
     fn new(
     ) -> Self {
         Self {
@@ -16,7 +16,7 @@ impl TableAllocatable<ThirdPartyTable> for ThirdPartyTable {
     }
 }
 
-impl TableDataAccessible<ThirdPartyId, ThirdParty> for ThirdPartyTable {
+impl TableDataAccessible<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     fn get_data(
         &self
     ) -> &TableData<ThirdPartyId, ThirdParty> {
@@ -37,8 +37,8 @@ impl TableDataAccessible<ThirdPartyId, ThirdParty> for ThirdPartyTable {
     }
 }
 
-impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl Crud<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl Crud<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}

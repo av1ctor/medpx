@@ -1,9 +1,9 @@
-pub mod doctor;
-pub mod key;
-pub mod patient;
-pub mod prescription;
+pub mod doctors;
+pub mod keys;
+pub mod patients;
+pub mod prescriptions;
 pub mod staff;
-pub mod thirdparty;
+pub mod thirdparties;
 pub mod prescription_auth;
 pub mod prescription_template;
 pub mod doctor_prescription_rel;

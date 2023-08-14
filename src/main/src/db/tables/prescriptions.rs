@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableAllocatable, TableData, TableSubs, TableDataAccessible}};
 use crate::models::prescription::{PrescriptionId, Prescription};
 
-pub struct PrescriptionTable {
+pub struct PrescriptionsTable {
     pub data: TableData<PrescriptionId, Prescription>,
     pub subs: TableSubs,
 }
 
-impl TableAllocatable<PrescriptionTable> for PrescriptionTable {
+impl TableAllocatable<PrescriptionsTable> for PrescriptionsTable {
     fn new(
     ) -> Self {
         Self {
@@ -17,7 +17,7 @@ impl TableAllocatable<PrescriptionTable> for PrescriptionTable {
     }
 }
 
-impl TableDataAccessible<PrescriptionId, Prescription> for PrescriptionTable {
+impl TableDataAccessible<PrescriptionId, Prescription> for PrescriptionsTable {
     fn get_data(
         &self
     ) -> &TableData<PrescriptionId, Prescription> {
@@ -38,11 +38,11 @@ impl TableDataAccessible<PrescriptionId, Prescription> for PrescriptionTable {
     }
 }
 
-impl TableSerializable<PrescriptionId, Prescription> for PrescriptionTable {}
+impl TableSerializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionTable {}
+impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
+impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {
     fn get_subs(
         &self
     ) -> &TableSubs {
@@ -66,4 +66,4 @@ impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
     }
 }
 
-impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {}
+impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {}

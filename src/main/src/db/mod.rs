@@ -10,24 +10,24 @@ use self::tables::key_principal_rel::KeyPrincipalRelTable;
 use self::tables::patient_prescription_rel::PatientPrescriptionRelTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
-use self::tables::doctor::DoctorTable;
-use self::tables::key::KeyTable;
-use self::tables::patient::PatientTable;
-use self::tables::prescription::PrescriptionTable;
+use self::tables::doctors::DoctorsTable;
+use self::tables::keys::KeysTable;
+use self::tables::patients::PatientsTable;
+use self::tables::prescriptions::PrescriptionsTable;
 use self::tables::principal_keys_rel::PrincipalKeyRelTable;
 use self::tables::staff::StaffTable;
-use self::tables::thirdparty::ThirdPartyTable;
+use self::tables::thirdparties::ThirdPartiesTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
 
 pub struct DB {
-    pub doctors: Rc<RefCell<DoctorTable>>,
-    pub patients: Rc<RefCell<PatientTable>>,
+    pub doctors: Rc<RefCell<DoctorsTable>>,
+    pub patients: Rc<RefCell<PatientsTable>>,
     pub staff: Rc<RefCell<StaffTable>>,
-    pub thirdparties: Rc<RefCell<ThirdPartyTable>>,
-    pub prescriptions: Rc<RefCell<PrescriptionTable>>,
+    pub thirdparties: Rc<RefCell<ThirdPartiesTable>>,
+    pub prescriptions: Rc<RefCell<PrescriptionsTable>>,
     pub prescription_auths: Rc<RefCell<PrescriptionAuthTable>>,
     pub prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
-    pub keys: Rc<RefCell<KeyTable>>,
+    pub keys: Rc<RefCell<KeysTable>>,
     pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
     pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionRelTable>>,
     //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
@@ -37,12 +37,12 @@ pub struct DB {
 
 impl DB {
     pub fn new(
-        doctors: Rc<RefCell<DoctorTable>>,
-        patients: Rc<RefCell<PatientTable>>,
+        doctors: Rc<RefCell<DoctorsTable>>,
+        patients: Rc<RefCell<PatientsTable>>,
         staff: Rc<RefCell<StaffTable>>,
-        thirdparties: Rc<RefCell<ThirdPartyTable>>,
-        prescriptions: Rc<RefCell<PrescriptionTable>>,
-        keys: Rc<RefCell<KeyTable>>,
+        thirdparties: Rc<RefCell<ThirdPartiesTable>>,
+        prescriptions: Rc<RefCell<PrescriptionsTable>>,
+        keys: Rc<RefCell<KeysTable>>,
         prescrition_auths: Rc<RefCell<PrescriptionAuthTable>>,
         prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
         doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionRelTable>>,
