@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey::{Text, Principal}, TableAllocatable, TableData, TableSubs}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableAllocatable, TableData, TableSubs}};
 use crate::models::prescription::{PrescriptionId, Prescription};
 
 pub struct PrescriptionTable {
@@ -57,7 +57,10 @@ impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
     fn get_keys(
         k: &PrescriptionId,
         v: &Prescription
-    ) -> Vec<crate::db::traits::table::TableEventKey> {
-        vec![Text(k.clone()), Principal(v.doctor.clone())]
+    ) -> Vec<TableEventKey> {
+        vec![
+            TableEventKey::Text(k.clone()), 
+            TableEventKey::Principal(v.doctor.clone())
+        ]
     }
 }

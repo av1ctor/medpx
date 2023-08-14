@@ -8,6 +8,7 @@ use ic_cdk::api::stable::{StableWriter, StableReader};
 use crate::models::key::Key;
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 use self::tables::doctor_prescription::DoctorPrescriptionTable;
+use self::tables::key_principal::KeyPrincipalTable;
 use self::tables::patient_prescription::PatientPrescriptionTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
@@ -15,6 +16,7 @@ use self::tables::doctor::DoctorTable;
 use self::tables::key::KeyTable;
 use self::tables::patient::PatientTable;
 use self::tables::prescription::PrescriptionTable;
+use self::tables::principal_keys::PrincipalKeyTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
@@ -31,8 +33,8 @@ pub struct DB {
     pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
     pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
     //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
-    //pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
-    //pub key_principal: BTreeMap<String, Principal>,
+    pub principal_keys_rel: Rc<RefCell<PrincipalKeyTable>>,
+    pub key_principal_rel: Rc<RefCell<KeyPrincipalTable>>,
 }
 
 impl DB {
@@ -47,10 +49,14 @@ impl DB {
         prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
         doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
         patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
+        principal_keys_rel: Rc<RefCell<PrincipalKeyTable>>,
+        key_principal_rel: Rc<RefCell<KeyPrincipalTable>>,
     ) -> Self {
 
         prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());
         prescriptions.borrow_mut().subscribe(patient_prescriptions_rel.clone());
+        keys.borrow_mut().subscribe(principal_keys_rel.clone());
+        keys.borrow_mut().subscribe(key_principal_rel.clone());
         
         Self {
             doctors,
@@ -64,25 +70,27 @@ impl DB {
             doctor_prescriptions_rel,
             patient_prescriptions_rel,
             //prescription_auths_rel: todo!(),
-            //principal_keys_rel: todo!(),
-            //key_principal: todo!(),
+            principal_keys_rel,
+            key_principal_rel,
         }
     }
 
     pub fn serialize(
         &self,
-        writter: &mut StableWriter
+        writer: &mut StableWriter
     ) -> Result<(), String> {
-        DoctorTable::serialize(&self.doctors.borrow().data, writter)?;
-        PatientTable::serialize(&self.patients.borrow().data, writter)?;
-        StaffTable::serialize(&self.staff.borrow().data, writter)?;
-        ThirdPartyTable::serialize(&self.thirdparties.borrow().data, writter)?;
-        KeyTable::serialize(&self.keys.borrow().data, writter)?;
-        PrescriptionTable::serialize(&self.prescriptions.borrow().data, writter)?;
-        PrescriptionAuthTable::serialize(&self.prescription_auths.borrow().data, writter)?;
-        PrescriptionTemplateTable::serialize(&self.prescription_templates.borrow().data, writter)?;
-        DoctorPrescriptionTable::serialize(&self.doctor_prescriptions_rel.borrow().data, writter)?;
-        PatientPrescriptionTable::serialize(&self.patient_prescriptions_rel.borrow().data, writter)?;
+        DoctorTable::serialize(&self.doctors.borrow().data, writer)?;
+        PatientTable::serialize(&self.patients.borrow().data, writer)?;
+        StaffTable::serialize(&self.staff.borrow().data, writer)?;
+        ThirdPartyTable::serialize(&self.thirdparties.borrow().data, writer)?;
+        KeyTable::serialize(&self.keys.borrow().data, writer)?;
+        PrescriptionTable::serialize(&self.prescriptions.borrow().data, writer)?;
+        PrescriptionAuthTable::serialize(&self.prescription_auths.borrow().data, writer)?;
+        PrescriptionTemplateTable::serialize(&self.prescription_templates.borrow().data, writer)?;
+        DoctorPrescriptionTable::serialize(&self.doctor_prescriptions_rel.borrow().data, writer)?;
+        PatientPrescriptionTable::serialize(&self.patient_prescriptions_rel.borrow().data, writer)?;
+        PrincipalKeyTable::serialize(&self.principal_keys_rel.borrow().data, writer)?;
+        KeyPrincipalTable::serialize(&self.key_principal_rel.borrow().data, writer)?;
         Ok(())
     }
 
@@ -100,33 +108,11 @@ impl DB {
         self.prescription_templates.borrow_mut().data = PrescriptionTemplateTable::deserialize(reader)?;
         self.doctor_prescriptions_rel.borrow_mut().data = DoctorPrescriptionTable::deserialize(reader)?;
         self.patient_prescriptions_rel.borrow_mut().data = PatientPrescriptionTable::deserialize(reader)?;
+        self.principal_keys_rel.borrow_mut().data = PrincipalKeyTable::deserialize(reader)?;
+        self.key_principal_rel.borrow_mut().data = KeyPrincipalTable::deserialize(reader)?;
         Ok(())
     }
     
-    /**
-     * keys table
-     */
-    pub fn key_insert(
-        &mut self,
-        k: &Principal,
-        v: &Key
-    ) -> Result<(), String> {
-        /*if !self.principal_keys_rel.contains_key(k) {
-            self.principal_keys_rel.insert(k.clone(), BTreeSet::new());
-        }
-        
-        let keys = self.principal_keys_rel.get_mut(k).unwrap();
-        if keys.iter().any(|e| self.keys.get(e).cmp(v) == Ordering::Equal) {
-            Err("Key already exists".to_string())
-        }
-        else {
-            self.keys.insert(&v.id, v)?;
-            keys.insert(v.id.clone());
-            self.key_principal.insert(v.id.clone(), k.clone());*/
-            Ok(())
-        //}
-    }
-
     /**
      * authorizations table
      */

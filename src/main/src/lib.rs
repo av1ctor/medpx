@@ -20,9 +20,11 @@ use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
 use crate::db::tables::doctor::DoctorTable;
 use crate::db::tables::doctor_prescription::DoctorPrescriptionTable;
 use crate::db::tables::key::KeyTable;
+use crate::db::tables::key_principal::KeyPrincipalTable;
 use crate::db::tables::patient::PatientTable;
 use crate::db::tables::patient_prescription::PatientPrescriptionTable;
 use crate::db::tables::prescription::PrescriptionTable;
+use crate::db::tables::principal_keys::PrincipalKeyTable;
 use crate::db::traits::table::TableAllocatable;
 use crate::db::tables::prescription_auth::PrescriptionAuthTable;
 use crate::db::tables::prescription_template::PrescriptionTemplateTable;
@@ -48,6 +50,8 @@ thread_local! {
         Rc::new(RefCell::new(PrescriptionTemplateTable::new())),
         Rc::new(RefCell::new(DoctorPrescriptionTable::new())),
         Rc::new(RefCell::new(PatientPrescriptionTable::new())),
+        Rc::new(RefCell::new(PrincipalKeyTable::new())),
+        Rc::new(RefCell::new(KeyPrincipalTable::new())),
     ));    
 }
 
