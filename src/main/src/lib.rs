@@ -1,8 +1,8 @@
 pub mod models;
 pub mod db;
+pub mod utils;
 
 use std::cell::RefCell;
-use std::io::Read;
 use std::rc::Rc;
 use candid::{Principal, CandidType};
 use db::traits::{table::Table, crud::{Crud, CrudSubscribable}};
@@ -17,6 +17,7 @@ use models::patient::{Patient, PatientRequest, PatientResponse};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
+use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
 use crate::db::tables::keys::KeysTable;
@@ -93,7 +94,7 @@ fn pre_upgrade() {
     });
 
     STATE.with(|state| {
-        if let Err(err) = candid::write_args::<(&State, ), _>(&mut writter, (&state.borrow(), )) {
+        if let Err(err) = serialize(&state.take(), &mut writter) {
             trap(&format!(
                 "An error occurred when saving STATE to stable memory (pre_upgrade): {:?}",
                 err
@@ -116,22 +117,14 @@ fn post_upgrade() {
     });
 
     STATE.with(|state| {
-        let mut buf = Vec::new();
-        if let Err(err) = reader.read_to_end(&mut buf) {
+        match deserialize(&mut reader) {
+            Err(err) =>
             trap(&format!(
                 "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
                 err
-            ));
+            )),
+            Ok(state_) => state.replace(state_)
         }
-        match candid::decode_args::<'_, (State, )>(&buf) {
-            Ok((state_, )) => state.replace(state_),
-            Err(err) => {
-                trap(&format!(
-                    "An error occurred when decoding STATE (post_upgrade): {:?}",
-                    err
-                )); 
-            }
-        };
     });
 }
 
