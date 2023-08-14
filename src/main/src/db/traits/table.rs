@@ -22,6 +22,10 @@ pub struct TableData<K, V> (pub BTreeMap<K, V>)
         K: Ord + CandidType, 
         V: CandidType;
 
+pub struct TableSchema {
+    pub version: f32,
+}
+
 pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
 
 pub trait Table<K, V>
@@ -31,6 +35,10 @@ pub trait Table<K, V>
 
     fn new(
     ) -> Self;
+
+    fn get_schema(
+        &self
+    ) -> &TableSchema;
         
     fn get_data(
         &self

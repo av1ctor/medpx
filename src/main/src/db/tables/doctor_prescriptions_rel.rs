@@ -1,15 +1,17 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema}};
 use crate::models::{doctor::DoctorId, prescription::PrescriptionId};
 
 pub struct DoctorPrescriptionsRelTable {
     pub data: TableData<DoctorId, BTreeSet<PrescriptionId>>,
+    pub schema: TableSchema,
 }
     
 impl Table<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {
     fn new(
     ) -> Self {
         Self {
+            schema: TableSchema { version: 0.1 },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -33,7 +35,11 @@ impl Table<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {
         self.data = data;
     }
 
-    
+    fn get_schema(
+        &self
+    ) -> &TableSchema {
+        &self.schema
+    }
 }
 
 impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}

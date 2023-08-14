@@ -1,8 +1,9 @@
 use std::collections::{BTreeSet, BTreeMap};
 use candid::Principal;
-use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table}}, models::key::KeyId};
+use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema}}, models::key::KeyId};
 
 pub struct PrincipalKeysRelTable {
+    pub schema: TableSchema,
     pub data: TableData<Principal, BTreeSet<KeyId>>,
 }
     
@@ -10,6 +11,7 @@ impl Table<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
     fn new(
     ) -> Self {
         Self {
+            schema: TableSchema { version: 0.1 },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -31,6 +33,12 @@ impl Table<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
         data: TableData<Principal, BTreeSet<KeyId>>
     ) {
         self.data = data;
+    }
+    
+    fn get_schema(
+        &self
+    ) -> &TableSchema {
+        &self.schema
     }
 }
 

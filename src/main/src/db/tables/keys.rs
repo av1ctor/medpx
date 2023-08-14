@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, Table}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, Table, TableSchema}};
 use crate::models::key::{KeyId, Key};
 
 pub struct KeysTable {
+    pub schema: TableSchema,
     pub data: TableData<KeyId, Key>,
     pub subs: TableSubs,
 }
@@ -11,6 +12,7 @@ impl Table<KeyId, Key> for KeysTable {
     fn new(
     ) -> Self {
         Self {
+            schema: TableSchema { version: 0.1 },
             data: TableData(BTreeMap::new()),
             subs: TableSubs(Vec::new()),
         }
@@ -33,6 +35,12 @@ impl Table<KeyId, Key> for KeysTable {
         data: TableData<KeyId, Key>
     ) {
         self.data = data;
+    }
+    
+    fn get_schema(
+        &self
+    ) -> &TableSchema {
+        &self.schema
     }
 }
 

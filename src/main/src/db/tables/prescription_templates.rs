@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema}};
 use crate::models::prescription_template::{PrescriptionTemplateId, PrescriptionTemplate};
 
 pub struct PrescriptionTemplatesTable {
+    pub schema: TableSchema,
     pub data: TableData<PrescriptionTemplateId, PrescriptionTemplate>,
 }
 
@@ -11,6 +12,7 @@ impl Table<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplat
     fn new(
     ) -> Self {
         Self {
+            schema: TableSchema { version: 0.1 },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -32,6 +34,12 @@ impl Table<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplat
         data: TableData<PrescriptionTemplateId, PrescriptionTemplate>
     ) {
         self.data = data;
+    }
+    
+    fn get_schema(
+        &self
+    ) -> &TableSchema {
+        &self.schema
     }
 }
 
