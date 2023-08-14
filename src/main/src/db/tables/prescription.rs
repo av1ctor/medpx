@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableAllocatable, TableData, TableSubs}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableAllocatable, TableData, TableSubs, TableDataAccessible}};
 use crate::models::prescription::{PrescriptionId, Prescription};
 
 pub struct PrescriptionTable {
@@ -17,25 +17,7 @@ impl TableAllocatable<PrescriptionTable> for PrescriptionTable {
     }
 }
 
-impl TableSerializable<PrescriptionId, Prescription> for PrescriptionTable {}
-
-impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionTable {}
-
-impl TableSubscribable for PrescriptionTable {
-    fn get_subs(
-        &self
-    ) -> &TableSubs {
-        &self.subs
-    }
-
-    fn get_subs_mut(
-        &mut self
-    ) -> &mut TableSubs {
-        &mut self.subs
-    }
-}
-
-impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
+impl TableDataAccessible<PrescriptionId, Prescription> for PrescriptionTable {
     fn get_data(
         &self
     ) -> &TableData<PrescriptionId, Prescription> {
@@ -48,10 +30,29 @@ impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
         &mut self.data
     }
 
+    fn set_data(
+        &mut self,
+        data: TableData<PrescriptionId, Prescription>
+    ) {
+        self.data = data;
+    }
+}
+
+impl TableSerializable<PrescriptionId, Prescription> for PrescriptionTable {}
+
+impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionTable {}
+
+impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
     fn get_subs(
         &self
     ) -> &TableSubs {
         &self.subs
+    }
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs {
+        &mut self.subs
     }
 
     fn get_keys(
@@ -64,3 +65,5 @@ impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {
         ]
     }
 }
+
+impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionTable {}

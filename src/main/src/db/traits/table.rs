@@ -18,7 +18,9 @@ pub enum TableEventKey {
 
 #[derive(CandidType, Deserialize)]
 pub struct TableData<K, V> (pub BTreeMap<K, V>)
-    where K: Ord + CandidType, V: CandidType;
+    where 
+        K: Ord + CandidType, 
+        V: CandidType;
 
 pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
 
@@ -27,14 +29,35 @@ pub trait TableAllocatable<T> {
     ) -> T;
 }
 
+pub trait TableDataAccessible<K, V>
+    where 
+        K: Ord + CandidType, 
+        V: CandidType {
+    fn get_data(
+        &self
+    ) -> &TableData<K, V>;
+
+    fn get_data_mut(
+        &mut self
+    ) -> &mut TableData<K, V>;
+
+    fn set_data(
+        &mut self,
+        data: TableData<K, V>
+    );
+}
+
 pub trait TableSerializable<K, V>
-    where K: Ord + CandidType, V: CandidType {
+    where 
+        K: Ord + CandidType, 
+        V: CandidType,
+        Self: TableDataAccessible<K, V> {
     fn serialize(
-        data: &TableData<K, V>,
+        &self,
         writer: &mut StableWriter
     ) -> Result<(), String> {
         let mut ser = IDLBuilder::new();
-        (data, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
+        (&self.get_data().0, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
         let arr = ser.serialize_to_vec().unwrap();
         // store size
         writer.write(&u64::to_le_bytes(arr.len() as u64)).map_err(|e| format!("{:?}", e))?;
@@ -45,11 +68,14 @@ pub trait TableSerializable<K, V>
 }
 
 pub trait TableDeserializable<K, V>
-    where K: Ord + CandidType + for<'a> Deserialize<'a>, 
-          V: CandidType + for<'a> Deserialize<'a> {
+    where 
+        K: Ord + CandidType + for<'a> Deserialize<'a>, 
+        V: CandidType + for<'a> Deserialize<'a>,
+        Self: TableDataAccessible<K, V> {
     fn deserialize(
+        &mut self, 
         reader: &mut StableReader
-    ) -> Result<TableData<K, V>, String> {
+    ) -> Result<(), String> {
         // load size
         let mut size_buf = [0u8; 8];
         reader.read(&mut size_buf).map_err(|e| format!("{:?}", e))?;
@@ -60,7 +86,8 @@ pub trait TableDeserializable<K, V>
         // decode table
         let res = candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
             .map_err(|e| format!("{:?}", e))?;
-        Ok(res.0)
+        self.set_data(res.0);
+        Ok(())
     }
 }
 pub trait TableSubscriber {
@@ -70,7 +97,10 @@ pub trait TableSubscriber {
         keys: Vec<TableEventKey>
     );
 }
-pub trait TableSubscribable  {
+pub trait TableSubscribable<K, V>
+    where 
+        K: Ord + CandidType, 
+        V: CandidType {
     fn get_subs(
         &self
     ) -> &TableSubs;
@@ -78,6 +108,11 @@ pub trait TableSubscribable  {
     fn get_subs_mut(
         &mut self
     ) -> &mut TableSubs;
+
+    fn get_keys(
+        k: &K,
+        v: &V
+    ) -> Vec<TableEventKey>;
 
     fn subscribe(
         &mut self,

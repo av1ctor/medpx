@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use candid::Principal;
-use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData}}, models::key::KeyId};
+use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData, TableDataAccessible}}, models::key::KeyId};
 
 pub struct KeyPrincipalTable {
     pub data: TableData<KeyId, Principal>,
@@ -15,11 +15,7 @@ impl TableAllocatable<KeyPrincipalTable> for KeyPrincipalTable {
     }
 }
 
-impl TableSerializable<KeyId, Principal> for KeyPrincipalTable {}
-
-impl TableDeserializable<KeyId, Principal> for KeyPrincipalTable {}
-
-impl Crud<KeyId, Principal> for KeyPrincipalTable {
+impl TableDataAccessible<KeyId, Principal> for KeyPrincipalTable {
     fn get_data(
         &self
     ) -> &TableData<KeyId, Principal> {
@@ -31,7 +27,20 @@ impl Crud<KeyId, Principal> for KeyPrincipalTable {
     ) -> &mut TableData<KeyId, Principal> {
         &mut self.data
     }
+
+    fn set_data(
+        &mut self,
+        data: TableData<KeyId, Principal>
+    ) {
+        self.data = data;
+    }
 }
+
+impl TableSerializable<KeyId, Principal> for KeyPrincipalTable {}
+
+impl TableDeserializable<KeyId, Principal> for KeyPrincipalTable {}
+
+impl Crud<KeyId, Principal> for KeyPrincipalTable {}
 
 impl TableSubscriber for KeyPrincipalTable {
     fn on(

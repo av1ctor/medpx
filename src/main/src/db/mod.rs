@@ -3,9 +3,7 @@ pub mod tables;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use candid::Principal;
 use ic_cdk::api::stable::{StableWriter, StableReader};
-use crate::models::key::Key;
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 use self::tables::doctor_prescription::DoctorPrescriptionTable;
 use self::tables::key_principal::KeyPrincipalTable;
@@ -79,18 +77,18 @@ impl DB {
         &self,
         writer: &mut StableWriter
     ) -> Result<(), String> {
-        DoctorTable::serialize(&self.doctors.borrow().data, writer)?;
-        PatientTable::serialize(&self.patients.borrow().data, writer)?;
-        StaffTable::serialize(&self.staff.borrow().data, writer)?;
-        ThirdPartyTable::serialize(&self.thirdparties.borrow().data, writer)?;
-        KeyTable::serialize(&self.keys.borrow().data, writer)?;
-        PrescriptionTable::serialize(&self.prescriptions.borrow().data, writer)?;
-        PrescriptionAuthTable::serialize(&self.prescription_auths.borrow().data, writer)?;
-        PrescriptionTemplateTable::serialize(&self.prescription_templates.borrow().data, writer)?;
-        DoctorPrescriptionTable::serialize(&self.doctor_prescriptions_rel.borrow().data, writer)?;
-        PatientPrescriptionTable::serialize(&self.patient_prescriptions_rel.borrow().data, writer)?;
-        PrincipalKeyTable::serialize(&self.principal_keys_rel.borrow().data, writer)?;
-        KeyPrincipalTable::serialize(&self.key_principal_rel.borrow().data, writer)?;
+        self.doctors.borrow().serialize(writer)?;
+        self.patients.borrow().serialize(writer)?;
+        self.staff.borrow().serialize(writer)?;
+        self.thirdparties.borrow().serialize(writer)?;
+        self.keys.borrow().serialize(writer)?;
+        self.prescriptions.borrow().serialize(writer)?;
+        self.prescription_auths.borrow().serialize(writer)?;
+        self.prescription_templates.borrow().serialize(writer)?;
+        self.doctor_prescriptions_rel.borrow().serialize(writer)?;
+        self.patient_prescriptions_rel.borrow().serialize(writer)?;
+        self.principal_keys_rel.borrow().serialize(writer)?;
+        self.key_principal_rel.borrow().serialize(writer)?;
         Ok(())
     }
 
@@ -98,18 +96,18 @@ impl DB {
         &mut self,
         reader: &mut StableReader
     ) -> Result<(), String> {
-        self.doctors.borrow_mut().data = DoctorTable::deserialize(reader)?;
-        self.patients.borrow_mut().data = PatientTable::deserialize(reader)?;
-        self.staff.borrow_mut().data = StaffTable::deserialize(reader)?;
-        self.thirdparties.borrow_mut().data = ThirdPartyTable::deserialize(reader)?;
-        self.keys.borrow_mut().data = KeyTable::deserialize(reader)?;
-        self.prescriptions.borrow_mut().data = PrescriptionTable::deserialize(reader)?;
-        self.prescription_auths.borrow_mut().data = PrescriptionAuthTable::deserialize(reader)?;
-        self.prescription_templates.borrow_mut().data = PrescriptionTemplateTable::deserialize(reader)?;
-        self.doctor_prescriptions_rel.borrow_mut().data = DoctorPrescriptionTable::deserialize(reader)?;
-        self.patient_prescriptions_rel.borrow_mut().data = PatientPrescriptionTable::deserialize(reader)?;
-        self.principal_keys_rel.borrow_mut().data = PrincipalKeyTable::deserialize(reader)?;
-        self.key_principal_rel.borrow_mut().data = KeyPrincipalTable::deserialize(reader)?;
+        self.doctors.borrow_mut().deserialize(reader)?;
+        self.patients.borrow_mut().deserialize(reader)?;
+        self.staff.borrow_mut().deserialize(reader)?;
+        self.thirdparties.borrow_mut().deserialize(reader)?;
+        self.keys.borrow_mut().deserialize(reader)?;
+        self.prescriptions.borrow_mut().deserialize(reader)?;
+        self.prescription_auths.borrow_mut().deserialize(reader)?;
+        self.prescription_templates.borrow_mut().deserialize(reader)?;
+        self.doctor_prescriptions_rel.borrow_mut().deserialize(reader)?;
+        self.patient_prescriptions_rel.borrow_mut().deserialize(reader)?;
+        self.principal_keys_rel.borrow_mut().deserialize(reader)?;
+        self.key_principal_rel.borrow_mut().deserialize(reader)?;
         Ok(())
     }
     

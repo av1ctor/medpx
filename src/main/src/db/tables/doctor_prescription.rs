@@ -1,5 +1,5 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableAllocatable, TableData, TableDataAccessible}};
 use crate::models::{doctor::DoctorId, prescription::PrescriptionId};
 
 pub struct DoctorPrescriptionTable {
@@ -15,11 +15,7 @@ impl TableAllocatable<DoctorPrescriptionTable> for DoctorPrescriptionTable {
     }
 }
 
-impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
-
-impl TableDeserializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
-
-impl Crud<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
+impl TableDataAccessible<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
     fn get_data(
         &self
     ) -> &TableData<DoctorId, BTreeSet<PrescriptionId>> {
@@ -31,7 +27,22 @@ impl Crud<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
     ) -> &mut TableData<DoctorId, BTreeSet<PrescriptionId>> {
         &mut self.data
     }
+
+    fn set_data(
+        &mut self,
+        data: TableData<DoctorId, BTreeSet<PrescriptionId>>
+    ) {
+        self.data = data;
+    }
+
+    
 }
+
+impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
+
+impl TableDeserializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
+
+impl Crud<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
 
 impl TableSubscriber for DoctorPrescriptionTable {
     fn on(

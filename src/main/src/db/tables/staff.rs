@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableData, TableAllocatable, TableDataAccessible}};
 use crate::models::staff::{StaffId, Staff};
 
 pub struct StaffTable {
@@ -16,11 +16,7 @@ impl TableAllocatable<StaffTable> for StaffTable {
     }
 }
 
-impl TableSerializable<StaffId, Staff> for StaffTable {}
-
-impl TableDeserializable<StaffId, Staff> for StaffTable {}
-
-impl Crud<StaffId, Staff> for StaffTable {
+impl TableDataAccessible<StaffId, Staff> for StaffTable {
     fn get_data(
         &self
     ) -> &TableData<StaffId, Staff> {
@@ -32,4 +28,17 @@ impl Crud<StaffId, Staff> for StaffTable {
     ) -> &mut TableData<StaffId, Staff> {
         &mut self.data
     }
+
+    fn set_data(
+        &mut self,
+        data: TableData<StaffId, Staff>
+    ) {
+        self.data = data;
+    }
 }
+
+impl TableSerializable<StaffId, Staff> for StaffTable {}
+
+impl TableDeserializable<StaffId, Staff> for StaffTable {}
+
+impl Crud<StaffId, Staff> for StaffTable {}

@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData}};
+use crate::db::traits::{crud::CrudSubscribable, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, TableDataAccessible}};
 use crate::models::key::{KeyId, Key};
 
 pub struct KeyTable {
@@ -17,25 +17,7 @@ impl TableAllocatable<KeyTable> for KeyTable {
     }
 }
 
-impl TableSerializable<KeyId, Key> for KeyTable {}
-
-impl TableDeserializable<KeyId, Key> for KeyTable {}
-
-impl TableSubscribable for KeyTable {
-    fn get_subs(
-        &self
-    ) -> &TableSubs {
-        &self.subs
-    }
-
-    fn get_subs_mut(
-        &mut self
-    ) -> &mut TableSubs {
-        &mut self.subs
-    }
-}
-
-impl CrudSubscribable<KeyId, Key> for KeyTable {
+impl TableDataAccessible<KeyId, Key> for KeyTable {
     fn get_data(
         &self
     ) -> &TableData<KeyId, Key> {
@@ -48,10 +30,29 @@ impl CrudSubscribable<KeyId, Key> for KeyTable {
         &mut self.data
     }
 
+    fn set_data(
+        &mut self,
+        data: TableData<KeyId, Key>
+    ) {
+        self.data = data;
+    }
+}
+
+impl TableSerializable<KeyId, Key> for KeyTable {}
+
+impl TableDeserializable<KeyId, Key> for KeyTable {}
+
+impl TableSubscribable<KeyId, Key> for KeyTable {
     fn get_subs(
         &self
     ) -> &TableSubs {
         &self.subs
+    }
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs {
+        &mut self.subs
     }
 
     fn get_keys(
@@ -64,3 +65,5 @@ impl CrudSubscribable<KeyId, Key> for KeyTable {
         ]
     }
 }
+
+impl CrudSubscribable<KeyId, Key> for KeyTable {}

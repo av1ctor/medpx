@@ -1,15 +1,11 @@
 use candid::CandidType;
-use super::table::{TableData, TableSubscribable, TableSubs, TableEventKind, TableEventKey};
+use super::table::{TableSubscribable, TableEventKind, TableDataAccessible};
 
 pub trait Crud<K, V> 
-    where K: Ord + CandidType, V: CandidType {
-    fn get_data(
-        &self
-    ) -> &TableData<K, V>;
-
-    fn get_data_mut(
-        &mut self
-    ) -> &mut TableData<K, V>;
+    where 
+        K: Ord + CandidType, 
+        V: CandidType, 
+        Self: TableDataAccessible<K, V> {
     
     fn insert(
         &mut self,
@@ -63,24 +59,10 @@ pub trait Crud<K, V>
 }
 
 pub trait CrudSubscribable<K, V> 
-    where K: Ord + CandidType, V: CandidType, Self: TableSubscribable {
-    fn get_data(
-        &self
-    ) -> &TableData<K, V>;
-
-    fn get_data_mut(
-        &mut self
-    ) -> &mut TableData<K, V>;
-
-    fn get_subs(
-        &self
-    ) -> &TableSubs;
-
-    fn get_keys(
-        k: &K,
-        v: &V
-    ) -> Vec<TableEventKey>;
-    
+    where 
+        K: Ord + CandidType, 
+        V: CandidType, 
+        Self: TableDataAccessible<K, V> + TableSubscribable<K, V> {
     fn insert(
         &mut self,
         k: K,
