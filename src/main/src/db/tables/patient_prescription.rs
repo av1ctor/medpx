@@ -1,5 +1,5 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, TableAllocatable, TableData, TableSubs}};
+use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, TableAllocatable, TableData, TableSubs}};
 use crate::models::{patient::PatientId, prescription::PrescriptionId};
 
 pub struct PatientPrescriptionTable {
@@ -21,60 +21,17 @@ impl TableSerializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescript
 
 impl TableDeserializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {}
 
-impl CRUD<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {
-    fn insert(
-        &mut self,
-        k: &PatientId,
-        v: &BTreeSet<PrescriptionId>
-    ) -> Result<(), String> {
-        if self.data.0.contains_key(k) {
-            Err("Duplicated key".to_string())
-        }
-        else {
-            self.data.0.insert(k.clone(), v.clone());
-            Ok(())
-        }
+impl Crud<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {
+    fn get_data(
+        &self
+    ) -> &TableData<PatientId, BTreeSet<PrescriptionId>> {
+        &self.data
     }
 
-    fn update(
-        &mut self,
-        k: &PatientId,
-        v: &BTreeSet<PrescriptionId>
-    ) -> Result<(), String> {
-        if !self.data.0.contains_key(k) {
-            Err("Not found".to_string())
-        }
-        else {
-            self.data.0.insert(k.clone(), v.clone());
-            Ok(())
-        }
-    }
-
-    fn find_by_id(
-        &self,
-        k: &PatientId
-    ) -> Option<BTreeSet<PrescriptionId>> {
-        if !self.data.0.contains_key(k) {
-            None
-        }
-        else {
-            Some(self.data.0[k].clone())
-        }
-    }
-
-    fn get(
-        &self,
-        k: &PatientId
-    ) -> &BTreeSet<PrescriptionId> {
-        self.data.0.get(k).unwrap()
-    }
-
-    fn delete(
-        &mut self,
-        k: &PatientId
-    ) -> Result<(), String> {
-        _ = self.data.0.remove(k);
-        Ok(())
+    fn get_data_mut(
+        &mut self
+    ) -> &mut TableData<PatientId, BTreeSet<PrescriptionId>> {
+        &mut self.data
     }
 }
 

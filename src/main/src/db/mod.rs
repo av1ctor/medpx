@@ -5,14 +5,12 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use candid::Principal;
 use ic_cdk::api::stable::{StableWriter, StableReader};
-use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::key::Key;
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 use self::tables::doctor_prescription::DoctorPrescriptionTable;
 use self::tables::patient_prescription::PatientPrescriptionTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
-use self::traits::crud::CRUD;
 use self::tables::doctor::DoctorTable;
 use self::tables::key::KeyTable;
 use self::tables::patient::PatientTable;
@@ -20,7 +18,6 @@ use self::tables::prescription::PrescriptionTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparty::ThirdPartyTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
-
 
 pub struct DB {
     pub doctors: Rc<RefCell<DoctorTable>>,
@@ -106,27 +103,6 @@ impl DB {
         Ok(())
     }
     
-    /**
-     * prescriptions table
-     */
-    pub fn prescription_insert(
-        &mut self,
-        k: &PrescriptionId,
-        v: &Prescription
-    ) -> Result<(), String> {
-        self.prescriptions.borrow_mut().insert(k, v)?;
-        
-        /*if !self.patient_prescriptions_rel.contains_key(&v.patient) {
-            self.patient_prescriptions_rel.insert(v.patient.clone(), BTreeSet::new());
-        }
-
-        let pat_prescriptions = self.patient_prescriptions_rel
-            .get_mut(&v.patient).unwrap();
-        pat_prescriptions.insert(k.clone());*/
-
-        Ok(())
-    }
-
     /**
      * keys table
      */

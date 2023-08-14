@@ -18,7 +18,7 @@ pub enum TableEventKey {
 
 #[derive(CandidType, Deserialize)]
 pub struct TableData<K, V> (pub BTreeMap<K, V>)
-    where K: Ord + CandidType, V: CandidType, Self: Sized;
+    where K: Ord + CandidType, V: CandidType;
 
 pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
 
@@ -67,18 +67,28 @@ pub trait TableSubscriber {
         keys: Vec<TableEventKey>
     );
 }
-pub trait TableSubscribable {
+pub trait TableSubscribable  {
+    fn get_subs(
+        &self
+    ) -> &TableSubs;
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs;
+
     fn subscribe(
         &mut self,
         tb: Rc<RefCell<dyn TableSubscriber>>
-    );
+    ) {
+        self.get_subs_mut().0.push(tb);
+    }
 
     fn notify (
-        subs: &Vec<Rc<RefCell<dyn TableSubscriber>>>,
+        &self,
         kind: TableEventKind,
         keys: Vec<TableEventKey>
     ) {
-        subs.iter().for_each(|c| c.borrow_mut().on(kind.clone(), keys.clone()));
+        self.get_subs().0.iter().for_each(|c| c.borrow_mut().on(kind.clone(), keys.clone()));
     }
 }
 

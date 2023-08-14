@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::io::Read;
 use std::rc::Rc;
 use candid::{Principal, CandidType};
-use db::traits::crud::CRUD;
+use db::traits::crud::{Crud, CrudSubscribable};
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
@@ -138,7 +138,7 @@ fn doctor_create(
 
     DB.with(|rc| {
         let doctor = Doctor::new(&req, caller);
-        match rc.borrow_mut().doctors.borrow_mut().insert(caller, &doctor) {
+        match rc.borrow_mut().doctors.borrow_mut().insert(*caller, doctor.clone()) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -153,7 +153,7 @@ fn patient_create(
 
     DB.with(|rc| {
         let patient = Patient::new(&req, caller);
-        match rc.borrow_mut().patients.borrow_mut().insert(caller, &patient) {
+        match rc.borrow_mut().patients.borrow_mut().insert(*caller, patient.clone()) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
         }
@@ -168,7 +168,7 @@ fn staff_create(
 
     DB.with(|rc| {
         let staff = Staff::new(&req, caller);
-        match rc.borrow_mut().staff.borrow_mut().insert(caller, &staff) {
+        match rc.borrow_mut().staff.borrow_mut().insert(*caller, staff.clone()) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
         }
@@ -183,7 +183,7 @@ fn thirdparty_create(
 
     DB.with(|rc| {
         let thirdparty = ThirdParty::new(&req, caller);
-        match rc.borrow_mut().thirdparties.borrow_mut().insert(caller, &thirdparty) {
+        match rc.borrow_mut().thirdparties.borrow_mut().insert(*caller, thirdparty.clone()) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
         }
@@ -198,7 +198,7 @@ fn key_create(
 
     DB.with(|rc| {
         let key = Key::new(&req, caller);
-        match rc.borrow_mut().keys.borrow_mut().insert(&key.id, &key) {
+        match rc.borrow_mut().keys.borrow_mut().insert(key.id.clone(), key.clone()) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
         }
@@ -225,7 +225,7 @@ fn prescription_create(
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req, caller);
 
-        if let Err(msg) = db.prescriptions.borrow_mut().insert(&id, &prescription) {
+        if let Err(msg) = db.prescriptions.borrow_mut().insert(id, prescription.clone()) {
             return Err(msg);
         };
 
@@ -242,7 +242,7 @@ fn prescription_auth_create(
     DB.with(|rc| {
         let id = _gen_id();
         let auth = PrescriptionAuth::new(&id, &req, caller);
-        match rc.borrow_mut().prescription_auths.borrow_mut().insert(&id, &auth) {
+        match rc.borrow_mut().prescription_auths.borrow_mut().insert(id, auth.clone()) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
         }
