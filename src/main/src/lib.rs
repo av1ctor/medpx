@@ -14,14 +14,14 @@ use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthRespon
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
 use models::key::{KeyRequest, KeyResponse, Key};
 use models::patient::{Patient, PatientRequest, PatientResponse};
-use models::prescription::{PrescriptionRequest, PrescriptionResponse};
+use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
-
 use crate::db::tables::doctor::DoctorTable;
 use crate::db::tables::doctor_prescription::DoctorPrescriptionTable;
 use crate::db::tables::key::KeyTable;
 use crate::db::tables::patient::PatientTable;
+use crate::db::tables::patient_prescription::PatientPrescriptionTable;
 use crate::db::tables::prescription::PrescriptionTable;
 use crate::db::traits::table::TableAllocatable;
 use crate::db::tables::prescription_auth::PrescriptionAuthTable;
@@ -46,7 +46,8 @@ thread_local! {
         Rc::new(RefCell::new(KeyTable::new())), 
         Rc::new(RefCell::new(PrescriptionAuthTable::new())), 
         Rc::new(RefCell::new(PrescriptionTemplateTable::new())),
-        Rc::new(RefCell::new(DoctorPrescriptionTable::new()))
+        Rc::new(RefCell::new(DoctorPrescriptionTable::new())),
+        Rc::new(RefCell::new(PatientPrescriptionTable::new())),
     ));    
 }
 
@@ -69,11 +70,6 @@ fn init(
     STATE.with(|rc| {
         let mut state = rc.borrow_mut();
         state.owner = Some(caller());
-    });
-
-    DB.with(|rc| {
-        let mut db = rc.borrow_mut();
-        db.init();
     });
 }
 
@@ -156,13 +152,11 @@ fn patient_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let patient = Patient::new(&req, caller);
-        Err("".to_string())
-        /*match db.patients.insert(caller, &patient) {
+        match rc.borrow_mut().patients.borrow_mut().insert(caller, &patient) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
-        }*/
+        }
     })
 }
 
@@ -173,13 +167,11 @@ fn staff_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let staff = Staff::new(&req, caller);
-        Err("".to_string())
-        /*match db.staff.insert(caller, &staff) {
+        match rc.borrow_mut().staff.borrow_mut().insert(caller, &staff) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
-        }*/
+        }
     })
 }
 
@@ -190,13 +182,11 @@ fn thirdparty_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let thirdparty = ThirdParty::new(&req, caller);
-        Err("".to_string())
-        /*match db.thirdparties.insert(caller, &thirdparty) {
+        match rc.borrow_mut().thirdparties.borrow_mut().insert(caller, &thirdparty) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
-        }*/
+        }
     })
 }
 
@@ -207,13 +197,11 @@ fn key_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let key = Key::new(&req, caller);
-        Err("".to_string())
-        /*match db.key_insert(caller, &key) {
+        match rc.borrow_mut().keys.borrow_mut().insert(&key.id, &key) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
-        }*/
+        }
     })
 }
 
@@ -224,25 +212,24 @@ fn prescription_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
+        let db = rc.borrow_mut();
 
-        Err("".to_string())
-        /*if db.doctors.find_by_id(caller).is_none() {
+        if db.doctors.borrow().find_by_id(caller).is_none() {
             return Err("Doctor not found".to_string());
         }
     
-        if db.patients.find_by_id(&req.patient).is_none() {
+        if db.patients.borrow().find_by_id(&req.patient).is_none() {
             return Err("Patient not found".to_string());
         }
 
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req, caller);
 
-        if let Err(msg) = db.prescription_insert(&id, &prescription) {
+        if let Err(msg) = db.prescriptions.borrow_mut().insert(&id, &prescription) {
             return Err(msg);
         };
 
-        Ok(prescription.into())*/
+        Ok(prescription.into())
     })
 }
 
@@ -253,13 +240,11 @@ fn prescription_auth_create(
     let caller = &caller();
 
     DB.with(|rc| {
-        let mut db = rc.borrow_mut();
         let id = _gen_id();
         let auth = PrescriptionAuth::new(&id, &req, caller);
-        Err("".to_string())
-        /*match db.prescription_auth_insert(&id, &auth) {
+        match rc.borrow_mut().prescription_auths.borrow_mut().insert(&id, &auth) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
-        }*/
+        }
     })
 }

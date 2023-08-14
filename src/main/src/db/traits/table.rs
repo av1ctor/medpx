@@ -22,20 +22,9 @@ pub struct TableData<K, V> (pub BTreeMap<K, V>)
 
 pub struct TableSubs (pub Vec<Rc<RefCell<dyn TableSubscriber>>>);
 
-pub struct Table<K, V>
-    where K: Ord + CandidType, V: CandidType {
-    pub data: TableData<K, V>,
-    pub subs: TableSubs,
-}
-
-pub trait TableAllocatable<K: Ord + CandidType, V: CandidType> {
+pub trait TableAllocatable<T> {
     fn new(
-    ) -> Table<K, V> {
-        Table {
-            data: TableData(BTreeMap::new()),
-            subs: TableSubs(Vec::new()),
-        }
-    }
+    ) -> T;
 }
 
 pub trait TableSerializable<K: Ord + CandidType, V: CandidType> {

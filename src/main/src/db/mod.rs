@@ -9,6 +9,7 @@ use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::key::Key;
 use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId};
 use self::tables::doctor_prescription::DoctorPrescriptionTable;
+use self::tables::patient_prescription::PatientPrescriptionTable;
 use self::tables::prescription_auth::PrescriptionAuthTable;
 use self::tables::prescription_template::PrescriptionTemplateTable;
 use self::traits::crud::CRUD;
@@ -31,7 +32,7 @@ pub struct DB {
     pub prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
     pub keys: Rc<RefCell<KeyTable>>,
     pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
-    //pub patient_prescriptions_rel: BTreeMap<PatientId, BTreeSet<PrescriptionId>>,
+    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
     //pub prescription_auths_rel: BTreeMap<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
     //pub principal_keys_rel: BTreeMap<Principal, BTreeSet<KeyId>>,
     //pub key_principal: BTreeMap<String, Principal>,
@@ -48,7 +49,11 @@ impl DB {
         prescrition_auths: Rc<RefCell<PrescriptionAuthTable>>,
         prescription_templates: Rc<RefCell<PrescriptionTemplateTable>>,
         doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionTable>>,
+        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionTable>>,
     ) -> Self {
+
+        prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());
+        prescriptions.borrow_mut().subscribe(patient_prescriptions_rel.clone());
         
         Self {
             doctors,
@@ -60,19 +65,11 @@ impl DB {
             prescription_auths: prescrition_auths,
             prescription_templates,
             doctor_prescriptions_rel,
-            //patient_prescriptions_rel: todo!(),
+            patient_prescriptions_rel,
             //prescription_auths_rel: todo!(),
             //principal_keys_rel: todo!(),
             //key_principal: todo!(),
         }
-    }
-
-    pub fn init(
-        &mut self
-    ) {
-        
-        self.prescriptions.borrow_mut().subscribe(self.doctor_prescriptions_rel.clone());
-        
     }
 
     pub fn serialize(
@@ -87,6 +84,8 @@ impl DB {
         PrescriptionTable::serialize(&self.prescriptions.borrow().data, writter)?;
         PrescriptionAuthTable::serialize(&self.prescription_auths.borrow().data, writter)?;
         PrescriptionTemplateTable::serialize(&self.prescription_templates.borrow().data, writter)?;
+        DoctorPrescriptionTable::serialize(&self.doctor_prescriptions_rel.borrow().data, writter)?;
+        PatientPrescriptionTable::serialize(&self.patient_prescriptions_rel.borrow().data, writter)?;
         Ok(())
     }
 
@@ -102,6 +101,8 @@ impl DB {
         self.prescriptions.borrow_mut().data = PrescriptionTable::deserialize(reader)?;
         self.prescription_auths.borrow_mut().data = PrescriptionAuthTable::deserialize(reader)?;
         self.prescription_templates.borrow_mut().data = PrescriptionTemplateTable::deserialize(reader)?;
+        self.doctor_prescriptions_rel.borrow_mut().data = DoctorPrescriptionTable::deserialize(reader)?;
+        self.patient_prescriptions_rel.borrow_mut().data = PatientPrescriptionTable::deserialize(reader)?;
         Ok(())
     }
     

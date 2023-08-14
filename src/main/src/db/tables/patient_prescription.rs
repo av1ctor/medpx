@@ -1,11 +1,24 @@
-use std::collections::BTreeSet;
-use crate::{db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, Table, TableAllocatable}}, models::prescription::PrescriptionId};
-use crate::models::patient::PatientId;
+use std::collections::{BTreeSet, BTreeMap};
+use crate::db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, TableAllocatable, TableData, TableSubs}};
+use crate::models::{patient::PatientId, prescription::PrescriptionId};
 
-pub type PatientPrescriptionTable = Table<PatientId, BTreeSet<PrescriptionId>>;
-    
-impl TableAllocatable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {}
+pub struct PatientPrescriptionTable {
+    pub data: TableData<PatientId, BTreeSet<PrescriptionId>>,
+    pub subs: TableSubs,
+}
+
+impl TableAllocatable<PatientPrescriptionTable> for PatientPrescriptionTable {
+    fn new(
+    ) -> Self {
+        Self {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
+        }
+    }
+}
+
 impl TableSerializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {}
+
 impl TableDeserializable<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {}
 
 impl CRUD<PatientId, BTreeSet<PrescriptionId>> for PatientPrescriptionTable {
@@ -73,24 +86,24 @@ impl TableSubscriber for PatientPrescriptionTable {
     ) {
         if let (
                 Text(prescription_key), 
-                Principal(doctor_key)
+                Principal(patient_key)
             ) = (keys[0].clone(), keys[1].clone()) {
             match kind {
                 TableEventKind::Create => {
-                    if !self.data.0.contains_key(&doctor_key) {
-                        self.data.0.insert(doctor_key.clone(), BTreeSet::new());
+                    if !self.data.0.contains_key(&patient_key) {
+                        self.data.0.insert(patient_key.clone(), BTreeSet::new());
                     }
 
                     let doc_prescriptions = self.data.0
-                        .get_mut(&doctor_key).unwrap();
+                        .get_mut(&patient_key).unwrap();
                     doc_prescriptions.insert(prescription_key.clone());
                 },
                 TableEventKind::Update => {
-                    // assuming doctor_key won't be updated
+                    // assuming patient_key won't be updated
                 },
                 TableEventKind::Delete => {
                     let doc_prescriptions = self.data.0
-                        .get_mut(&doctor_key).unwrap();
+                        .get_mut(&patient_key).unwrap();
                     doc_prescriptions.remove(&prescription_key);
                 },
             }

@@ -1,12 +1,26 @@
-use std::{rc::Rc, cell::RefCell};
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
+use std::{rc::Rc, cell::RefCell, collections::BTreeMap};
+use crate::db::traits::{crud::CRUD, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber, TableData, TableSubs}};
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
-pub type ThirdPartyTable = Table<ThirdPartyId, ThirdParty>;
+pub struct ThirdPartyTable {
+    pub data: TableData<ThirdPartyId, ThirdParty>,
+    pub subs: TableSubs,
+}
 
-impl TableAllocatable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+impl TableAllocatable<ThirdPartyTable> for ThirdPartyTable {
+    fn new(
+    ) -> Self {
+        Self {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
+        }
+    }
+}
+
 impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+
 impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartyTable {}
+
 impl TableSubscribable for ThirdPartyTable {
     fn subscribe(
         &mut self,

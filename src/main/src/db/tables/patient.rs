@@ -1,12 +1,26 @@
-use std::{rc::Rc, cell::RefCell};
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber}};
+use std::{rc::Rc, cell::RefCell, collections::BTreeMap};
+use crate::db::traits::{crud::CRUD, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Principal, TableSubscriber, TableData, TableSubs}};
 use crate::models::patient::{PatientId, Patient};
 
-pub type PatientTable = Table<PatientId, Patient>;
+pub struct PatientTable {
+    pub data: TableData<PatientId, Patient>,
+    pub subs: TableSubs,
+}
 
-impl TableAllocatable<PatientId, Patient> for PatientTable {}
+impl TableAllocatable<PatientTable> for PatientTable {
+    fn new(
+    ) -> Self {
+        Self {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
+        }
+    }
+}
+
 impl TableSerializable<PatientId, Patient> for PatientTable {}
+
 impl TableDeserializable<PatientId, Patient> for PatientTable {}
+
 impl TableSubscribable for PatientTable {
     fn subscribe(
         &mut self,

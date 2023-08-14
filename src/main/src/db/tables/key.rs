@@ -1,12 +1,26 @@
-use std::{cell::RefCell, rc::Rc};
-use crate::db::traits::{crud::CRUD, table::{Table, TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber}};
+use std::{cell::RefCell, rc::Rc, collections::BTreeMap};
+use crate::db::traits::{crud::CRUD, table::{TableAllocatable, TableSerializable, TableSubscribable, TableDeserializable, TableEventKind, TableEventKey::Text, TableSubscriber, TableSubs, TableData}};
 use crate::models::key::{KeyId, Key};
 
-pub type KeyTable = Table<KeyId, Key>;
+pub struct KeyTable {
+    pub data: TableData<KeyId, Key>,
+    pub subs: TableSubs,
+}
 
-impl TableAllocatable<KeyId, Key> for KeyTable {}
+impl TableAllocatable<KeyTable> for KeyTable {
+    fn new(
+    ) -> Self {
+        Self {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
+        }
+    }
+}
+
 impl TableSerializable<KeyId, Key> for KeyTable {}
+
 impl TableDeserializable<KeyId, Key> for KeyTable {}
+
 impl TableSubscribable for KeyTable {
     fn subscribe(
         &mut self,

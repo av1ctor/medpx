@@ -1,11 +1,24 @@
-use std::collections::BTreeSet;
-use crate::{db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, Table, TableAllocatable}}, models::prescription::PrescriptionId};
-use crate::models::doctor::DoctorId;
+use std::collections::{BTreeSet, BTreeMap};
+use crate::db::traits::{crud::CRUD, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey::{Principal, Text, self}, TableSubscriber, TableAllocatable, TableData, TableSubs}};
+use crate::models::{doctor::DoctorId, prescription::PrescriptionId};
 
-pub type DoctorPrescriptionTable = Table<DoctorId, BTreeSet<PrescriptionId>>;
+pub struct DoctorPrescriptionTable {
+    pub data: TableData<DoctorId, BTreeSet<PrescriptionId>>,
+    pub subs: TableSubs,
+}
     
-impl TableAllocatable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
+impl TableAllocatable<DoctorPrescriptionTable> for DoctorPrescriptionTable {
+    fn new(
+    ) -> Self {
+        Self {
+            data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
+        }
+    }
+}
+
 impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
+
 impl TableDeserializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {}
 
 impl CRUD<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionTable {
