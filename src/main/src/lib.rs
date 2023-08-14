@@ -32,6 +32,8 @@ use crate::db::tables::prescription_templates::PrescriptionTemplatesTable;
 use crate::db::tables::staff::StaffTable;
 use crate::db::tables::thirdparties::ThirdPartiesTable;
 
+const STATE_VERSION: f32 = 0.1;
+
 #[derive(Default, CandidType, Deserialize)]
 struct State {
     owner: Option<Principal>,
@@ -94,7 +96,7 @@ fn pre_upgrade() {
     });
 
     STATE.with(|state| {
-        if let Err(err) = serialize(&state.take(), &mut writter) {
+        if let Err(err) = serialize(&state.take(), STATE_VERSION, &mut writter) {
             trap(&format!(
                 "An error occurred when saving STATE to stable memory (pre_upgrade): {:?}",
                 err
@@ -117,7 +119,7 @@ fn post_upgrade() {
     });
 
     STATE.with(|state| {
-        match deserialize(&mut reader) {
+        match deserialize(STATE_VERSION, &mut reader) {
             Err(err) =>
             trap(&format!(
                 "An error occurred when loading STATE from stable memory (post_upgrade): {:?}",
@@ -212,6 +214,7 @@ fn prescription_create(
     DB.with(|rc| {
         let db = rc.borrow_mut();
 
+        // validations
         if db.doctors.borrow().find_by_id(caller).is_none() {
             return Err("Doctor not found".to_string());
         }

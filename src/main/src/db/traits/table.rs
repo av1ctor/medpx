@@ -66,6 +66,8 @@ pub trait TableSerializable<K, V>
         let mut ser = IDLBuilder::new();
         (&self.get_data().0, ).encode(&mut ser).map_err(|e| format!("{:?}", e))?;
         let arr = ser.serialize_to_vec().unwrap();
+        // store version
+        writer.write(&f32::to_le_bytes(self.get_schema().version)).map_err(|e| format!("{:?}", e))?;
         // store size
         writer.write(&u64::to_le_bytes(arr.len() as u64)).map_err(|e| format!("{:?}", e))?;
         // store table
@@ -83,6 +85,13 @@ pub trait TableDeserializable<K, V>
         &mut self, 
         reader: &mut StableReader
     ) -> Result<(), String> {
+        // load version
+        let mut version_buf = [0u8; 4];
+        reader.read(&mut version_buf).map_err(|e| format!("{:?}", e))?;
+        let version = f32::from_le_bytes(version_buf);
+        if version != self.get_schema().version {
+            return Err("Invalid schema version".to_string());
+        }
         // load size
         let mut size_buf = [0u8; 8];
         reader.read(&mut size_buf).map_err(|e| format!("{:?}", e))?;
