@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/auth";
 import { useUI } from "../../../hooks/ui";
+import { IconUserBolt, IconUserPlus, IconUserX } from "@tabler/icons-react";
 
 const useStyles = createStyles((theme) => ({
     hiddenMobile: {
@@ -20,13 +21,16 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export const Menu = () => {
-    const {isLogged, user, logout} = useAuth();
+    const {isLogged, isAuthenticated, logout} = useAuth();
     const {showSuccess} = useUI();
     const navigate = useNavigate();
-    const {classes} = useStyles();
     
     const redirectToLogin = useCallback(() => {
         navigate(`/user/login?return=${window.location.hash.replace('#', '')}`);
+    }, []);
+
+    const redirectToSignup = useCallback(() => {
+        navigate(`/user/signup?return=${window.location.hash.replace('#', '')}`);
     }, []);
 
     const handleLogout = useCallback(async () => {
@@ -34,22 +38,27 @@ export const Menu = () => {
         showSuccess('Logged out!');
     }, [logout]);
 
-    return (!isLogged? 
+    return (!isAuthenticated? 
         <>
             <Button 
                 variant="default" 
+                leftIcon={<IconUserBolt/>}
                 onClick={redirectToLogin}
             >
                 Log in
             </Button>
-            <Button>
+            <Button 
+                leftIcon={<IconUserPlus/>}
+                onClick={redirectToSignup}
+            >
                 Sign up
             </Button>
         </>
     :
         <>
             <Button 
-                variant="default" 
+                variant="default"
+                leftIcon={<IconUserX/>} 
                 onClick={handleLogout}
             >
                 Log out

@@ -138,6 +138,7 @@ const AppHeader = (props: Props) => {
             <Header height={60} px="md">
                 <Group position="apart" sx={{ height: '100%' }}>
                     <Group sx={{ height: '100%' }} spacing={0} className={classes.hiddenMobile}>
+                        <img src="/medpx-logo.svg" />
                         <a href="#" className={classes.link}>
                             Home
                         </a>
@@ -207,7 +208,7 @@ const AppHeader = (props: Props) => {
                 onClose={closeDrawer}
                 size="100%"
                 padding="md"
-                title="Navigation"
+                title={<img src="/medpx-logo.svg" />}
                 className={classes.hiddenDesktop}
                 zIndex={1000000}
             >

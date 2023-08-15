@@ -1,25 +1,18 @@
-import { Button, Center, Container } from "@mantine/core";
+import { Button, Center, Stack, Title } from "@mantine/core";
 import React from "react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../../site/src/hooks/auth";
 import { useUI } from "../../../../../site/src/hooks/ui";
 import { ICProviderType } from "../../../../../site/src/interfaces/icprovider";
 
 interface Props {
+    onLogon: () => void;
 }
 
-const Login = () => {
-    const {login} = useAuth();
-    const {showSuccess, showError} = useUI();
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const getReturnUrl = (): string => {
-        let returnTo = location.search.match(/return=([^&]+)/);
-        return (returnTo && returnTo[1]) || '/';
-    }
+const Login = (props: Props) => {
+    const {login, isAuthenticated} = useAuth();
+    const {showError} = useUI();
 
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
@@ -28,14 +21,13 @@ const Login = () => {
                 showError(res.Err);
             }
             else {
-                showSuccess("Welcome back!");
-                setTimeout(() => handleReturn(), 3000);
+                props.onLogon();
             }
         }
         catch(e) {
             showError(e);
         }
-    }, [login]);
+    }, [login, props.onLogon]);
 
     const handleAuthenticateII = useCallback(async () => {
         handleLogin(ICProviderType.InternetIdentity);
@@ -47,45 +39,48 @@ const Login = () => {
     
     const handleAuthenticateStoic = useCallback(async () => {
         handleLogin(ICProviderType.Stoic);
-    }, [login]);
+    }, [handleLogin]);
 
-    const handleReturn = useCallback(() => {
-        navigate(getReturnUrl());
-    }, [navigate]);
+    if(isAuthenticated) {
+        props.onLogon();
+        return null;
+    }
 
     return (
-        <Center mx="auto">
-            <Container>
-                <Center mx="auto">
-                    <FormattedMessage defaultMessage="Please choose a provider"/>:
-                </Center>
-                <Center mx="auto">
-                    <Button 
-                        onClick={handleAuthenticateII}>
-                        <img src="providers/ii.svg" height="" />
-                        Internet Identity
-                    </Button>
-                </Center>
-                <br/>
-                <Center mx="auto">
-                    <Button 
-                        color="info"
-                        onClick={handleAuthenticatePlug}>
-                        <img src="providers/plug.svg" height="" />
-                        Plug Wallet
-                    </Button>
-                </Center>
-                <br/>
-                <Center mx="auto">
-                    <Button 
-                        color="warning"
-                        onClick={handleAuthenticateStoic}>
-                        <img src="providers/stoic.png" height="" />
-                        Stoic Wallet
-                    </Button>
-                </Center>
-            </Container>
-        </Center>
+        <Stack>
+            <Center>
+                <Title order={4}>
+                    <FormattedMessage defaultMessage="Please choose a provider"/>
+                </Title>
+            </Center>
+            <Center>
+                <Button 
+                    color="blue"
+                    leftIcon={<img src="providers/ii.svg" height="24" />}
+                    onClick={handleAuthenticateII}
+                >
+                    Internet Identity
+                </Button>
+            </Center>
+            <Center>
+                <Button 
+                    color="pink"
+                    leftIcon={<img src="providers/plug.svg" />}
+                    onClick={handleAuthenticatePlug}
+                >
+                    Plug Wallet
+                </Button>
+            </Center>
+            <Center>
+                <Button 
+                    color="cyan"
+                    leftIcon={<img src="providers/stoic.png" height="24" />}
+                    onClick={handleAuthenticateStoic}
+                >
+                    Stoic Wallet
+                </Button>
+            </Center>
+        </Stack>
     );
 };
 
