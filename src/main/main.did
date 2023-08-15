@@ -1,6 +1,7 @@
 type DoctorRequest = record {
     license_num: text;
     name: text;
+    email: text;
     prescription_template: opt text;
 };
 
@@ -8,6 +9,7 @@ type DoctorResponse = record {
     id: text;
     license_num: text;
     name: text;
+    email: text;
     prescription_template: opt text;
 };
 
@@ -148,8 +150,21 @@ type PrescriptionAuthResponseResult = variant {
     Ok: PrescriptionAuthResponse;
 };
 
+type DefaultResponseResult = variant {
+    Err: text;
+    Ok
+};
+
+type Pagination = record {
+    offset: nat32;
+    size: nat32;
+};
+
 service : {
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
+    doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
+    doctor_delete: (principal) -> (DefaultResponseResult);
+    doctor_find_prescriptions: (principal, Pagination) -> (vec text, text);
     patient_create: (PatientRequest) -> (PatientResponseResult);
     staff_create: (StaffRequest) -> (StaffResponseResult);
     thirdparty_create: (ThirdPartyRequest) -> (ThirdPartyResponseResult);

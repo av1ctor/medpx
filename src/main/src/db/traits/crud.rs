@@ -1,5 +1,13 @@
 use candid::CandidType;
+use serde::Deserialize;
 use super::table::{TableSubscribable, TableEventKind, Table};
+
+
+#[derive(CandidType, Deserialize)]
+pub struct Pagination {
+    pub offset: u32,
+    pub limit: u32,
+}
 
 pub trait Crud<K, V> 
     where 

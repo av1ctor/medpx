@@ -1,22 +1,24 @@
 pub mod models;
 pub mod db;
 pub mod utils;
+pub mod services;
 
 use std::cell::RefCell;
 use std::rc::Rc;
 use candid::{Principal, CandidType};
-use db::traits::{table::Table, crud::{Crud, CrudSubscribable}};
+use db::traits::{table::Table, crud::{Crud, CrudSubscribable, Pagination}};
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
-use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth};
+use models::{prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth}, doctor::DoctorId, prescription::PrescriptionId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
 use models::key::{KeyRequest, KeyResponse, Key};
 use models::patient::{Patient, PatientRequest, PatientResponse};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
+use services::doctor::DoctorService;
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -134,11 +136,11 @@ fn post_upgrade() {
 fn doctor_create(
     req: DoctorRequest
 ) -> Result<DoctorResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
-        let doctor = Doctor::new(&req, caller);
-        match rc.borrow_mut().doctors.borrow_mut().insert(*caller, doctor.clone()) {
+        let doctor = Doctor::new(&req, &caller);
+        match DoctorService::create(&doctor, &mut rc.borrow_mut(), &caller) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -146,14 +148,53 @@ fn doctor_create(
 }
 
 #[ic_cdk::update]
+fn doctor_update(
+    id: DoctorId,
+    req: DoctorRequest
+) -> Result<DoctorResponse, String> {
+    let caller = caller();
+
+    DB.with(|rc| {
+        let doctor = Doctor::new(&req, &caller);
+        match DoctorService::update(&id, &doctor, &mut rc.borrow_mut(), &caller) {
+            Ok(()) => Ok(doctor.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn doctor_delete(
+    id: DoctorId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|rc| {
+        DoctorService::delete(&id, &mut rc.borrow_mut(), &caller)
+    })
+}
+
+#[ic_cdk::query]
+fn doctor_find_prescriptions(
+    id: DoctorId,
+    pag: Pagination
+) -> Result<Vec<PrescriptionId>, String> {
+    let caller = caller();
+
+    DB.with(|rc| {
+        DoctorService::find_prescriptions(&id, pag, &rc.borrow(), &caller)
+    })
+}
+
+#[ic_cdk::update]
 fn patient_create(
     req: PatientRequest
 ) -> Result<PatientResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
-        let patient = Patient::new(&req, caller);
-        match rc.borrow_mut().patients.borrow_mut().insert(*caller, patient.clone()) {
+        let patient = Patient::new(&req, &caller);
+        match rc.borrow_mut().patients.borrow_mut().insert(caller, patient.clone()) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
         }
@@ -164,11 +205,11 @@ fn patient_create(
 fn staff_create(
     req: StaffRequest
 ) -> Result<StaffResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
-        let staff = Staff::new(&req, caller);
-        match rc.borrow_mut().staff.borrow_mut().insert(*caller, staff.clone()) {
+        let staff = Staff::new(&req, &caller);
+        match rc.borrow_mut().staff.borrow_mut().insert(caller, staff.clone()) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
         }
@@ -179,11 +220,11 @@ fn staff_create(
 fn thirdparty_create(
     req: ThirdPartyRequest
 ) -> Result<ThirdPartyResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
-        let thirdparty = ThirdParty::new(&req, caller);
-        match rc.borrow_mut().thirdparties.borrow_mut().insert(*caller, thirdparty.clone()) {
+        let thirdparty = ThirdParty::new(&req, &caller);
+        match rc.borrow_mut().thirdparties.borrow_mut().insert(caller, thirdparty.clone()) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
         }
@@ -194,10 +235,10 @@ fn thirdparty_create(
 fn key_create(
     req: KeyRequest
 ) -> Result<KeyResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
-        let key = Key::new(&req, caller);
+        let key = Key::new(&req, &caller);
         match rc.borrow_mut().keys.borrow_mut().insert(key.id.clone(), key.clone()) {
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
@@ -209,13 +250,13 @@ fn key_create(
 fn prescription_create(
     req: PrescriptionRequest
 ) -> Result<PrescriptionResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
         let db = rc.borrow_mut();
 
         // validations
-        if db.doctors.borrow().find_by_id(caller).is_none() {
+        if db.doctors.borrow().find_by_id(&caller).is_none() {
             return Err("Doctor not found".to_string());
         }
     
@@ -224,7 +265,7 @@ fn prescription_create(
         }
 
         let id = _gen_id();
-        let prescription = Prescription::new(&id, &req, caller);
+        let prescription = Prescription::new(&id, &req, &caller);
 
         if let Err(msg) = db.prescriptions.borrow_mut().insert(id, prescription.clone()) {
             return Err(msg);
@@ -238,11 +279,11 @@ fn prescription_create(
 fn prescription_auth_create(
     req: PrescritipionAuthRequest
 ) -> Result<PrescriptionAuthResponse, String> {
-    let caller = &caller();
+    let caller = caller();
 
     DB.with(|rc| {
         let id = _gen_id();
-        let auth = PrescriptionAuth::new(&id, &req, caller);
+        let auth = PrescriptionAuth::new(&id, &req, &caller);
         match rc.borrow_mut().prescription_auths.borrow_mut().insert(id, auth.clone()) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
