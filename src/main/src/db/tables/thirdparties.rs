@@ -45,15 +45,7 @@ impl Table<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
 
 impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl TableVersioned<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<ThirdPartyId, ThirdParty>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
 impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 

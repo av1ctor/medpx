@@ -49,15 +49,7 @@ impl TableSerializable<KeyId, Key> for KeysTable {}
 
 impl TableDeserializable<KeyId, Key> for KeysTable {}
 
-impl TableVersioned<KeyId, Key> for KeysTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<KeyId, Key>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<KeyId, Key> for KeysTable {}
 
 impl CrudSubscribable<KeyId, Key> for KeysTable {}
 

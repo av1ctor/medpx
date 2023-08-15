@@ -61,9 +61,11 @@ pub trait TableVersioned<K, V>
         Self: Table<K, V> {
     fn migrate(
         &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<K, V>, String>;
+        _from_version: f32,
+        _buf: &[u8]
+    ) -> Result<TableData<K, V>, String> {
+        panic!("Not supported")
+    }
 }
 
 pub trait TableSerializable<K, V>

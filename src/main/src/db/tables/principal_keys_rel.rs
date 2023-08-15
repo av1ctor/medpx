@@ -46,15 +46,7 @@ impl Table<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
 
 impl TableSerializable<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
-impl TableVersioned<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<Principal, BTreeSet<KeyId>>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
 impl TableDeserializable<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 

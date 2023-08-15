@@ -47,15 +47,7 @@ impl Table<PrescriptionId, Prescription> for PrescriptionsTable {
 
 impl TableSerializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableVersioned<PrescriptionId, Prescription> for PrescriptionsTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<PrescriptionId, Prescription>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<PrescriptionId, Prescription> for PrescriptionsTable {}
 
 impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionsTable {}
 

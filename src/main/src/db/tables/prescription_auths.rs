@@ -47,15 +47,7 @@ impl Table<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
 
 impl TableSerializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
-impl TableVersioned<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<PrescriptionAuthId, PrescriptionAuth>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
 impl TableDeserializable<PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 

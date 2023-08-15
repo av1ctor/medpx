@@ -45,15 +45,7 @@ impl Table<PatientId, Patient> for PatientsTable {
 
 impl TableSerializable<PatientId, Patient> for PatientsTable {}
 
-impl TableVersioned<PatientId, Patient> for PatientsTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<PatientId, Patient>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<PatientId, Patient> for PatientsTable {}
 
 impl TableDeserializable<PatientId, Patient> for PatientsTable {}
 

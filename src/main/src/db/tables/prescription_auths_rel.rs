@@ -45,15 +45,7 @@ impl Table<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRe
 
 impl TableSerializable<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
-impl TableVersioned<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {
-    fn migrate(
-        &self,
-        from_version: f32,
-        buf: &[u8]
-    ) -> Result<TableData<PrescriptionId, BTreeSet<PrescriptionAuthId>>, String> {
-        panic!("Not supported")
-    }
-}
+impl TableVersioned<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
 impl TableDeserializable<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
