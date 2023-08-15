@@ -1,18 +1,22 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
 use crate::db::traits::crud::Crud;
 use crate::models::{prescription::PrescriptionId, prescription_auth::PrescriptionAuthId};
 
 pub struct PrescriptionAuthsRelTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<PrescriptionId, BTreeSet<PrescriptionAuthId>>,
 }
     
-impl Table<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {
+impl Table<TableName, PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::PrescriptionAuthsRel, 
+            },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -38,30 +42,29 @@ impl Table<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRe
     
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
+impl TableSerializable<TableName, PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
-impl TableVersioned<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
+impl TableVersioned<TableName, PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
-impl TableDeserializable<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
+impl TableDeserializable<TableName, PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
-impl Crud<PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
+impl Crud<TableName, PrescriptionId, BTreeSet<PrescriptionAuthId>> for PrescriptionAuthsRelTable {}
 
-impl TableSubscriber for PrescriptionAuthsRelTable {
+impl TableSubscriber<TableName> for PrescriptionAuthsRelTable {
     fn on(
         &mut self,
-        kind: TableEventKind,
-        keys: Vec<TableEventKey>
+        event: &TableEvent<TableName>
     ) {
         if let (
                 TableEventKey::Text(prescription_auth_key), 
                 TableEventKey::Text(prescription_key)
-            ) = (keys[0].clone(), keys[1].clone()) {
-            match kind {
+            ) = (event.pkey.clone(), event.keys[0].clone()) {
+            match event.kind {
                 TableEventKind::Create => {
                     if !self.data.0.contains_key(&prescription_key) {
                         self.data.0.insert(prescription_key.clone(), BTreeSet::new());

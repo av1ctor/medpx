@@ -1,18 +1,22 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
 use crate::db::traits::crud::Crud;
 use crate::models::{doctor::DoctorId, prescription::PrescriptionId};
 
 pub struct DoctorPrescriptionsRelTable {
     pub data: TableData<DoctorId, BTreeSet<PrescriptionId>>,
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
 }
     
-impl Table<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {
+impl Table<TableName, DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::DoctorPrescriptionsRel,
+            },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -38,30 +42,29 @@ impl Table<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {
 
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
+impl TableSerializable<TableName, DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
 
-impl TableVersioned<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
+impl TableVersioned<TableName, DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
 
-impl TableDeserializable<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
+impl TableDeserializable<TableName, DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
 
-impl Crud<DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
+impl Crud<TableName, DoctorId, BTreeSet<PrescriptionId>> for DoctorPrescriptionsRelTable {}
 
-impl TableSubscriber for DoctorPrescriptionsRelTable {
+impl TableSubscriber<TableName> for DoctorPrescriptionsRelTable {
     fn on(
         &mut self,
-        kind: TableEventKind,
-        keys: Vec<TableEventKey>
+        event: &TableEvent<TableName>
     ) {
         if let (
                 TableEventKey::Text(prescription_key), 
                 TableEventKey::Principal(doctor_key)
-            ) = (keys[0].clone(), keys[1].clone()) {
-            match kind {
+            ) = (event.pkey.clone(), event.keys[0].clone()) {
+            match event.kind {
                 TableEventKind::Create => {
                     if !self.data.0.contains_key(&doctor_key) {
                         self.data.0.insert(doctor_key.clone(), BTreeSet::new());

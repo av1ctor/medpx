@@ -1,6 +1,6 @@
 use candid::CandidType;
 use serde::Deserialize;
-use super::table::{TableSubscribable, TableEventKind, Table};
+use super::table::{TableSubscribable, TableEventKind, Table, TableEvent};
 
 
 #[derive(CandidType, Deserialize)]
@@ -9,11 +9,11 @@ pub struct Pagination {
     pub limit: u32,
 }
 
-pub trait Crud<K, V> 
+pub trait Crud<TN, K, V> 
     where 
         K: Ord + CandidType, 
         V: CandidType, 
-        Self: Table<K, V> {
+        Self: Table<TN, K, V> {
     
     fn insert(
         &mut self,
@@ -66,11 +66,11 @@ pub trait Crud<K, V>
     }
 }
 
-pub trait CrudSubscribable<K, V> 
+pub trait CrudSubscribable<TN, K, V> 
     where 
         K: Ord + CandidType, 
         V: CandidType, 
-        Self: Table<K, V> + TableSubscribable<K, V> {
+        Self: Table<TN, K, V> + TableSubscribable<TN, K, V> {
     fn insert(
         &mut self,
         k: K,
@@ -80,7 +80,12 @@ pub trait CrudSubscribable<K, V>
             Err("Duplicated key".to_string())
         }
         else {
-            self.notify(TableEventKind::Create, Self::get_keys(&k, &v));
+            self.notify(&TableEvent {
+                table_name: &self.get_schema().name,
+                kind: TableEventKind::Create, 
+                pkey: Self::get_pkey(&k),
+                keys: Self::get_keys(&v)
+            });
             self.get_data_mut().0.insert(k, v);
             Ok(())
         }
@@ -109,7 +114,12 @@ pub trait CrudSubscribable<K, V>
             Err("Not found".to_string())
         }
         else {
-            self.notify(TableEventKind::Update, Self::get_keys(&k, &v));
+            self.notify(&TableEvent {
+                table_name: &self.get_schema().name,
+                kind: TableEventKind::Update, 
+                pkey: Self::get_pkey(&k),
+                keys: Self::get_keys(&v)
+            });
             self.get_data_mut().0.insert(k, v);
             Ok(())
         }
@@ -117,11 +127,16 @@ pub trait CrudSubscribable<K, V>
 
     fn delete(
         &mut self,
-        k: K
+        k: &K
     ) -> Result<(), String> {
-        let v = self.get_data_mut().0.remove(&k);
+        let v = self.get_data_mut().0.remove(k);
         if let Some(v) = v {
-            self.notify(TableEventKind::Delete, Self::get_keys(&k, &v));
+            self.notify(&TableEvent {
+                table_name: &self.get_schema().name,
+                kind: TableEventKind::Delete, 
+                pkey: Self::get_pkey(k),
+                keys: Self::get_keys(&v)
+            });
         }
         Ok(())
     }

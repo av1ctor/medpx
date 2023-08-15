@@ -1,19 +1,23 @@
 use std::collections::BTreeMap;
 use candid::Principal;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
 use crate::db::traits::crud::Crud;
 use crate::models::key::KeyId;
 
 pub struct KeyPrincipalRelTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<KeyId, Principal>,
 }
     
-impl Table<KeyId, Principal> for KeyPrincipalRelTable {
+impl Table<TableName, KeyId, Principal> for KeyPrincipalRelTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::KeyPrincipalRel,
+            },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -39,30 +43,29 @@ impl Table<KeyId, Principal> for KeyPrincipalRelTable {
 
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<KeyId, Principal> for KeyPrincipalRelTable {}
+impl TableSerializable<TableName, KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl TableVersioned<KeyId, Principal> for KeyPrincipalRelTable {}
+impl TableVersioned<TableName, KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl TableDeserializable<KeyId, Principal> for KeyPrincipalRelTable {}
+impl TableDeserializable<TableName, KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl Crud<KeyId, Principal> for KeyPrincipalRelTable {}
+impl Crud<TableName, KeyId, Principal> for KeyPrincipalRelTable {}
 
-impl TableSubscriber for KeyPrincipalRelTable {
+impl TableSubscriber<TableName> for KeyPrincipalRelTable {
     fn on(
         &mut self,
-        kind: TableEventKind,
-        keys: Vec<TableEventKey>
+        event: &TableEvent<TableName>
     ) {
         if let (
                 TableEventKey::Principal(principal), 
                 TableEventKey::Text(key)
-            ) = (keys[0].clone(), keys[1].clone()) {
-            match kind {
+            ) = (event.pkey.clone(), event.keys[0].clone()) {
+            match event.kind {
                 TableEventKind::Create => {
                     self.data.0
                         .insert(key.clone(), principal.clone());

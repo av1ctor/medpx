@@ -1,19 +1,25 @@
 use std::collections::BTreeMap;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned};
-use crate::db::traits::crud::Crud;
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned, TableSubs, TableSubscribable, TableEventKey};
+use crate::db::traits::crud::CrudSubscribable;
 use crate::models::doctor::{DoctorId, Doctor};
 
 pub struct DoctorsTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<DoctorId, Doctor>,
+    pub subs: TableSubs<TableName>,
 }
 
-impl Table<DoctorId, Doctor> for DoctorsTable {
+impl Table<TableName, DoctorId, Doctor> for DoctorsTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.2 },
+            schema: TableSchema { 
+                version: 0.2,
+                name: TableName::Doctors,
+            },
             data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
         }
     }
 
@@ -38,14 +44,14 @@ impl Table<DoctorId, Doctor> for DoctorsTable {
 
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<DoctorId, Doctor> for DoctorsTable {}
+impl TableSerializable<TableName, DoctorId, Doctor> for DoctorsTable {}
 
-impl TableVersioned<DoctorId, Doctor> for DoctorsTable {
+impl TableVersioned<TableName, DoctorId, Doctor> for DoctorsTable {
     fn migrate(
         &self,
         from_version: f32,
@@ -55,6 +61,33 @@ impl TableVersioned<DoctorId, Doctor> for DoctorsTable {
     }
 }
 
-impl TableDeserializable<DoctorId, Doctor> for DoctorsTable {}
+impl TableDeserializable<TableName, DoctorId, Doctor> for DoctorsTable {}
 
-impl Crud<DoctorId, Doctor> for DoctorsTable {}
+impl CrudSubscribable<TableName, DoctorId, Doctor> for DoctorsTable {}
+
+impl TableSubscribable<TableName, DoctorId, Doctor> for DoctorsTable {
+    fn get_subs(
+        &self
+    ) -> &TableSubs<TableName> {
+        &self.subs
+    }
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs<TableName> {
+        &mut self.subs
+    }
+
+    fn get_pkey(
+        k: &DoctorId
+    ) -> TableEventKey {
+        TableEventKey::Principal(k.clone())
+    }
+
+    fn get_keys(
+        _v: &Doctor
+    ) -> Vec<TableEventKey> {
+        vec![
+        ]
+    }
+}

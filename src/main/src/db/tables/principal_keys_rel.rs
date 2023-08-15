@@ -1,19 +1,23 @@
 use std::collections::{BTreeSet, BTreeMap};
 use candid::Principal;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
 use crate::db::traits::crud::Crud;
 use crate::models::key::KeyId;
 
 pub struct PrincipalKeysRelTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<Principal, BTreeSet<KeyId>>,
 }
     
-impl Table<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
+impl Table<TableName, Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::PrincipalKeysRel,
+            },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -39,30 +43,29 @@ impl Table<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {
     
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
+impl TableSerializable<TableName, Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
-impl TableVersioned<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
+impl TableVersioned<TableName, Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
-impl TableDeserializable<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
+impl TableDeserializable<TableName, Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
-impl Crud<Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
+impl Crud<TableName, Principal, BTreeSet<KeyId>> for PrincipalKeysRelTable {}
 
-impl TableSubscriber for PrincipalKeysRelTable {
+impl TableSubscriber<TableName> for PrincipalKeysRelTable {
     fn on(
         &mut self,
-        kind: TableEventKind,
-        keys: Vec<TableEventKey>
+        event: &TableEvent<TableName>
     ) {
         if let (
                 TableEventKey::Principal(principal), 
                 TableEventKey::Text(key)
-            ) = (keys[0].clone(), keys[1].clone()) {
-            match kind {
+            ) = (event.pkey.clone(), event.keys[0].clone()) {
+            match event.kind {
                 TableEventKind::Create => {
                     if !self.data.0.contains_key(&principal) {
                         self.data.0.insert(principal.clone(), BTreeSet::new());

@@ -1,19 +1,25 @@
 use std::collections::BTreeMap;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned};
-use crate::db::traits::crud::Crud;
+use crate::db::TableName;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned, TableSubscribable, TableSubs, TableEventKey};
+use crate::db::traits::crud::CrudSubscribable;
 use crate::models::thirdparty::{ThirdPartyId, ThirdParty};
 
 pub struct ThirdPartiesTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<ThirdPartyId, ThirdParty>,
+    pub subs: TableSubs<TableName>,
 }
 
-impl Table<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
+impl Table<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::ThirdParties,
+            },
             data: TableData(BTreeMap::new()),
+            subs: TableSubs(Vec::new()),
         }
     }
 
@@ -38,15 +44,42 @@ impl Table<ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+impl TableSerializable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl TableVersioned<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+impl TableVersioned<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl TableDeserializable<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+impl TableDeserializable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl Crud<ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+impl CrudSubscribable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+
+impl TableSubscribable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {
+    fn get_subs(
+        &self
+    ) -> &TableSubs<TableName> {
+        &self.subs
+    }
+
+    fn get_subs_mut(
+        &mut self
+    ) -> &mut TableSubs<TableName> {
+        &mut self.subs
+    }
+
+    fn get_pkey(
+        k: &ThirdPartyId
+    ) -> TableEventKey {
+        TableEventKey::Principal(k.clone())
+    }
+
+    fn get_keys(
+        _v: &ThirdParty
+    ) -> Vec<TableEventKey> {
+        vec![
+        ]
+    }
+}

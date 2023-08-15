@@ -22,6 +22,7 @@ use services::doctor::DoctorService;
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
+use crate::db::tables::users::UsersTable;
 use crate::db::tables::keys::KeysTable;
 use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
 use crate::db::tables::patients::PatientsTable;
@@ -49,6 +50,7 @@ thread_local! {
         Rc::new(RefCell::new(PatientsTable::new())), 
         Rc::new(RefCell::new(StaffTable::new())), 
         Rc::new(RefCell::new(ThirdPartiesTable::new())), 
+        Rc::new(RefCell::new(UsersTable::new())), 
         Rc::new(RefCell::new(PrescriptionsTable::new())), 
         Rc::new(RefCell::new(KeysTable::new())), 
         Rc::new(RefCell::new(PrescriptionAuthsTable::new())), 

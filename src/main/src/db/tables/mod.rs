@@ -11,3 +11,4 @@ pub mod patient_prescriptions_rel;
 pub mod principal_keys_rel;
 pub mod key_principal_rel;
 pub mod prescription_auths_rel;
+pub mod users;

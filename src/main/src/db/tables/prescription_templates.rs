@@ -1,18 +1,22 @@
 use std::collections::BTreeMap;
+use crate::db::TableName;
 use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned};
 use crate::db::traits::crud::Crud;
 use crate::models::prescription_template::{PrescriptionTemplateId, PrescriptionTemplate};
 
 pub struct PrescriptionTemplatesTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<PrescriptionTemplateId, PrescriptionTemplate>,
 }
 
-impl Table<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {
+impl Table<TableName, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::PrescriptionTemplates, 
+            },
             data: TableData(BTreeMap::new()),
         }
     }
@@ -38,15 +42,15 @@ impl Table<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplat
     
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
+impl TableSerializable<TableName, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
 
-impl TableVersioned<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
+impl TableVersioned<TableName, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
 
-impl TableDeserializable<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
+impl TableDeserializable<TableName, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
 
-impl Crud<PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}
+impl Crud<TableName, PrescriptionTemplateId, PrescriptionTemplate> for PrescriptionTemplatesTable {}

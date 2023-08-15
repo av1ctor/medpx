@@ -1,19 +1,23 @@
 use std::collections::BTreeMap;
+use crate::db::TableName;
 use crate::db::traits::table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableData, TableSubs, Table, TableSchema, TableVersioned};
 use crate::db::traits::crud::CrudSubscribable;
 use crate::models::prescription::{PrescriptionId, Prescription};
 
 pub struct PrescriptionsTable {
-    pub schema: TableSchema,
+    pub schema: TableSchema<TableName>,
     pub data: TableData<PrescriptionId, Prescription>,
-    pub subs: TableSubs,
+    pub subs: TableSubs<TableName>,
 }
 
-impl Table<PrescriptionId, Prescription> for PrescriptionsTable {
+impl Table<TableName, PrescriptionId, Prescription> for PrescriptionsTable {
     fn new(
     ) -> Self {
         Self {
-            schema: TableSchema { version: 0.1 },
+            schema: TableSchema { 
+                version: 0.1,
+                name: TableName::Prescriptions, 
+            },
             data: TableData(BTreeMap::new()),
             subs: TableSubs(Vec::new()),
         }
@@ -40,38 +44,42 @@ impl Table<PrescriptionId, Prescription> for PrescriptionsTable {
     
     fn get_schema(
         &self
-    ) -> &TableSchema {
+    ) -> &TableSchema<TableName> {
         &self.schema
     }
 }
 
-impl TableSerializable<PrescriptionId, Prescription> for PrescriptionsTable {}
+impl TableSerializable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableVersioned<PrescriptionId, Prescription> for PrescriptionsTable {}
+impl TableVersioned<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableDeserializable<PrescriptionId, Prescription> for PrescriptionsTable {}
+impl TableDeserializable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl CrudSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {}
+impl CrudSubscribable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableSubscribable<PrescriptionId, Prescription> for PrescriptionsTable {
+impl TableSubscribable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {
     fn get_subs(
         &self
-    ) -> &TableSubs {
+    ) -> &TableSubs<TableName> {
         &self.subs
     }
 
     fn get_subs_mut(
         &mut self
-    ) -> &mut TableSubs {
+    ) -> &mut TableSubs<TableName> {
         &mut self.subs
     }
 
+    fn get_pkey(
+        k: &PrescriptionId
+    ) -> TableEventKey {
+        TableEventKey::Text(k.clone())
+    }
+
     fn get_keys(
-        k: &PrescriptionId,
         v: &Prescription
     ) -> Vec<TableEventKey> {
         vec![
-            TableEventKey::Text(k.clone()), 
             TableEventKey::Principal(v.doctor.clone())
         ]
     }

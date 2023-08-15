@@ -1,7 +1,7 @@
 
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::{Crud, Pagination};
+use crate::db::traits::crud::{Crud, CrudSubscribable, Pagination};
 use crate::models::doctor::{Doctor, DoctorId};
 use crate::models::prescription::PrescriptionId;
 
