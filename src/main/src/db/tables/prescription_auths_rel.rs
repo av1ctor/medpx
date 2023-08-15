@@ -1,5 +1,6 @@
 use std::collections::{BTreeSet, BTreeMap};
-use crate::db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned}};
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::traits::crud::Crud;
 use crate::models::{prescription::PrescriptionId, prescription_auth::PrescriptionAuthId};
 
 pub struct PrescriptionAuthsRelTable {

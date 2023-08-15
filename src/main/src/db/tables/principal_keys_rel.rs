@@ -1,6 +1,8 @@
 use std::collections::{BTreeSet, BTreeMap};
 use candid::Principal;
-use crate::{db::traits::{crud::Crud, table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned}}, models::key::KeyId};
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned};
+use crate::db::traits::crud::Crud;
+use crate::models::key::KeyId;
 
 pub struct PrincipalKeysRelTable {
     pub schema: TableSchema,

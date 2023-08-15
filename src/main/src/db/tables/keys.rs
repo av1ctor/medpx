@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
-use crate::db::traits::{crud::CrudSubscribable, table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, Table, TableSchema, TableVersioned}};
+use crate::db::traits::table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableSubs, TableData, Table, TableSchema, TableVersioned};
+use crate::db::traits::crud::CrudSubscribable;
 use crate::models::key::{KeyId, Key};
 
 pub struct KeysTable {
