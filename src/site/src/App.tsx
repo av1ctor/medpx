@@ -9,7 +9,7 @@ import { WalletContextProvider } from "./stores/wallet";
 import { IcProviderBuider } from "./libs/icproviderbuilder";
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import {Home} from "./views/home/Home";
+import Home from "./views/home/Home";
 
 const queryClient = new QueryClient({
     defaultOptions: {

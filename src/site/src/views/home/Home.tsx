@@ -1,24 +1,43 @@
 import React from "react";
-import {Routes, Route} from "react-router-dom";
-import { useUI } from "../../hooks/ui";
-import Front from "./Front";
+import { Route, Routes } from "react-router-dom";
+import { AppShell, useMantineTheme } from '@mantine/core';
+import Header from "./Header";
+import Footer from "./Footer";
+import Login from "../users/user/Login";
+import { Front } from "./Front";
 
-export const Home = () => {
-    const {isLoading} = useUI();
+interface Props {
+}
+
+const Home = (props: Props) => {
+    const theme = useMantineTheme();
 
     return (
-        <div className="home">
-            <section className="section">
-                <div className="container">
-                    <Routes>
-                        <Route path="/" element={<Front />} />
-                    </Routes>
-                </div>
-            </section>
-
-            {/*<div className={`loading ${isLoading? 'visible': 'hidden'}`}>
-                <img src="/loading.svg" />
-            </div>*/}
-        </div>            
+        <AppShell
+            styles={{
+                main: {
+                    background: theme.colorScheme === 'dark' ? 
+                        theme.colors.dark[8] : 
+                        theme.white,
+                },
+            }}
+            navbarOffsetBreakpoint="sm"
+            asideOffsetBreakpoint="sm"
+            footer={
+                <Footer />
+            }
+            header={
+                <Header />
+            }
+        >
+            <>
+                <Routes>
+                    <Route path="/user/login" element={<Login />} />
+                    <Route path="/" element={<Front />} />
+                </Routes>
+            </>
+        </AppShell>
     );
-}
+};
+
+export default Home;

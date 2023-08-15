@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { _SERVICE as Main } from "../../../declarations/main/main.did";
+import { _SERVICE as Main, UserResponse } from "../../../declarations/main/main.did";
 import { canisterId as mainCanisterId } from "../../../declarations/main";
 import { ICProvider, ICProviderState, ICProviderType } from "../interfaces/icprovider";
 import { ActorActionType, ActorContext } from "../stores/actor";
@@ -7,13 +7,17 @@ import { AuthActionType, AuthContext } from "../stores/auth";
 import { Principal } from "@dfinity/principal";
 import { Result } from "../interfaces/result";
 import { IcProviderBuider } from "../libs/icproviderbuilder";
+import { accountIdentifierFromBytes, principalToAccountDefaultIdentifier } from "../libs/icp";
 
 interface AuthResponse {
     isAuthenticated: boolean;
+    isLogged: boolean;
+    user?: UserResponse;
     principal?: Principal;
     accountId?: string,
     login: (providerType: ICProviderType) => Promise<Result<any, string>>;
     logout: () => Promise<void>;
+    update: (user: UserResponse) => void;
 }
 
 const locks = {
@@ -121,6 +125,10 @@ export const useAuth = (
                 type: AuthActionType.SET_ACCOUNT_ID,
                 payload: undefined
             });
+            authDisp({
+                type: AuthActionType.SET_USER,
+                payload: undefined
+            });
 
             return;
         }
@@ -129,6 +137,20 @@ export const useAuth = (
         authDisp({
             type: AuthActionType.SET_PRINCIPAL,
             payload: principal
+        });
+        authDisp({
+            type: AuthActionType.SET_ACCOUNT_ID,
+            payload: principal?
+                accountIdentifierFromBytes(
+                    principalToAccountDefaultIdentifier(principal)):
+                undefined
+        });
+
+        authDisp({
+            type: AuthActionType.SET_USER,
+            payload: main? 
+                await _loadAuthenticatedUser(main): 
+                undefined
         });
     };
 
@@ -215,6 +237,19 @@ export const useAuth = (
             type: AuthActionType.SET_ACCOUNT_ID,
             payload: undefined
         });
+        authDisp({
+            type: AuthActionType.SET_USER,
+            payload: undefined
+        });
+    };
+
+    const update = (
+        user: UserResponse
+    ) => {
+        authDisp({
+            type: AuthActionType.SET_USER,
+            payload: user
+        });
     };
 
     useEffect(() => {
@@ -240,9 +275,27 @@ export const useAuth = (
 
     return {
         isAuthenticated: auth.principal !== undefined,
+        isLogged: auth.user !== undefined,
+        user: auth.user,
         principal: auth.principal,
         accountId: auth.accountId,
         login,
         logout,
+        update,
     }
+};
+
+const _loadAuthenticatedUser = async (
+    main: Main
+): Promise<UserResponse|undefined> => {
+    try {
+        const res = await main.user_find_me();
+        if('Ok' in res) {
+            return res.Ok;
+        }
+    }
+    catch(e) {
+    }
+
+    return undefined;
 };

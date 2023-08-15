@@ -1,12 +1,14 @@
 import { Principal } from "@dfinity/principal";
 import React, {createContext, useReducer} from "react";
 import { ICProvider, ICProviderState } from "../interfaces/icprovider";
+import { UserResponse } from "../../../declarations/main/main.did";
 
 export interface AuthState {
     state: ICProviderState;
     provider?: ICProvider;
     principal?: Principal;
     accountId?: string;
+    user?: UserResponse;
 };
 
 export enum AuthActionType {
@@ -14,6 +16,7 @@ export enum AuthActionType {
     SET_PROVIDER,
     SET_PRINCIPAL,
     SET_ACCOUNT_ID,
+    SET_USER,
 };
 
 export interface AuthAction {
@@ -26,6 +29,7 @@ const initialState: AuthState = {
     provider: undefined,
     principal: undefined,
     accountId: undefined,
+    user: undefined,
 };
 
 export const AuthContext = createContext<[AuthState, (action: AuthAction) => void]>(
@@ -55,6 +59,12 @@ const reducer = (state: AuthState, action: AuthAction): AuthState => {
             return {
                 ...state,
                 accountId: action.payload
+            };
+
+        case AuthActionType.SET_USER:
+            return {
+                ...state,
+                user: action.payload
             };
 
         default:
