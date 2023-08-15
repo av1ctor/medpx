@@ -11,14 +11,14 @@ use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
-use models::{prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth}, doctor::DoctorId, prescription::PrescriptionId};
+use models::{prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth}, doctor::DoctorId, prescription::PrescriptionId, user::{UserResponse, UserKind, UserKindResponse}, patient::PatientId, staff::StaffId, thirdparty::ThirdPartyId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
 use models::key::{KeyRequest, KeyResponse, Key};
 use models::patient::{Patient, PatientRequest, PatientResponse};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
 use models::staff::{StaffRequest, Staff, StaffResponse};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
-use services::doctor::DoctorService;
+use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService};
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -134,15 +134,49 @@ fn post_upgrade() {
     });
 }
 
+/*
+ * users facade
+ */
+#[ic_cdk::update]
+fn user_find_me(
+) -> Result<UserResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        match UsersService::find_by_id(&caller, &mut db.borrow_mut(), &caller) {
+            Ok(user) => {
+                Ok(UserResponse{ 
+                    kind: match user.kind {
+                        UserKind::Doctor(_) => 
+                            UserKindResponse::Doctor(DoctorsService::find_by_id(&caller, &db.borrow()).unwrap().into()),
+                        UserKind::Patient(_) =>     
+                            UserKindResponse::Patient(PatientsService::find_by_id(&caller, &db.borrow()).unwrap().into()),
+                        UserKind::ThirdParty(_) => 
+                            UserKindResponse::ThirdParty(ThirdPartiesService::find_by_id(&caller, &db.borrow()).unwrap().into()),
+                        UserKind::Staff(_) => 
+                            UserKindResponse::Staff(StaffService::find_by_id(&caller, &db.borrow()).unwrap().into()),
+                    }, 
+                    active: user.active, 
+                    banned: user.banned, 
+                })
+            },
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+/*
+ * doctors facade
+ */
 #[ic_cdk::update]
 fn doctor_create(
     req: DoctorRequest
 ) -> Result<DoctorResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
+    DB.with(|db| {
         let doctor = Doctor::new(&req, &caller);
-        match DoctorService::create(&doctor, &mut rc.borrow_mut(), &caller) {
+        match DoctorsService::create(&doctor, &mut db.borrow_mut(), &caller) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -156,9 +190,9 @@ fn doctor_update(
 ) -> Result<DoctorResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
+    DB.with(|db| {
         let doctor = Doctor::new(&req, &caller);
-        match DoctorService::update(&id, &doctor, &mut rc.borrow_mut(), &caller) {
+        match DoctorsService::update(&id, &doctor, &mut db.borrow_mut(), &caller) {
             Ok(()) => Ok(doctor.into()),
             Err(msg) => Err(msg)
         }
@@ -171,8 +205,8 @@ fn doctor_delete(
 ) -> Result<(), String> {
     let caller = caller();
 
-    DB.with(|rc| {
-        DoctorService::delete(&id, &mut rc.borrow_mut(), &caller)
+    DB.with(|db| {
+        DoctorsService::delete(&id, &mut db.borrow_mut(), &caller)
     })
 }
 
@@ -183,20 +217,23 @@ fn doctor_find_prescriptions(
 ) -> Result<Vec<PrescriptionId>, String> {
     let caller = caller();
 
-    DB.with(|rc| {
-        DoctorService::find_prescriptions(&id, pag, &rc.borrow(), &caller)
+    DB.with(|db| {
+        DoctorsService::find_prescriptions(&id, pag, &db.borrow(), &caller)
     })
 }
 
+/*
+ * patients facade
+ */
 #[ic_cdk::update]
 fn patient_create(
     req: PatientRequest
 ) -> Result<PatientResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
+    DB.with(|db| {
         let patient = Patient::new(&req, &caller);
-        match rc.borrow_mut().patients.borrow_mut().insert(caller, patient.clone()) {
+        match PatientsService::create(&patient, &mut db.borrow_mut(), &caller) {
             Ok(()) => Ok(patient.into()),
             Err(msg) => Err(msg)
         }
@@ -204,14 +241,56 @@ fn patient_create(
 }
 
 #[ic_cdk::update]
+fn patient_update(
+    id: PatientId,
+    req: PatientRequest
+) -> Result<PatientResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let patient = Patient::new(&req, &caller);
+        match PatientsService::update(&id, &patient, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(patient.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn patient_delete(
+    id: PatientId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        PatientsService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+#[ic_cdk::query]
+fn patient_find_prescriptions(
+    id: PatientId,
+    pag: Pagination
+) -> Result<Vec<PrescriptionId>, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        PatientsService::find_prescriptions(&id, pag, &db.borrow(), &caller)
+    })
+}
+
+/*
+ * staff facade
+ */
+#[ic_cdk::update]
 fn staff_create(
     req: StaffRequest
 ) -> Result<StaffResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
+    DB.with(|db| {
         let staff = Staff::new(&req, &caller);
-        match rc.borrow_mut().staff.borrow_mut().insert(caller, staff.clone()) {
+        match StaffService::create(&staff, &mut db.borrow_mut(), &caller) {
             Ok(()) => Ok(staff.into()),
             Err(msg) => Err(msg)
         }
@@ -219,20 +298,80 @@ fn staff_create(
 }
 
 #[ic_cdk::update]
+fn staff_update(
+    id: StaffId,
+    req: StaffRequest
+) -> Result<StaffResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let staff = Staff::new(&req, &caller);
+        match StaffService::update(&id, &staff, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(staff.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn staff_delete(
+    id: StaffId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        StaffService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+/*
+ * thirdparty facade
+ */
+#[ic_cdk::update]
 fn thirdparty_create(
     req: ThirdPartyRequest
 ) -> Result<ThirdPartyResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
+    DB.with(|db| {
         let thirdparty = ThirdParty::new(&req, &caller);
-        match rc.borrow_mut().thirdparties.borrow_mut().insert(caller, thirdparty.clone()) {
+        match ThirdPartiesService::create(&thirdparty, &mut db.borrow_mut(), &caller) {
             Ok(()) => Ok(thirdparty.into()),
             Err(msg) => Err(msg)
         }
     })
 }
 
+#[ic_cdk::update]
+fn thirdparty_update(
+    id: ThirdPartyId,
+    req: ThirdPartyRequest
+) -> Result<ThirdPartyResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let thirdparty = ThirdParty::new(&req, &caller);
+        match ThirdPartiesService::update(&id, &thirdparty, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(thirdparty.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn thirdparty_delete(
+    id: ThirdPartyId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        ThirdPartiesService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+/*
+ * keys facade
+ */
 #[ic_cdk::update]
 fn key_create(
     req: KeyRequest
@@ -248,6 +387,9 @@ fn key_create(
     })
 }
 
+/*
+ * prescriptions facade
+ */
 #[ic_cdk::update]
 fn prescription_create(
     req: PrescriptionRequest
@@ -277,6 +419,9 @@ fn prescription_create(
     })
 }
 
+/*
+ * prescriptions access authorization facade
+ */
 #[ic_cdk::update]
 fn prescription_auth_create(
     req: PrescritipionAuthRequest

@@ -1,13 +1,12 @@
-
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{Crud, CrudSubscribable, Pagination};
 use crate::models::doctor::{Doctor, DoctorId};
 use crate::models::prescription::PrescriptionId;
 
-pub struct DoctorService {}
+pub struct DoctorsService {}
 
-impl DoctorService {
+impl DoctorsService {
     pub fn create(
         doctor: &Doctor,
         db: &mut DB,
@@ -50,6 +49,16 @@ impl DoctorService {
         }
         
         doctors.delete(id)
+    }
+
+    pub fn find_by_id(
+        id: &DoctorId,
+        db: &DB
+    ) -> Result<Doctor, String> {
+        match db.doctors.borrow().find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => Ok(e.clone())
+        }
     }
 
     pub fn find_prescriptions(

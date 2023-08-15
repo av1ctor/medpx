@@ -4,7 +4,7 @@ use super::{doctor::{DoctorResponse, DoctorId}, patient::{PatientResponse, Patie
 
 pub type UserId = Principal;
 
-#[derive(CandidType, Deserialize)]
+#[derive(Clone, CandidType, Deserialize)]
 pub enum UserKind {
     Doctor(DoctorId),
     Patient(PatientId),
@@ -12,7 +12,7 @@ pub enum UserKind {
     Staff(StaffId),
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(Clone, CandidType, Deserialize)]
 pub struct User {
     pub kind: UserKind,
     pub active: bool,

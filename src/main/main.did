@@ -1,3 +1,8 @@
+type UserResponseResult = variant {
+    Err: text;
+    Ok: UserResponse;
+};
+
 type DoctorRequest = record {
     license_num: text;
     name: text;
@@ -76,6 +81,19 @@ type ThirdPartyResponse = record {
 type ThirdPartyResponseResult = variant {
     Err: text;
     Ok: ThirdPartyResponse;
+};
+
+type UserKindResponse = variant {
+    doctor: DoctorResponse;
+    patient: PatientResponse;
+    thirdparty: ThirdPartyResponse;
+    staff: StaffResponse;    
+};
+
+type UserResponse = record {
+    kind: UserKindResponse;
+    active: bool;
+    banned: bool;
 };
 
 type KeyKind = variant {
@@ -161,13 +179,26 @@ type Pagination = record {
 };
 
 service : {
+    user_find_me: () -> (UserResponseResult);
+    
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
     doctor_delete: (principal) -> (DefaultResponseResult);
     doctor_find_prescriptions: (principal, Pagination) -> (vec text, text);
+
     patient_create: (PatientRequest) -> (PatientResponseResult);
+    patient_update: (principal, PatientRequest) -> (PatientResponseResult);
+    patient_delete: (principal) -> (DefaultResponseResult);
+    patient_find_prescriptions: (principal, Pagination) -> (vec text, text);
+
     staff_create: (StaffRequest) -> (StaffResponseResult);
+    staff_update: (principal, StaffRequest) -> (StaffResponseResult);
+    staff_delete: (principal) -> (DefaultResponseResult);
+
     thirdparty_create: (ThirdPartyRequest) -> (ThirdPartyResponseResult);
+    thirdparty_update: (principal, ThirdPartyRequest) -> (ThirdPartyResponseResult);
+    thirdparty_delete: (principal) -> (DefaultResponseResult);
+
     key_create: (KeyRequest) -> (KeyResponseResult);
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
     prescription_auth_create: (PrescriptionAuthRequest) -> (PrescriptionAuthResponseResult);
