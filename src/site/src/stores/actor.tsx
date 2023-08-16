@@ -9,6 +9,7 @@ export interface ActorState {
 
 export enum ActorActionType {
     SET_MAIN,
+    RESET_MAIN,
 };
 
 export interface ActorAction {
@@ -34,6 +35,12 @@ const reducer = (state: ActorState, action: ActorAction): ActorState => {
                 main: action.payload
             };
 
+        case ActorActionType.RESET_MAIN:
+            return {
+                ...state,
+                main: mainCreateActor(mainCanisterId, options)
+            };
+    
         default:
             return state;
     }

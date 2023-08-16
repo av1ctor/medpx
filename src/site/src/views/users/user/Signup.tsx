@@ -6,11 +6,12 @@ import { useUI } from "../../../hooks/ui";
 import { useBrowser } from "../../../hooks/browser";
 import Login from "./Login";
 import PatientCreate from "../../patients/patient/Create";
+import DoctorCreate from "../../doctors/doctor/Create";
 
 interface Props {
 }
 
-const Signup = () => {
+const Signup = (props: Props) => {
     const {isAuthenticated, isLogged} = useAuth();
     const {showSuccess} = useUI();
     const {isMobile, returnToLastPage} = useBrowser();
@@ -20,6 +21,10 @@ const Signup = () => {
     const handleChangeKind = useCallback((value: string) => {
         setKind(value);
     }, [setKind]);
+
+    const handleAuthenticated = useCallback(() => {
+
+    }, []);
 
     const handleRegistered = useCallback((msg: string) => {
         showSuccess(msg);
@@ -79,7 +84,7 @@ const Signup = () => {
                 label="Authentication" 
                 description="Authenticate with your provider"
             >
-                <Login />
+                <Login onAuthenticated={handleAuthenticated} />
             </Stepper.Step>
             <Stepper.Step 
                 label="Registration" 
@@ -100,6 +105,9 @@ const Signup = () => {
                 <Space h="md" />
                 {kind === 'patient' && 
                     <PatientCreate onSuccess={handleRegistered} />
+                }
+                {kind === 'doctor' && 
+                    <DoctorCreate onSuccess={handleRegistered} />
                 }
             </Stepper.Step>
         </Stepper>

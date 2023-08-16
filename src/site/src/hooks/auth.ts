@@ -32,6 +32,92 @@ export const useAuth = (
     const [auth, authDisp] = useContext(AuthContext);
     const [, actorsDisp] = useContext(ActorContext);
 
+    const _createActors = async (
+        provider: ICProvider
+    ): Promise<Main> => {
+        const actors = await Promise.all([
+            provider.createActor(mainCanisterId),
+        ]);
+        actorsDisp({
+            type: ActorActionType.SET_MAIN,
+            payload: actors[0]
+        });
+
+        return actors[0];
+    };
+
+    const _destroyActors = async (
+    ) => {
+        actorsDisp({
+            type: ActorActionType.RESET_MAIN,
+            payload: undefined
+        });
+    }
+
+    const _loadUser = async (
+        provider: ICProvider,
+        main?: Main
+    ) => {
+        if(!await provider.isAuthenticated()) {
+            _destroyUser();
+            return;
+        }
+
+        const principal = provider.getPrincipal();
+        authDisp({
+            type: AuthActionType.SET_PRINCIPAL,
+            payload: principal
+        });
+        authDisp({
+            type: AuthActionType.SET_ACCOUNT_ID,
+            payload: principal?
+                accountIdentifierFromBytes(
+                    principalToAccountDefaultIdentifier(principal)):
+                undefined
+        });
+        authDisp({
+            type: AuthActionType.SET_USER,
+            payload: main? 
+                await _loadAuthenticatedUser(main): 
+                undefined
+        });
+    };
+
+    const _destroyUser = () => {
+        authDisp({
+            type: AuthActionType.SET_PRINCIPAL,
+            payload: undefined
+        });
+        authDisp({
+            type: AuthActionType.SET_ACCOUNT_ID,
+            payload: undefined
+        });
+        authDisp({
+            type: AuthActionType.SET_USER,
+            payload: undefined
+        });
+    };
+
+    const _storeProvider = (
+        provider: ICProvider,
+        providerType: ICProviderType
+    ) => {
+        window.localStorage.setItem('providerType', ICProviderType[providerType]);
+
+        authDisp({
+            type: AuthActionType.SET_PROVIDER,
+            payload: provider
+        });
+    };
+
+    const _destroyProvider = () => {
+        window.localStorage.removeItem('providerType');
+        authDisp({
+            type: AuthActionType.SET_PROVIDER,
+            payload: undefined
+        });
+    };
+        
     const _initialize = async (
         provider: ICProvider
     ) => {
@@ -99,61 +185,6 @@ export const useAuth = (
         }
     };
 
-    const _createActors = async (
-        provider: ICProvider
-    ): Promise<Main> => {
-        const actors = await Promise.all([
-            provider.createActor(mainCanisterId),
-        ]);
-        actorsDisp({
-            type: ActorActionType.SET_MAIN,
-            payload: actors[0]
-        });
-
-        return actors[0];
-    };
-
-    const _loadUser = async (
-        provider: ICProvider,
-        main?: Main
-    ) => {
-        if(!await provider.isAuthenticated()) {
-            authDisp({
-                type: AuthActionType.SET_PRINCIPAL,
-                payload: undefined
-            });
-            authDisp({
-                type: AuthActionType.SET_ACCOUNT_ID,
-                payload: undefined
-            });
-            authDisp({
-                type: AuthActionType.SET_USER,
-                payload: undefined
-            });
-
-            return;
-        }
-
-        const principal = provider.getPrincipal();
-        authDisp({
-            type: AuthActionType.SET_PRINCIPAL,
-            payload: principal
-        });
-        authDisp({
-            type: AuthActionType.SET_ACCOUNT_ID,
-            payload: principal?
-                accountIdentifierFromBytes(
-                    principalToAccountDefaultIdentifier(principal)):
-                undefined
-        });
-        authDisp({
-            type: AuthActionType.SET_USER,
-            payload: main? 
-                await _loadAuthenticatedUser(main): 
-                undefined
-        });
-    };
-
     const _configure = async (
         provider: ICProvider
     ) => {
@@ -213,12 +244,8 @@ export const useAuth = (
             return res;
         }
 
-        window.localStorage.setItem('providerType', ICProviderType[providerType]);
+        _storeProvider(provider, providerType);
 
-        authDisp({
-            type: AuthActionType.SET_PROVIDER,
-            payload: provider
-        });
         authDisp({
             type: AuthActionType.SET_STATE,
             payload: ICProviderState.Initialized
@@ -229,17 +256,12 @@ export const useAuth = (
 
     const logout = async () => {
         await auth.provider?.logout();
+        _destroyUser();
+        _destroyActors();
+        _destroyProvider();
         authDisp({
-            type: AuthActionType.SET_PRINCIPAL,
-            payload: undefined
-        });
-        authDisp({
-            type: AuthActionType.SET_ACCOUNT_ID,
-            payload: undefined
-        });
-        authDisp({
-            type: AuthActionType.SET_USER,
-            payload: undefined
+            type: AuthActionType.SET_STATE,
+            payload: ICProviderState.Idle
         });
     };
 

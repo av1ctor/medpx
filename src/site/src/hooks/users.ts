@@ -8,7 +8,7 @@ export const useFindMe = (
     const {main} = useActors();
     
     return useQuery<UserResponse, Error>(
-        ['users', 'redacted', 'me'],
+        ['users', 'me'],
         () => findMe(main)
     );
-};
+}; 

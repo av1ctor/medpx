@@ -7,28 +7,38 @@ import { ICProviderType } from "../../../../../site/src/interfaces/icprovider";
 import { useBrowser } from "../../../hooks/browser";
 
 interface Props {
+    onAuthenticated?: () => void;
 }
 
 const Login = (props: Props) => {
-    const {login, isLogged} = useAuth();
-    const {showError, showSuccess} = useUI();
+    const {login, isLogged, logout} = useAuth();
+    const {showError, showSuccess, toggleLoading} = useUI();
     const {returnToLastPage} = useBrowser();
 
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
+            toggleLoading(true);
             const res = await login(providerType);
             if(res.Err) {
                 showError(res.Err);
             }
             else {
-                showSuccess('Welcome back!');
-                returnToLastPage();
+                if(props.onAuthenticated) {
+                    props.onAuthenticated()
+                }
+                else if(isLogged) {
+                    showSuccess('Welcome back!');
+                    returnToLastPage();
+                }
             }
         }
         catch(e) {
             showError(e);
         }
-    }, [login]);
+        finally {
+            toggleLoading(false);
+        }
+    }, [login, isLogged, props.onAuthenticated]);
 
     const handleAuthenticateII = useCallback(async () => {
         handleLogin(ICProviderType.InternetIdentity);

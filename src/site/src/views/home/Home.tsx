@@ -42,6 +42,7 @@ const Home = (props: Props) => {
                     </Routes>
                 </Container>
             </AppShell>
+            
             <LoadingOverlay loader={<img src="/loading.svg" />} visible={isLoading}  />
         </>
     );
