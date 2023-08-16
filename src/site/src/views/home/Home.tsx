@@ -2,7 +2,6 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { AppShell, Container, LoadingOverlay, useMantineTheme } from '@mantine/core';
 import Header from "./Header";
-import Footer from "./Footer";
 import Login from "../users/user/Login";
 import { Front } from "./Front";
 import { useUI } from "../../hooks/ui";
@@ -27,9 +26,6 @@ const Home = (props: Props) => {
                 }}
                 navbarOffsetBreakpoint="sm"
                 asideOffsetBreakpoint="sm"
-                footer={
-                    <Footer />
-                }
                 header={
                     <Header />
                 }

@@ -65,19 +65,21 @@ type StaffResponseResult = variant {
 
 type ThirdPartyKind = variant {
     Hospital;
-    DrogStore;
+    DrugStore;
     Other;
 };
 
 type ThirdPartyRequest = record {
     kind: ThirdPartyKind;
     name: text;
+    email: text;
 };
 
 type ThirdPartyResponse = record {
     id: principal;
     kind: ThirdPartyKind;
     name: text;
+    email: text;
 };
 
 type ThirdPartyResponseResult = variant {
@@ -88,7 +90,7 @@ type ThirdPartyResponseResult = variant {
 type UserKindResponse = variant {
     Doctor: DoctorResponse;
     Patient: PatientResponse;
-    Thirdparty: ThirdPartyResponse;
+    ThirdParty: ThirdPartyResponse;
     Staff: StaffResponse;    
 };
 

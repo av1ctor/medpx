@@ -15,7 +15,7 @@ impl Table<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {
     ) -> Self {
         Self {
             schema: TableSchema { 
-                version: 0.1,
+                version: 0.3,
                 name: TableName::ThirdParties,
             },
             data: TableData(BTreeMap::new()),
@@ -51,7 +51,15 @@ impl Table<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {
 
 impl TableSerializable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 
-impl TableVersioned<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
+impl TableVersioned<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<ThirdPartyId, ThirdParty>, String> {
+        crate::db::migrations::thirdparties::migrate(from_version, buf)
+    }
+}
 
 impl TableDeserializable<TableName, ThirdPartyId, ThirdParty> for ThirdPartiesTable {}
 

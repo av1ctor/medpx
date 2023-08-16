@@ -7,6 +7,7 @@ import { useBrowser } from "../../../hooks/browser";
 import Login from "./Login";
 import PatientCreate from "../../patients/patient/Create";
 import DoctorCreate from "../../doctors/doctor/Create";
+import ThirdPartyCreate from "../../thirdparties/thirdparty/Create";
 
 interface Props {
 }
@@ -108,6 +109,9 @@ const Signup = (props: Props) => {
                 }
                 {kind === 'doctor' && 
                     <DoctorCreate onSuccess={handleRegistered} />
+                }
+                {kind === 'thirdparty' && 
+                    <ThirdPartyCreate onSuccess={handleRegistered} />
                 }
             </Stepper.Step>
         </Stepper>

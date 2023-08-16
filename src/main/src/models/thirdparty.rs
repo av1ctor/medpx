@@ -6,7 +6,7 @@ pub type ThirdPartyId = Principal;
 #[derive(CandidType, Clone, Deserialize)]
 pub enum ThirdPartyKind {
     Hospital,
-    DrogStore,
+    DrugStore,
     Other,
 }
 
@@ -15,6 +15,7 @@ pub struct ThirdParty {
     pub id: ThirdPartyId,
     pub kind: ThirdPartyKind,
     pub name: String,
+    pub email: String,
     pub created_at: u64,
     pub created_by: Principal,
     pub updated_at: Option<u64>,
@@ -27,6 +28,7 @@ pub struct ThirdParty {
 pub struct ThirdPartyRequest {
     kind: ThirdPartyKind,
     name: String,
+    email: String,
 }
 
 #[derive(CandidType, Clone, Deserialize)]
@@ -34,6 +36,7 @@ pub struct ThirdPartyResponse {
     id: ThirdPartyId,
     kind: ThirdPartyKind,
     name: String,
+    email: String,
 }
 
 impl ThirdParty {
@@ -45,6 +48,7 @@ impl ThirdParty {
             id: caller.clone(),
             kind: e.kind.clone(),
             name: e.name.clone(),
+            email: e.email.clone(),
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),
             updated_at: None,
@@ -74,6 +78,7 @@ impl From<ThirdParty> for ThirdPartyResponse {
             id: e.id,
             kind: e.kind,
             name: e.name, 
+            email: e.email,
         }
     }
 }
