@@ -1,13 +1,14 @@
 import { useContext, useEffect } from "react";
+import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main, UserResponse } from "../../../declarations/main/main.did";
 import { canisterId as mainCanisterId } from "../../../declarations/main";
 import { ICProvider, ICProviderState, ICProviderType } from "../interfaces/icprovider";
 import { ActorActionType, ActorContext } from "../stores/actor";
 import { AuthActionType, AuthContext } from "../stores/auth";
-import { Principal } from "@dfinity/principal";
 import { Result } from "../interfaces/result";
 import { IcProviderBuider } from "../libs/icproviderbuilder";
 import { accountIdentifierFromBytes, principalToAccountDefaultIdentifier } from "../libs/icp";
+import { findMe } from "../libs/users";
 
 interface AuthResponse {
     isAuthenticated: boolean;
@@ -145,7 +146,6 @@ export const useAuth = (
                     principalToAccountDefaultIdentifier(principal)):
                 undefined
         });
-
         authDisp({
             type: AuthActionType.SET_USER,
             payload: main? 
@@ -289,12 +289,10 @@ const _loadAuthenticatedUser = async (
     main: Main
 ): Promise<UserResponse|undefined> => {
     try {
-        const res = await main.user_find_me();
-        if('Ok' in res) {
-            return res.Ok;
-        }
+        return await findMe(main);
     }
     catch(e) {
+        console.log(e)
     }
 
     return undefined;

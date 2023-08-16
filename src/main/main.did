@@ -11,7 +11,7 @@ type DoctorRequest = record {
 };
 
 type DoctorResponse = record {
-    id: text;
+    id: principal;
     license_num: text;
     name: text;
     email: text;
@@ -25,12 +25,14 @@ type DoctorResponseResult = variant {
 
 type PatientRequest = record {
     name: text;
+    email: text;
     birth_date: nat64;
 };
 
 type PatientResponse = record {
-    id: text;
+    id: principal;
     name: text;
+    email: text;
     birth_date: nat64;
 };
 
@@ -51,7 +53,7 @@ type StaffRequest = record {
 };
 
 type StaffResponse = record {
-    id: text;
+    id: principal;
     name: text;
     role: StaffRole;
 };
@@ -73,7 +75,7 @@ type ThirdPartyRequest = record {
 };
 
 type ThirdPartyResponse = record {
-    id: text;
+    id: principal;
     kind: ThirdPartyKind;
     name: text;
 };
@@ -84,10 +86,10 @@ type ThirdPartyResponseResult = variant {
 };
 
 type UserKindResponse = variant {
-    doctor: DoctorResponse;
-    patient: PatientResponse;
-    thirdparty: ThirdPartyResponse;
-    staff: StaffResponse;    
+    Doctor: DoctorResponse;
+    Patient: PatientResponse;
+    Thirdparty: ThirdPartyResponse;
+    Staff: StaffResponse;    
 };
 
 type UserResponse = record {
@@ -179,7 +181,7 @@ type Pagination = record {
 };
 
 service : {
-    user_find_me: () -> (UserResponseResult);
+    user_find_me: () -> (UserResponseResult) query;
     
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
@@ -189,7 +191,7 @@ service : {
     patient_create: (PatientRequest) -> (PatientResponseResult);
     patient_update: (principal, PatientRequest) -> (PatientResponseResult);
     patient_delete: (principal) -> (DefaultResponseResult);
-    patient_find_prescriptions: (principal, Pagination) -> (vec text, text);
+    patient_find_prescriptions: (principal, Pagination) -> (vec text, text) query;
 
     staff_create: (StaffRequest) -> (StaffResponseResult);
     staff_update: (principal, StaffRequest) -> (StaffResponseResult);

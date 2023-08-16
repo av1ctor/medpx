@@ -1,18 +1,18 @@
+import React, { useCallback, useEffect } from "react";
 import { Button, Center, Stack, Title } from "@mantine/core";
-import React from "react";
-import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useAuth } from "../../../../../site/src/hooks/auth";
 import { useUI } from "../../../../../site/src/hooks/ui";
 import { ICProviderType } from "../../../../../site/src/interfaces/icprovider";
+import { useBrowser } from "../../../hooks/browser";
 
 interface Props {
-    onLogon: () => void;
 }
 
 const Login = (props: Props) => {
-    const {login, isAuthenticated} = useAuth();
-    const {showError} = useUI();
+    const {login, isLogged} = useAuth();
+    const {showError, showSuccess} = useUI();
+    const {returnToLastPage} = useBrowser();
 
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
@@ -21,13 +21,14 @@ const Login = (props: Props) => {
                 showError(res.Err);
             }
             else {
-                props.onLogon();
+                showSuccess('Welcome back!');
+                returnToLastPage();
             }
         }
         catch(e) {
             showError(e);
         }
-    }, [login, props.onLogon]);
+    }, [login]);
 
     const handleAuthenticateII = useCallback(async () => {
         handleLogin(ICProviderType.InternetIdentity);
@@ -41,10 +42,11 @@ const Login = (props: Props) => {
         handleLogin(ICProviderType.Stoic);
     }, [handleLogin]);
 
-    if(isAuthenticated) {
-        props.onLogon();
-        return null;
-    }
+    useEffect(() => {
+        if(isLogged) {
+            returnToLastPage();
+        }
+    }, [isLogged]);
 
     return (
         <Stack>

@@ -108,8 +108,6 @@ const useStyles = createStyles((theme) => ({
 interface Props {
 }
 
-
-
 const AppHeader = (props: Props) => {
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);

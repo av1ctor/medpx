@@ -137,13 +137,13 @@ fn post_upgrade() {
 /*
  * users facade
  */
-#[ic_cdk::update]
+#[ic_cdk::query]
 fn user_find_me(
 ) -> Result<UserResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
-        match UsersService::find_by_id(&caller, &mut db.borrow_mut(), &caller) {
+        match UsersService::find_by_id(&caller, &db.borrow(), &caller) {
             Ok(user) => {
                 Ok(UserResponse{ 
                     kind: match user.kind {

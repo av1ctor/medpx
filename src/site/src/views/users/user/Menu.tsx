@@ -1,27 +1,13 @@
-import React from "react";
-import { Button, createStyles } from "@mantine/core";
+import React, { useEffect } from "react";
+import { Button } from "@mantine/core";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/auth";
 import { useUI } from "../../../hooks/ui";
 import { IconUserBolt, IconUserPlus, IconUserX } from "@tabler/icons-react";
 
-const useStyles = createStyles((theme) => ({
-    hiddenMobile: {
-        [theme.fn.smallerThan('sm')]: {
-          display: 'none',
-        },
-      },
-    
-      hiddenDesktop: {
-        [theme.fn.largerThan('sm')]: {
-          display: 'none',
-        },
-      },
-}));
-
 export const Menu = () => {
-    const {isLogged, isAuthenticated, logout} = useAuth();
+    const {isLogged, logout} = useAuth();
     const {showSuccess} = useUI();
     const navigate = useNavigate();
     
@@ -38,7 +24,11 @@ export const Menu = () => {
         showSuccess('Logged out!');
     }, [logout]);
 
-    return (!isAuthenticated? 
+    useEffect(() => {
+
+    }, [isLogged]);
+
+    return (!isLogged? 
         <>
             <Button 
                 variant="default" 

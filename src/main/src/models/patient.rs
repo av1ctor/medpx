@@ -7,6 +7,7 @@ pub type PatientId = Principal;
 pub struct Patient {
     pub id: PatientId,
     pub name: String,
+    pub email: String,
     pub birth_date: u64,
     pub credits: u128,
     pub created_at: u64,
@@ -20,6 +21,7 @@ pub struct Patient {
 #[derive(CandidType, Deserialize)]
 pub struct PatientRequest {
     name: String,
+    email: String,
     birth_date: u64,
 }
 
@@ -27,6 +29,7 @@ pub struct PatientRequest {
 pub struct PatientResponse {
     id: PatientId,
     name: String,
+    email: String,
     birth_date: u64,
 }
 
@@ -38,6 +41,7 @@ impl Patient {
         Self {
             id: caller.clone(),
             name: e.name.clone(),
+            email: e.email.clone(),
             birth_date: e.birth_date,
             credits: 0,
             created_at: ic_cdk::api::time(),
@@ -68,6 +72,7 @@ impl From<Patient> for PatientResponse {
         Self { 
             id: e.id,
             name: e.name, 
+            email: e.email,
             birth_date: e.birth_date,
         }
     }
