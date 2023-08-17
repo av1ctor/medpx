@@ -6,20 +6,20 @@ pub mod services;
 use std::cell::RefCell;
 use std::rc::Rc;
 use candid::{Principal, CandidType};
-use db::traits::{table::Table, crud::{Crud, CrudSubscribable, Pagination}};
+use db::traits::{table::Table, crud::{Crud, Pagination}};
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
 use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth, PrescriptionAuthId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
-use models::key::{KeyRequest, KeyResponse, Key};
+use models::key::{KeyRequest, KeyResponse, Key, KeyId};
 use models::patient::{Patient, PatientRequest, PatientResponse, PatientId};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
 use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
-use models::user::{UserResponse, UserKind, UserKindResponse};
-use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService};
+use models::user::{UserResponse, UserKind, UserKindResponse, UserId};
+use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService};
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -429,8 +429,37 @@ fn key_create(
 
     DB.with(|rc| {
         let key = Key::new(&req, &caller);
-        match rc.borrow_mut().keys.borrow_mut().insert(key.id.clone(), key.clone()) {
+        match KeysService::create(&key, &mut rc.borrow_mut(), &caller) {
             Ok(()) => Ok(key.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn key_find_by_id(
+    id: KeyId
+) -> Result<KeyResponse, String> {
+    let caller = &caller();
+
+    DB.with(|db| {
+        match KeysService::find_by_id(&id, &db.borrow(), &caller) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn key_find_all_by_user(
+    id: UserId,
+    pag: Pagination
+) -> Result<Vec<KeyResponse>, String> {
+    let caller = &caller();
+
+    DB.with(|db| {
+        match KeysService::find_all_by_user(&id, pag, &db.borrow(), &caller) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
             Err(msg) => Err(msg)
         }
     })
@@ -450,7 +479,7 @@ fn prescription_create(
         let prescription = Prescription::new(&id, &req, &caller);
 
         match PrescriptionsService::create(&prescription, &mut db.borrow_mut(), &caller) {
-            Ok(e) => Ok(prescription.into()),
+            Ok(_) => Ok(prescription.into()),
             Err(msg) => Err(msg)
         }
     })

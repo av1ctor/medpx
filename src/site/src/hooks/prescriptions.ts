@@ -17,13 +17,14 @@ export const usePrescriptionsFind = (
     return useInfiniteQuery<PrescriptionResponse[], Error>(
         ['prescriptions', principal, limit], 
         ({pageParam = 0}) => isDoctor? 
-            doctorFindPrescriptions(main, principal, {offset: pageParam, limit}):
+            doctorFindPrescriptions(main, principal, {offset: pageParam, limit})
+        :
             patientFindPrescriptions(main, principal, {offset: pageParam, limit}),
-            {
-                getNextPageParam: (lastPage, pages) => 
-                    lastPage.length < limit?
-                        undefined:
-                    pages.length * limit
-            }
+        {
+            getNextPageParam: (lastPage, pages) => 
+                lastPage.length < limit?
+                    undefined:
+                pages.length * limit
+        }
     );
 };

@@ -187,37 +187,43 @@ type FindPrescriptionsResult = variant {
     Ok: vec PrescriptionResponse;
 };
 
+type FindKeysResult = variant {
+    Err: text;
+    Ok: vec KeyResponse;
+};
+
 service : {
     user_find_me: () -> (UserResponseResult) query;
     
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
     doctor_delete: (principal) -> (DefaultResponseResult);
-    doctor_find_by_id: (principal) -> (DoctorResponseResult);
+    doctor_find_by_id: (principal) -> (DoctorResponseResult) query;
     doctor_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
 
     patient_create: (PatientRequest) -> (PatientResponseResult);
     patient_update: (principal, PatientRequest) -> (PatientResponseResult);
     patient_delete: (principal) -> (DefaultResponseResult);
-    patient_find_by_id: (principal) -> (PatientResponseResult);
+    patient_find_by_id: (principal) -> (PatientResponseResult) query;
     patient_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
 
     staff_create: (StaffRequest) -> (StaffResponseResult);
     staff_update: (principal, StaffRequest) -> (StaffResponseResult);
     staff_delete: (principal) -> (DefaultResponseResult);
-    staff_find_by_id: (principal) -> (StaffResponseResult);
+    staff_find_by_id: (principal) -> (StaffResponseResult) query;
 
     thirdparty_create: (ThirdPartyRequest) -> (ThirdPartyResponseResult);
     thirdparty_update: (principal, ThirdPartyRequest) -> (ThirdPartyResponseResult);
     thirdparty_delete: (principal) -> (DefaultResponseResult);
-    thirdparty_find_by_id: (principal) -> (ThirdPartyResponseResult);
+    thirdparty_find_by_id: (principal) -> (ThirdPartyResponseResult) query;
 
     key_create: (KeyRequest) -> (KeyResponseResult);
-    key_find_by_id: (text) -> (KeyResponseResult);
+    key_find_by_id: (text) -> (KeyResponseResult) query;
+    key_find_all_by_user: (principal, Pagination) -> (FindKeysResult) query;
 
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
-    prescription_find_by_id: (text) -> (PrescriptionResponseResult);
+    prescription_find_by_id: (text) -> (PrescriptionResponseResult) query;
     
     prescription_auth_create: (PrescriptionAuthRequest) -> (PrescriptionAuthResponseResult);
-    prescription_auth_find_by_id: (text) -> (PrescriptionAuthResponseResult);
+    prescription_auth_find_by_id: (text) -> (PrescriptionAuthResponseResult) query;
 }

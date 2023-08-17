@@ -84,7 +84,7 @@ impl DoctorsService {
                 list.iter()
                     .skip(pag.offset as usize)
                     .take(pag.limit as usize)
-                    .map(|e| e.clone())
+                    .cloned()
                     .collect()
         })
     }
