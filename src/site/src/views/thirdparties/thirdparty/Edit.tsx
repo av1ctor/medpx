@@ -61,6 +61,12 @@ const ThirdPartyEdit = (props: Props) => {
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
+                <TextInput
+                    label="Id"
+                    placeholder="Your id"
+                    {...form.getInputProps('id')}
+                    readOnly
+                />
                 <Select
                     label="Kind"
                     placeholder="Kind"

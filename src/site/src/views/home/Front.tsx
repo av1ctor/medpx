@@ -1,18 +1,19 @@
 import React from "react";
 import { useAuth } from "../../hooks/auth";
 import Prescriptions from "../prescriptions/Prescriptions";
-import UserEdit from "../users/user/Edit";
 import Profile from "../users/user/Profile";
 
 export const Front = () => {
-    const {isLogged, user} = useAuth();
+    const {isLogged} = useAuth();
+
+    if(!isLogged) {
+        return null;
+    }
 
     return (
         <>
-            {isLogged && <>
-                <Prescriptions />
-                <Profile />
-            </>}
+            <Prescriptions />
+            <Profile />
         </>
     );
 }

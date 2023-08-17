@@ -66,6 +66,12 @@ const DoctorEdit = (props: Props) => {
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
                 <TextInput
+                    label="Id"
+                    placeholder="Your id"
+                    {...form.getInputProps('id')}
+                    readOnly
+                />
+                <TextInput
                     label="Name"
                     placeholder="Your name"
                     {...form.getInputProps('name')}

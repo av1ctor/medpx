@@ -6,13 +6,14 @@ import Login from "../users/user/Login";
 import { Front } from "./Front";
 import { useUI } from "../../hooks/ui";
 import Signup from "../users/user/Signup";
+import Footer from "./Footer";
 
 interface Props {
 }
 
 const Home = (props: Props) => {
     const theme = useMantineTheme();
-    const {showSuccess, isLoading} = useUI();
+    const {isLoading} = useUI();
 
     return (
         <>
@@ -30,13 +31,15 @@ const Home = (props: Props) => {
                     <Header />
                 }
             >
-                <Container size="sm">
+                <Container size="md">
                     <Routes>
                         <Route path="/user/login" element={<Login />} />
                         <Route path="/user/signup" element={<Signup />} />
                         <Route path="/" element={<Front />} />
                     </Routes>
                 </Container>
+                
+                <Footer />
             </AppShell>
             
             <LoadingOverlay loader={<img src="/loading.svg" />} visible={isLoading}  />
