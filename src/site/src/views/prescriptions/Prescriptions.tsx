@@ -1,9 +1,10 @@
 import React, { Fragment } from "react";
+import { Button, Card, Center, Text } from "@mantine/core";
+import { FormattedMessage } from "react-intl";
+import { IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
 import { usePrescriptionsFind } from "../../hooks/prescriptions";
-import { Button, Card, Center, Text } from "@mantine/core";
 import Item from "./Item";
-import { FormattedMessage } from "react-intl";
 
 interface Props {
 }
@@ -36,7 +37,7 @@ const Prescriptions = (props: Props) => {
                     disabled={!query.hasNextPage || query.isFetchingNextPage}
                     onClick={() => query.fetchNextPage()}
                 >
-                    <i className="la la-sync" />&nbsp;{<FormattedMessage id={query.hasNextPage? 'Load more': 'All loaded'} defaultMessage={query.hasNextPage? 'Load more': 'All loaded'}/>}
+                    <IconRefresh />&nbsp;{<FormattedMessage id={query.hasNextPage? 'Load more': 'All loaded'} defaultMessage={query.hasNextPage? 'Load more': 'All loaded'}/>}
                 </Button>
             </Center>
         </Card>

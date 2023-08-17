@@ -1,8 +1,7 @@
-import { Anchor, Center, Container, Divider, Footer, Grid, Space, Stack } from '@mantine/core';
-import { IconBrandGithubFilled, IconBrandTwitterFilled } from '@tabler/icons-react';
 import React from 'react';
+import { Anchor, Center, Container, Divider, Grid, Space, Stack } from '@mantine/core';
+import { IconBrandGithubFilled, IconBrandTwitterFilled } from '@tabler/icons-react';
 import { FormattedMessage } from 'react-intl';
-import { Link } from 'react-router-dom';
 
 interface Props {
 }
