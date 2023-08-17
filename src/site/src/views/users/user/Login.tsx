@@ -11,7 +11,7 @@ interface Props {
 }
 
 const Login = (props: Props) => {
-    const {login, isLogged, logout} = useAuth();
+    const {login, isLogged} = useAuth();
     const {showError, showSuccess, toggleLoading} = useUI();
     const {returnToLastPage} = useBrowser();
 
@@ -24,12 +24,13 @@ const Login = (props: Props) => {
             }
             else {
                 if(props.onAuthenticated) {
-                    props.onAuthenticated()
+                    props.onAuthenticated();
+                    return;
                 }
                 else if(isLogged) {
                     showSuccess('Welcome back!');
-                    returnToLastPage();
                 }
+                returnToLastPage();
             }
         }
         catch(e) {
@@ -83,7 +84,7 @@ const Login = (props: Props) => {
                     Plug Wallet
                 </Button>
             </Center>
-            <Center>
+            {/*<Center>
                 <Button 
                     color="cyan"
                     leftIcon={<img src="providers/stoic.png" height="24" />}
@@ -91,7 +92,7 @@ const Login = (props: Props) => {
                 >
                     Stoic Wallet
                 </Button>
-            </Center>
+            </Center>*/}
         </Stack>
     );
 };

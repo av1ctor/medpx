@@ -8,7 +8,7 @@ import { AuthActionType, AuthContext } from "../stores/auth";
 import { Result } from "../interfaces/result";
 import { IcProviderBuider } from "../libs/icproviderbuilder";
 import { accountIdentifierFromBytes, principalToAccountDefaultIdentifier } from "../libs/icp";
-import { findMe } from "../libs/users";
+import { userFindMe } from "../libs/users";
 
 interface AuthResponse {
     isAuthenticated: boolean;
@@ -311,7 +311,7 @@ const _loadAuthenticatedUser = async (
     main: Main
 ): Promise<UserResponse|undefined> => {
     try {
-        return await findMe(main);
+        return await userFindMe(main);
     }
     catch(e) {
         console.log(e)

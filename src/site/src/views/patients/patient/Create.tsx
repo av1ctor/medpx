@@ -6,7 +6,8 @@ import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
 import { useAuth } from "../../../hooks/auth";
-import { findMe } from "../../../libs/users";
+import { userFindMe } from "../../../libs/users";
+import { usePatient } from "../../../hooks/patients";
 
 const schema = yup.object().shape({
     name: yup.string().min(3).max(64),
@@ -22,6 +23,7 @@ const PatientCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {update} = useAuth();
+    const {create} = usePatient();
     
     const form = useForm({
         initialValues: {
@@ -42,19 +44,11 @@ const PatientCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            if(!main) {
-                throw Error('Main actor undefined');
-            }
+            await create(values);
+            props.onSuccess('Patient registered!');
             
-            const res = await main.patient_create(values);
-            if('Ok' in res) {
-                let user = await findMe(main);
-                update(user);
-                props.onSuccess('Patient registered!');
-            }
-            else {
-                showError(res.Err);
-            }
+            let user = await userFindMe(main);
+            update(user);
         }
         catch(e: any) {
             showError(e);

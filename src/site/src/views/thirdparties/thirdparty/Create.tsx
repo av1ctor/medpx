@@ -5,8 +5,9 @@ import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
 import { useAuth } from "../../../hooks/auth";
-import { findMe } from "../../../libs/users";
+import { userFindMe } from "../../../libs/users";
 import { kinds } from "../../../libs/thirdparties";
+import { useThirdParty } from "../../../hooks/thirdparty";
 
 const schema = yup.object().shape({
     kind: yup.string().required(),
@@ -22,6 +23,7 @@ const ThirdPartyCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {update} = useAuth();
+    const {create} = useThirdParty();
     
     const form = useForm({
         initialValues: {
@@ -46,15 +48,11 @@ const ThirdPartyCreate = (props: Props) => {
                 throw Error('Main actor undefined');
             }
             
-            const res = await main.thirdparty_create(values);
-            if('Ok' in res) {
-                let user = await findMe(main);
-                update(user);
-                props.onSuccess('Third party registered!');
-            }
-            else {
-                showError(res.Err);
-            }
+            await create(values);
+            props.onSuccess('Third party registered!');
+
+            let user = await userFindMe(main);
+            update(user);
         }
         catch(e: any) {
             showError(e);

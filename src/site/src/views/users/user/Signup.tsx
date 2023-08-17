@@ -49,7 +49,7 @@ const Signup = (props: Props) => {
                 value: 'patient',
                 label: (
                     <Center>
-                        <IconUserHeart size="1rem" />
+                        <IconUserHeart />
                         <Box ml={10}>Patient</Box>
                     </Center>
                 ),
@@ -58,7 +58,7 @@ const Signup = (props: Props) => {
                 value: 'doctor',
                 label: (
                     <Center>
-                        <IconStethoscope size="1rem" />
+                        <IconStethoscope />
                         <Box ml={10}>Doctor</Box>
                     </Center>
                 ),
@@ -67,7 +67,7 @@ const Signup = (props: Props) => {
                 value: 'thirdparty',
                 label: (
                     <Center>
-                        <IconUsersGroup size="1rem" />
+                        <IconUsersGroup />
                         <Box ml={10}>Third party</Box>
                     </Center>
                 ),
