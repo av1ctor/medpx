@@ -19,7 +19,7 @@ use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescripti
 use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
 use models::user::{UserResponse, UserKind, UserKindResponse};
-use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService};
+use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService};
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -445,26 +445,14 @@ fn prescription_create(
 ) -> Result<PrescriptionResponse, String> {
     let caller = caller();
 
-    DB.with(|rc| {
-        let db = rc.borrow_mut();
-
-        // validations
-        if db.doctors.borrow().find_by_id(&caller).is_none() {
-            return Err("Doctor not found".to_string());
-        }
-    
-        if db.patients.borrow().find_by_id(&req.patient).is_none() {
-            return Err("Patient not found".to_string());
-        }
-
+    DB.with(|db| {
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req, &caller);
 
-        if let Err(msg) = db.prescriptions.borrow_mut().insert(id, prescription.clone()) {
-            return Err(msg);
-        };
-
-        Ok(prescription.into())
+        match PrescriptionsService::create(&prescription, &mut db.borrow_mut(), &caller) {
+            Ok(e) => Ok(prescription.into()),
+            Err(msg) => Err(msg)
+        }
     })
 }
 
@@ -472,10 +460,12 @@ fn prescription_create(
 fn prescription_find_by_id(
     id: PrescriptionId
 ) -> Result<PrescriptionResponse, String> {
+    let caller = caller();
+
     DB.with(|db| {
-        match db.borrow_mut().prescriptions.borrow_mut().find_by_id(&id) {
-            Some(e) => Ok(e.to_owned().into()),
-            None => Err("Not found".to_string())
+        match PrescriptionsService::find_by_id(&id, &db.borrow(), &caller) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
         }
     })
 }
