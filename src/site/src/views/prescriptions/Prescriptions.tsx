@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Button, Card, Center, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconClipboardList, IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
 import { usePrescriptionsFind } from "../../hooks/prescriptions";
 import Item from "./Item";
@@ -17,7 +17,7 @@ const Prescriptions = (props: Props) => {
     return (
         <Card withBorder radius="md" p="xl" className="card">
             <Text fz="lg" className="card-title" fw={500}>
-                Prescriptions
+                <IconClipboardList size="1rem" /> Prescriptions
             </Text>
             <Text fz="xs" c="dimmed" mt={3} mb="xl">
                 View your prescriptions

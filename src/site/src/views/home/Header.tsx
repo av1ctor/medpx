@@ -9,6 +9,7 @@ import {
     IconFingerprint,
     IconCoin,
     IconChevronDown,
+    IconHome2,
   } from '@tabler/icons-react';
 import { Menu } from '../users/user/Menu';
 
@@ -137,8 +138,9 @@ const AppHeader = (props: Props) => {
                 <Group position="apart" sx={{ height: '100%' }}>
                     <Group sx={{ height: '100%' }} spacing={0} className={classes.hiddenMobile}>
                         <img src="/medpx-logo.svg" />
+
                         <a href="#" className={classes.link}>
-                            Home
+                            <IconHome2 size="1rem" /> Home
                         </a>
                         <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
                             <HoverCard.Target>
@@ -194,7 +196,7 @@ const AppHeader = (props: Props) => {
                     <Burger opened={drawerOpened} onClick={toggleDrawer} className={classes.hiddenDesktop} />
                 </Group>
             </Header>
-  
+
             <Drawer
                 opened={drawerOpened}
                 onClose={closeDrawer}
@@ -208,7 +210,7 @@ const AppHeader = (props: Props) => {
                     <Divider my="sm" color={theme.colorScheme === 'dark' ? 'dark.5' : 'gray.1'} />
         
                     <a href="#" className={classes.link}>
-                        Home
+                        <IconHome2 size="1rem" /> Home
                     </a>
                     <UnstyledButton className={classes.link} onClick={toggleLinks}>
                         <Center inline>

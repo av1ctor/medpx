@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Button, Card, Center, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconKey, IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
 import { useKeyFindByUser } from "../../hooks/keys";
 import Item from "./Item";
@@ -17,7 +17,7 @@ const Keys = (props: Props) => {
     return (
         <Card withBorder radius="md" p="xl" className="card">
             <Text fz="lg" className="card-title" fw={500}>
-                Keys
+                <IconKey size="1rem" /> Keys
             </Text>
             <Text fz="xs" c="dimmed" mt={3} mb="xl">
                 View your keys
