@@ -1,5 +1,8 @@
 import React from "react";
 import { useAuth } from "../../hooks/auth";
+import Prescriptions from "../prescriptions/Prescriptions";
+import UserEdit from "../users/user/Edit";
+import Profile from "../users/user/Profile";
 
 export const Front = () => {
     const {isLogged, user} = useAuth();
@@ -7,7 +10,8 @@ export const Front = () => {
     return (
         <>
             {isLogged && <>
-                    {JSON.stringify(user, (_, v) => typeof v === 'bigint' ? v.toString() : v, 4)}
+                <Prescriptions />
+                <Profile />
             </>}
         </>
     );

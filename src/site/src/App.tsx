@@ -10,6 +10,7 @@ import { IcProviderBuider } from "./libs/icproviderbuilder";
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import Home from "./views/home/Home";
+import { GlobalStyles } from "./GlobaStyles";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -21,6 +22,7 @@ const queryClient = new QueryClient({
 
 const authProvider = new IcProviderBuider()
     .withInternetIdentity()
+    .withPlug()
     .build();
 
 export const App = () => {
@@ -32,6 +34,7 @@ export const App = () => {
                         <ActorContextProvider>
                             <UIContextProvider>
                                 <MantineProvider withGlobalStyles withNormalizeCSS>
+                                    <GlobalStyles />
                                     <Notifications position="top-right" />
                                     <Router> 
                                         <Home />

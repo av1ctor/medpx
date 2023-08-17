@@ -1,42 +1,47 @@
 import React, { useCallback } from "react";
 import * as yup from 'yup';
-import { Button, Container, Select, Space, TextInput } from "@mantine/core";
+import { Button, Container, Space, TextInput } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
 import { useAuth } from "../../../hooks/auth";
-import { userFindMe } from "../../../libs/users";
-import { kinds } from "../../../libs/thirdparties";
-import { useThirdParty } from "../../../hooks/thirdparty";
+import { userFindMe, userGetPrincipal } from "../../../libs/users";
+import { useDoctor } from "../../../hooks/doctors";
+import { DoctorResponse } from "../../../../../declarations/main/main.did";
 
 const schema = yup.object().shape({
-    kind: yup.string().required(),
+    license_num: yup.string().required().min(3).max(32),
     name: yup.string().min(3).max(64),
     email: yup.string().email().min(3).max(128),
+    prescription_template: yup.string().optional(),
 });
 
 interface Props {
+    entity: DoctorResponse,
     onSuccess: (msg: string) => void;
 }
 
-const ThirdPartyCreate = (props: Props) => {
+const DoctorEdit = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
-    const {update} = useAuth();
-    const {create} = useThirdParty();
+    const {user, update: userUpdate} = useAuth();
+    const {update} = useDoctor();
     
     const form = useForm({
         initialValues: {
-          kind: '',
-          name: '',
-          email: '',
+            ...props.entity,
+            prescription_template: props.entity.prescription_template.length > 0?
+                props.entity.prescription_template[0]:
+                '',
         },
     
         validate: yupResolver(schema),
 
         transformValues: (values) => ({
             ...values,
-            kind: {[values.kind]: null},
+            prescription_template: values.prescription_template !== ''? 
+                [values.prescription_template]:
+                [],
         }),
     });
 
@@ -44,10 +49,10 @@ const ThirdPartyCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            await create(values);
-            props.onSuccess('Third party registered!');
+            await update(userGetPrincipal(user), values);
+            props.onSuccess('Doctor updated!');
 
-            update(await userFindMe(main));
+            userUpdate(await userFindMe(main));
         }
         catch(e: any) {
             showError(e);
@@ -55,17 +60,11 @@ const ThirdPartyCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main]);
+    }, [main, user]);
 
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <Select
-                    label="Kind"
-                    placeholder="Kind"
-                    data={kinds}
-                    {...form.getInputProps('kind')}
-                />
                 <TextInput
                     label="Name"
                     placeholder="Your name"
@@ -75,6 +74,16 @@ const ThirdPartyCreate = (props: Props) => {
                     label="Email"
                     placeholder="Your e-mail"
                     {...form.getInputProps('email')}
+                />
+                <TextInput
+                    label="License num"
+                    placeholder="Your license number"
+                    {...form.getInputProps('license_num')}
+                />
+                <TextInput
+                    label="Prescription Template"
+                    placeholder="Your prescription template"
+                    {...form.getInputProps('prescription_template')}
                 />
                 <Space h="lg"/>
                 <Button
@@ -89,4 +98,4 @@ const ThirdPartyCreate = (props: Props) => {
     );
 };
 
-export default ThirdPartyCreate;
+export default DoctorEdit;

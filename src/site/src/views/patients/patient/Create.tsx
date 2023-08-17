@@ -29,14 +29,14 @@ const PatientCreate = (props: Props) => {
         initialValues: {
           name: '',
           email: '',
-          birth_date: '',
+          birth_date: Date.parse('2000-06-15'),
         },
     
         validate: yupResolver(schema),
 
         transformValues: (values) => ({
             ...values,
-            birth_date: Date.parse(values.birth_date),
+            birth_date: values.birth_date.valueOf(),
         }),
     });
 
@@ -46,7 +46,7 @@ const PatientCreate = (props: Props) => {
 
             await create(values);
             props.onSuccess('Patient registered!');
-            
+
             let user = await userFindMe(main);
             update(user);
         }

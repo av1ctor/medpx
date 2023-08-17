@@ -11,13 +11,14 @@ use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
-use models::{prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth}, doctor::DoctorId, prescription::PrescriptionId, user::{UserResponse, UserKind, UserKindResponse}, patient::PatientId, staff::StaffId, thirdparty::ThirdPartyId};
-use models::doctor::{Doctor, DoctorRequest, DoctorResponse};
+use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth, PrescriptionAuthId};
+use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
 use models::key::{KeyRequest, KeyResponse, Key};
-use models::patient::{Patient, PatientRequest, PatientResponse};
-use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription};
-use models::staff::{StaffRequest, Staff, StaffResponse};
-use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty};
+use models::patient::{Patient, PatientRequest, PatientResponse, PatientId};
+use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
+use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
+use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
+use models::user::{UserResponse, UserKind, UserKindResponse};
 use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService};
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
@@ -211,6 +212,18 @@ fn doctor_delete(
 }
 
 #[ic_cdk::query]
+fn doctor_find_by_id(
+    id: DoctorId
+) -> Result<DoctorResponse, String> {
+    DB.with(|db| {
+        match DoctorsService::find_by_id(&id, &db.borrow()) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
 fn doctor_find_prescriptions(
     id: DoctorId,
     pag: Pagination
@@ -264,6 +277,18 @@ fn patient_delete(
 
     DB.with(|db| {
         PatientsService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+#[ic_cdk::query]
+fn patient_find_by_id(
+    id: PatientId
+) -> Result<PatientResponse, String> {
+    DB.with(|db| {
+        match PatientsService::find_by_id(&id, &db.borrow()) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
     })
 }
 
@@ -324,6 +349,18 @@ fn staff_delete(
     })
 }
 
+#[ic_cdk::query]
+fn staff_find_by_id(
+    id: StaffId
+) -> Result<StaffResponse, String> {
+    DB.with(|db| {
+        match StaffService::find_by_id(&id, &db.borrow()) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
 /*
  * thirdparty facade
  */
@@ -366,6 +403,18 @@ fn thirdparty_delete(
 
     DB.with(|db| {
         ThirdPartiesService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+#[ic_cdk::query]
+fn thirdparty_find_by_id(
+    id: ThirdPartyId
+) -> Result<ThirdPartyResponse, String> {
+    DB.with(|db| {
+        match ThirdPartiesService::find_by_id(&id, &db.borrow()) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
     })
 }
 
@@ -419,6 +468,18 @@ fn prescription_create(
     })
 }
 
+#[ic_cdk::query]
+fn prescription_find_by_id(
+    id: PrescriptionId
+) -> Result<PrescriptionResponse, String> {
+    DB.with(|db| {
+        match db.borrow_mut().prescriptions.borrow_mut().find_by_id(&id) {
+            Some(e) => Ok(e.to_owned().into()),
+            None => Err("Not found".to_string())
+        }
+    })
+}
+
 /*
  * prescriptions access authorization facade
  */
@@ -434,6 +495,18 @@ fn prescription_auth_create(
         match rc.borrow_mut().prescription_auths.borrow_mut().insert(id, auth.clone()) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn prescription_auth_find_by_id(
+    id: PrescriptionAuthId
+) -> Result<PrescriptionAuthResponse, String> {
+    DB.with(|db| {
+        match db.borrow_mut().prescription_auths.borrow_mut().find_by_id(&id) {
+            Some(e) => Ok(e.to_owned().into()),
+            None => Err("Not found".to_string())
         }
     })
 }

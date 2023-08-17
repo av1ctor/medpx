@@ -78,12 +78,14 @@ impl PatientsService {
             return Err("Forbidden".to_string());
         }
 
-        Ok(db.patient_prescriptions_rel.borrow().get(id)
-            .iter()
-            .skip(pag.offset as usize)
-            .take(pag.limit as usize)
-            .map(|e| e.clone())
-            .collect()
-        )
+        Ok(match db.patient_prescriptions_rel.borrow().find_by_id(id) {
+            None => vec![],
+            Some(list) =>
+                list.iter()
+                    .skip(pag.offset as usize)
+                    .take(pag.limit as usize)
+                    .map(|e| e.clone())
+                    .collect()
+        })
     }
 }

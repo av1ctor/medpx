@@ -5,9 +5,10 @@ import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
 import { useAuth } from "../../../hooks/auth";
-import { userFindMe } from "../../../libs/users";
-import { kinds } from "../../../libs/thirdparties";
+import { userFindMe, userGetPrincipal } from "../../../libs/users";
+import { kinds, thirdPartyGetKind } from "../../../libs/thirdparties";
 import { useThirdParty } from "../../../hooks/thirdparty";
+import { ThirdPartyResponse } from "../../../../../declarations/main/main.did";
 
 const schema = yup.object().shape({
     kind: yup.string().required(),
@@ -16,20 +17,20 @@ const schema = yup.object().shape({
 });
 
 interface Props {
+    entity: ThirdPartyResponse,
     onSuccess: (msg: string) => void;
 }
 
-const ThirdPartyCreate = (props: Props) => {
+const ThirdPartyEdit = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
-    const {update} = useAuth();
-    const {create} = useThirdParty();
+    const {user, update: userUpdate} = useAuth();
+    const {update} = useThirdParty();
     
     const form = useForm({
         initialValues: {
-          kind: '',
-          name: '',
-          email: '',
+            ...props.entity,
+            kind: thirdPartyGetKind(props.entity.kind)
         },
     
         validate: yupResolver(schema),
@@ -43,11 +44,11 @@ const ThirdPartyCreate = (props: Props) => {
     const handleCreate = useCallback(async (values: any) => {
         try {
             toggleLoading(true);
+            
+            await update(userGetPrincipal(user), values);
+            props.onSuccess('Third party updated!');
 
-            await create(values);
-            props.onSuccess('Third party registered!');
-
-            update(await userFindMe(main));
+            userUpdate(await userFindMe(main));
         }
         catch(e: any) {
             showError(e);
@@ -89,4 +90,4 @@ const ThirdPartyCreate = (props: Props) => {
     );
 };
 
-export default ThirdPartyCreate;
+export default ThirdPartyEdit;

@@ -47,11 +47,10 @@ const DoctorCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            create(values);
+            await create(values);
             props.onSuccess('Doctor registered!');
 
-            let user = await userFindMe(main);
-            update(user);
+            update(await userFindMe(main));
         }
         catch(e: any) {
             showError(e);
