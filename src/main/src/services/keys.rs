@@ -86,6 +86,8 @@ impl KeysService {
         let keys = db.keys.borrow();
         let list: Vec<Key> = key_ids.iter()
             .map(|e| keys.find_by_id(e).unwrap())
+            .skip(pag.offset as usize)
+            .take(pag.limit as usize)
             .cloned()
             .collect();
 
@@ -93,11 +95,6 @@ impl KeysService {
             return Err("Forbidden".to_string());
         }
 
-        Ok(list.iter()
-            .skip(pag.offset as usize)
-            .take(pag.limit as usize)
-            .cloned()
-            .collect()
-        )
+        Ok(list)
     }
 }
