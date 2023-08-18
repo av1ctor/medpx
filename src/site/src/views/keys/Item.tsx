@@ -6,6 +6,7 @@ import { KeyResponse } from "../../../../declarations/main/main.did";
 import { keyGetKind } from "../../libs/keys";
 import { useKey } from "../../hooks/keys";
 import { useUI } from "../../hooks/ui";
+import TimeFromNow from "../../components/TimeFromNow";
 
 interface Props {
     item: KeyResponse
@@ -39,6 +40,7 @@ const Item = (props: Props) => {
             <Group position="apart" className="list-item" noWrap spacing="xl">
                 <div>
                     <Text>{item.value}</Text>
+                    <Text size="xs"><TimeFromNow date={item.created_at} /></Text>
                     <Text size="xs" color="dimmed">
                         {keyGetKind(item.kind).label}
                     </Text>

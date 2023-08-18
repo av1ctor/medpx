@@ -60,6 +60,7 @@ pub struct KeyResponse {
     country: String,
     kind: KeyKind,
     value: String,
+    created_at: u64,
 }
 
 impl Eq for Key {
@@ -155,6 +156,7 @@ impl From<Key> for KeyResponse {
             kind: e.kind,
             country: e.country,
             value: e.value, 
+            created_at: e.created_at,
         }
     }
 }

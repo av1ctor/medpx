@@ -16,6 +16,8 @@ type DoctorResponse = record {
     name: text;
     email: text;
     prescription_template: opt text;
+    created_at: nat64;
+    updated_at: opt nat64;
 };
 
 type DoctorResponseResult = variant {
@@ -34,6 +36,8 @@ type PatientResponse = record {
     name: text;
     email: text;
     birth_date: nat64;
+    created_at: nat64;
+    updated_at: opt nat64;
 };
 
 type PatientResponseResult = variant {
@@ -56,6 +60,8 @@ type StaffResponse = record {
     id: principal;
     name: text;
     role: StaffRole;
+    created_at: nat64;
+    updated_at: opt nat64;
 };
 
 type StaffResponseResult = variant {
@@ -80,6 +86,8 @@ type ThirdPartyResponse = record {
     kind: ThirdPartyKind;
     name: text;
     email: text;
+    created_at: nat64;
+    updated_at: opt nat64;
 };
 
 type ThirdPartyResponseResult = variant {
@@ -121,6 +129,7 @@ type KeyResponse = record {
     country: text;
     kind: KeyKind;
     value: text;
+    created_at: nat64;
 };
 
 type KeyResponseResult = variant {
@@ -138,6 +147,7 @@ type PrescriptionResponse = record {
     doctor: principal;
     patient: principal;
     contents: vec nat8;
+    created_at: nat64;
 };
 
 type PrescriptionResponseResult = variant {
@@ -165,6 +175,8 @@ type PrescriptionAuthResponse = record {
     from: text;
     to: text;
     expires_at: opt nat64;
+    created_at: nat64;
+    updated_at: opt nat64;
 };
 
 type PrescriptionAuthResponseResult = variant {

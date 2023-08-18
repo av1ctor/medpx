@@ -1,10 +1,12 @@
 import React from "react";
-import { Group, Text, createStyles, rem } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
 import { PrescriptionResponse } from "../../../../declarations/main/main.did";
 import { useAuth } from "../../hooks/auth";
 import { userIsKind } from "../../libs/users";
 import { useDoctorFindById } from "../../hooks/doctors";
 import { usePatientFindById } from "../../hooks/patients";
+import { IconStethoscope, IconVaccine } from "@tabler/icons-react";
+import TimeFromNow from "../../components/TimeFromNow";
 
 interface Props {
     item: PrescriptionResponse
@@ -22,10 +24,11 @@ const Item = (props: Props) => {
         <Group position="apart" className="list-item" noWrap spacing="xl">
             <div>
                 <Text>{item.id}</Text>
+                <Text size="xs"><TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
                     {isDoctor?
-                        patient.data?.name:
-                        doctor.data?.name
+                        <span><IconVaccine size="0.75rem"/> {patient.data?.name}</span>:
+                        <span><IconStethoscope size="0.75rem"/> {doctor.data?.name}</span>
                     }
                 </Text>
             </div>

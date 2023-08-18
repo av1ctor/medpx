@@ -37,6 +37,8 @@ pub struct ThirdPartyResponse {
     kind: ThirdPartyKind,
     name: String,
     email: String,
+    created_at: u64,
+    updated_at: Option<u64>,
 }
 
 impl ThirdParty {
@@ -79,6 +81,8 @@ impl From<ThirdParty> for ThirdPartyResponse {
             kind: e.kind,
             name: e.name, 
             email: e.email,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
         }
     }
 }

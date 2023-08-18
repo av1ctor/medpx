@@ -36,6 +36,8 @@ pub struct DoctorResponse {
     name: String,
     email: String,
     prescription_template: Option<PrescriptionTemplateId>,
+    created_at: u64,
+    updated_at: Option<u64>,
 }
 
 impl Doctor {
@@ -81,6 +83,8 @@ impl From<Doctor> for DoctorResponse {
             name: e.name, 
             email: e.email,
             prescription_template: e.prescription_template,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
         }
     }
 }

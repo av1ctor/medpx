@@ -39,12 +39,14 @@ pub struct PrescritipionAuthRequest {
 
 #[derive(CandidType)]
 pub struct PrescriptionAuthResponse {
-    pub id: PrescriptionAuthId,
-    pub prescription_id: PrescriptionId,
-    pub kind: PrescriptionAuthKind,
-    pub from: Principal,
-    pub to: Principal,
-    pub expires_at: Option<u64>,
+    id: PrescriptionAuthId,
+    prescription_id: PrescriptionId,
+    kind: PrescriptionAuthKind,
+    from: Principal,
+    to: Principal,
+    expires_at: Option<u64>,
+    created_at: u64,
+    updated_at: Option<u64>,
 }
 
 impl Eq for PrescriptionAuth {
@@ -135,6 +137,8 @@ impl From<PrescriptionAuth> for PrescriptionAuthResponse {
             from: e.from, 
             to: e.to, 
             expires_at: e.expires_at,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
         }
     }
 }

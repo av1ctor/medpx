@@ -29,6 +29,7 @@ pub struct PrescriptionResponse {
     doctor: DoctorId,
     patient: PatientId,
     contents: Vec<u8>,
+    created_at: u64,
 }
 
 impl Prescription {
@@ -59,6 +60,7 @@ impl From<Prescription> for PrescriptionResponse {
             doctor: e.doctor, 
             patient: e.patient, 
             contents: e.contents, 
+            created_at: e.created_at,
         }
     }
 }

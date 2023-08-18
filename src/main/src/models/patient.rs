@@ -31,6 +31,8 @@ pub struct PatientResponse {
     name: String,
     email: String,
     birth_date: u64,
+    created_at: u64,
+    updated_at: Option<u64>,
 }
 
 impl Patient {
@@ -74,6 +76,8 @@ impl From<Patient> for PatientResponse {
             name: e.name, 
             email: e.email,
             birth_date: e.birth_date,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
         }
     }
 }

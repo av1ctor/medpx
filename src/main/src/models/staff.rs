@@ -34,6 +34,8 @@ pub struct StaffResponse {
     id: StaffId,
     name: String,
     role: StaffRole,
+    created_at: u64,
+    updated_at: Option<u64>,
 }
 
 impl Staff {
@@ -74,6 +76,8 @@ impl From<Staff> for StaffResponse {
             id: e.id,
             name: e.name, 
             role: e.role,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
         }
     }
 }
