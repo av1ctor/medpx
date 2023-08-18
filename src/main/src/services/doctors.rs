@@ -2,7 +2,7 @@ use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{Crud, CrudSubscribable, Pagination};
 use crate::models::doctor::{Doctor, DoctorId};
-use crate::models::prescription::PrescriptionId;
+use crate::models::prescription::Prescription;
 
 pub struct DoctorsService {}
 
@@ -66,7 +66,7 @@ impl DoctorsService {
         pag: Pagination,
         db: &DB,
         caller: &Principal
-    ) -> Result<Vec<PrescriptionId>, String> {
+    ) -> Result<Vec<Prescription>, String> {
         let doctors = db.doctors.borrow();
 
         let doctor = match doctors.find_by_id(id) {
@@ -78,7 +78,7 @@ impl DoctorsService {
             return Err("Forbidden".to_string());
         }
 
-        Ok(match db.doctor_prescriptions_rel.borrow().find_by_id(id) {
+        let ids = match db.doctor_prescriptions_rel.borrow().find_by_id(id) {
             None => vec![],
             Some(list) => 
                 list.iter()
@@ -86,6 +86,10 @@ impl DoctorsService {
                     .take(pag.limit as usize)
                     .cloned()
                     .collect()
-        })
+        };
+        
+        Ok(ids.iter().map(|id| 
+            db.prescriptions.borrow().get(id).clone()
+        ).collect())
     }
 }

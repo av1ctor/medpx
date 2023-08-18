@@ -24,6 +24,12 @@ export const keyGetKind = (
     return {label: 'Unkonwn', value: 'Unkonwn'};
 };
 
+export const keyBuildKind = (
+    kind: string
+): KeyKind => {
+    return {[kind]: null} as KeyKind;
+};
+
 export const keyCreate = async (
     main: Main,
     req: KeyRequest

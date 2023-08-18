@@ -63,7 +63,7 @@ impl TableSubscriber<TableName> for PatientPrescriptionsRelTable {
         if let (
                 TableEventKey::Text(prescription_key), 
                 TableEventKey::Principal(patient_key)
-            ) = (event.pkey.clone(), event.keys[0].clone()) {
+            ) = (event.pkey.clone(), event.keys[1].clone()) {
             match event.kind {
                 TableEventKind::Create => {
                     if !self.data.0.contains_key(&patient_key) {

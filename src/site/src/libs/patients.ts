@@ -35,6 +35,17 @@ export const patientDelete = async (
     return; 
 };
 
+export const patientFindById = async (
+    main: Main,
+    id: Principal
+): Promise<PatientResponse> => {
+    const res = await main.patient_find_by_id(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};
+
 export const patientFindPrescriptions = async (
     main: Main,
     principal: Principal,

@@ -14,7 +14,7 @@ use db::DB;
 use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, 
     PrescriptionAuth, PrescriptionAuthId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
-use models::key::{KeyRequest, KeyResponse, Key, KeyId};
+use models::key::{KeyRequest, KeyResponse, Key, KeyId, KeyKind};
 use models::patient::{Patient, PatientRequest, PatientResponse, PatientId};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
 use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
@@ -69,9 +69,9 @@ thread_local! {
 fn _gen_id(
 ) -> String {
     let counter = STATE.with(|s| {
-        let mut cnt = s.borrow_mut().counter;
-        cnt += 1;
-        cnt
+        let cnt = &mut s.borrow_mut().counter;
+        *cnt += 1;
+        cnt.clone()
     });
 
     ulid::Ulid::from_parts(ic_cdk::api::time(), counter).to_string()
@@ -181,12 +181,14 @@ fn user_find_id(
 
 #[ic_cdk::query]
 fn user_find_by_key(
-    key: KeyId
+    country: String,
+    kind: KeyKind,
+    key: String,
 ) -> Result<UserResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
-        match KeysService::find_by_id(&key, &db.borrow(), &caller) {
+        match KeysService::find_by_value(&country, &kind, &key, &db.borrow(), &caller) {
             Ok(key) => {
                 match UsersService::find_by_id(&key.created_by, &db.borrow(), &caller) {
                     Ok(user) => {
@@ -265,11 +267,14 @@ fn doctor_find_by_id(
 fn doctor_find_prescriptions(
     id: DoctorId,
     pag: Pagination
-) -> Result<Vec<PrescriptionId>, String> {
+) -> Result<Vec<PrescriptionResponse>, String> {
     let caller = caller();
 
     DB.with(|db| {
-        DoctorsService::find_prescriptions(&id, pag, &db.borrow(), &caller)
+        match DoctorsService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
+            Err(msg) => Err(msg)
+        }
     })
 }
 
@@ -334,11 +339,14 @@ fn patient_find_by_id(
 fn patient_find_prescriptions(
     id: PatientId,
     pag: Pagination
-) -> Result<Vec<PrescriptionId>, String> {
+) -> Result<Vec<PrescriptionResponse>, String> {
     let caller = caller();
 
     DB.with(|db| {
-        PatientsService::find_prescriptions(&id, pag, &db.borrow(), &caller)
+        match PatientsService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
+            Err(msg) => Err(msg)
+        }
     })
 }
 
@@ -493,6 +501,22 @@ fn key_find_by_id(
 
     DB.with(|db| {
         match KeysService::find_by_id(&id, &db.borrow(), &caller) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn key_find_by_value(
+    country: String,
+    kind: KeyKind,
+    value: String
+) -> Result<KeyResponse, String> {
+    let caller = &caller();
+
+    DB.with(|db| {
+        match KeysService::find_by_value(&country, &kind, &value, &db.borrow(), &caller) {
             Ok(e) => Ok(e.into()),
             Err(msg) => Err(msg)
         }

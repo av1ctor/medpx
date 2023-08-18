@@ -1,7 +1,7 @@
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud, Pagination};
-use crate::models::key::{Key, KeyId};
+use crate::models::key::{Key, KeyId, KeyKind};
 use crate::models::user::UserId;
 
 pub struct KeysService {}
@@ -59,6 +59,25 @@ impl KeysService {
         let keys = db.keys.borrow();
 
         let key = match keys.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
+        Ok(key.clone())
+    }
+
+    pub fn find_by_value(
+        country: &String,
+        kind: &KeyKind,
+        value: &String,
+        db: &DB,
+        _caller: &Principal
+    ) -> Result<Key, String> {
+        let keys = db.keys.borrow();
+
+        let id = Key::unique_id(country, kind, value);
+
+        let key = match keys.find_by_id(&id) {
             None => return Err("Not found".to_string()),
             Some(e) => e
         };

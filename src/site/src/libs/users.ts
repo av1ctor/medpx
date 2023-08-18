@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import { _SERVICE as Main, UserResponse } from "../../../declarations/main/main.did";
+import { KeyKind, _SERVICE as Main, UserResponse } from "../../../declarations/main/main.did";
 
 export enum UserKind {
     Doctor,
@@ -23,7 +23,18 @@ export const userGetKind = (
         }
     }
 
-    return UserKind.Staff
+    return UserKind.Staff;
+};
+
+export const userIsKind = (
+    user: UserResponse | undefined,
+    kind: string
+): boolean => {
+    if(user !== undefined) {
+        return kind in user.kind;
+    }
+
+    return false;
 };
 
 export const userGetPrincipal = (
@@ -70,9 +81,11 @@ export const userFindById = async (
 
 export const userFindByKey = async (
     main: Main,
+    country: string,
+    kind: KeyKind,
     key: string
 ): Promise<UserResponse> => {
-    const res = await main.user_find_by_key(key);
+    const res = await main.user_find_by_key(country, kind, key);
     if('Err' in res) {
         throw new Error(res.Err);
     }

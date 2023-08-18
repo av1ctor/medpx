@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "react-query";
+import { UseQueryResult, useMutation, useQuery, useQueryClient } from "react-query";
 import { Principal } from "@dfinity/principal";
 import { PatientRequest, PatientResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { patientCreate, patientDelete, patientUpdate } from "../libs/patients";
+import { patientCreate, patientDelete, patientFindById, patientUpdate } from "../libs/patients";
 
 interface PatientMethods {
     create: (req: PatientRequest) => Promise<PatientResponse>;
@@ -73,3 +73,14 @@ export const usePatient = (
         remove,
     }
 };
+
+export const usePatientFindById = (
+    id: Principal
+): UseQueryResult<PatientResponse, Error> => {
+    const {main} = useActors();
+    
+    return useQuery<PatientResponse, Error>(
+        ['patients', id],
+        () => patientFindById(main, id)
+    );
+}; 

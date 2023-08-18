@@ -195,7 +195,7 @@ type FindKeysResult = variant {
 service : {
     user_find_me: () -> (UserResponseResult) query;
     user_find_by_id: (principal) -> (UserResponseResult) query;
-    user_find_by_key: (text) -> (UserResponseResult) query;
+    user_find_by_key: (text, KeyKind, text) -> (UserResponseResult) query;
     
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
@@ -222,6 +222,7 @@ service : {
     key_create: (KeyRequest) -> (KeyResponseResult);
     key_delete: (text) -> (DefaultResponseResult);
     key_find_by_id: (text) -> (KeyResponseResult) query;
+    key_find_by_value: (text, KeyKind, text) -> (KeyResponseResult) query;
     key_find_all_by_user: (principal, Pagination) -> (FindKeysResult) query;
 
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);

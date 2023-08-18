@@ -80,7 +80,8 @@ impl TableSubscribable<TableName, PrescriptionId, Prescription> for Prescription
         v: &Prescription
     ) -> Vec<TableEventKey> {
         vec![
-            TableEventKey::Principal(v.doctor.clone())
+            TableEventKey::Principal(v.doctor.clone()),
+            TableEventKey::Principal(v.patient.clone())
         ]
     }
 }

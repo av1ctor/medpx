@@ -1,6 +1,6 @@
 import { UseQueryResult, useQuery } from "react-query";
 import { Principal } from "@dfinity/principal";
-import { UserResponse } from "../../../declarations/main/main.did";
+import { KeyKind, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { userFindById, userFindByKey, userFindMe } from "../libs/users";
 
@@ -26,12 +26,14 @@ export const useFindById = (
 }; 
 
 export const useFindByKey = (
+    country: string,
+    kind: KeyKind,
     key: string
 ): UseQueryResult<UserResponse, Error> => {
     const {main} = useActors();
     
     return useQuery<UserResponse, Error>(
         ['users', key],
-        () => userFindByKey(main, key)
+        () => userFindByKey(main, country, kind, key)
     );
 }; 
