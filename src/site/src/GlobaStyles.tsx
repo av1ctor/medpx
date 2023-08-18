@@ -13,6 +13,13 @@ export const GlobalStyles = () => {
                             theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[2]
                         }`,
                     },
+                    '.clickable': {
+                        width: '100%',
+                    },
+                    '.clickable:hover': {
+                        cursor: 'pointer',
+                        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.blue[0], 
+                    },
                 },
                 '.list-create-button': {
                     position: 'absolute',

@@ -1,5 +1,5 @@
-import React, { Fragment, useCallback } from "react";
-import { ActionIcon, Button, Card, Center, Divider, Drawer, Group, Space, Text } from "@mantine/core";
+import React, { Fragment, useCallback, useState } from "react";
+import { ActionIcon, Button, Card, Center, Divider, Drawer, Group, Modal, Space, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
 import { IconClipboardList, IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -7,8 +7,10 @@ import { useAuth } from "../../hooks/auth";
 import { usePrescriptionsFind } from "../../hooks/prescriptions";
 import { useUI } from "../../hooks/ui";
 import { userIsKind } from "../../libs/users";
+import { PrescriptionResponse } from "../../../../declarations/main/main.did";
 import Item from "./Item";
 import PrescriptionCreate from "./prescription/Create";
+import PrescriptionView from "./prescription/View";
 
 interface Props {
 }
@@ -16,13 +18,20 @@ interface Props {
 const Prescriptions = (props: Props) => {
     const {user} = useAuth();
     const {showSuccess} = useUI();
-    const [opened, { open, close }] = useDisclosure(false);
+    const [createOpened, { open: createOpen, close: createClose }] = useDisclosure(false);
+    const [viewOpened, { open: viewOpen, close: viewClose }] = useDisclosure(false);
+    const [item, setItem] = useState<PrescriptionResponse|undefined>();
     const query = usePrescriptionsFind(user, 10);
     
     const handleCreated = useCallback((msg: string) => {
         showSuccess(msg);
-        close();
-    }, [close, showSuccess]);
+        createClose();
+    }, [createClose, showSuccess]);
+
+    const handleView = useCallback((item: PrescriptionResponse) => {
+        setItem(item);
+        viewOpen()
+    }, [setItem, viewOpen]);
 
     const isDoctor = userIsKind(user, 'Doctor');
 
@@ -44,7 +53,7 @@ const Prescriptions = (props: Props) => {
                                 variant="filled"
                                 color="green"
                                 title="New"
-                                onClick={open}
+                                onClick={createOpen}
                             >
                                 <IconPlus size="1rem" />
                             </ActionIcon>
@@ -55,12 +64,14 @@ const Prescriptions = (props: Props) => {
                 <Divider pb="xs" />
 
                 {query.status === 'success' && query.data && 
-                    query.data.pages.map((page, index) => 
-                        <Fragment key={index}>
-                            {page.map(item =>
-                                <Item key={item.id} item={item} />
-                            )}
-                        </Fragment>
+                    query.data.pages.map(page => 
+                        page.map(item =>
+                            <Item 
+                                key={item.id} 
+                                item={item} 
+                                onView={handleView}
+                            />
+                        )
                     )
                 }
 
@@ -77,14 +88,25 @@ const Prescriptions = (props: Props) => {
             </Card>
 
             <Drawer 
-                opened={opened} 
+                opened={createOpened} 
                 title={<b><IconClipboardList size="1.25rem" /> Create prescription</b>}
                 position="right"
                 size="xl"
-                onClose={close} 
+                onClose={createClose} 
             >
                 <PrescriptionCreate onSuccess={handleCreated} />
             </Drawer>
+            
+            <Modal
+                opened={viewOpened}
+                size="xl"
+                centered
+                onClose={viewClose}
+            >
+                <PrescriptionView 
+                    item={item} 
+                />
+            </Modal>
         </>
     );
 };
