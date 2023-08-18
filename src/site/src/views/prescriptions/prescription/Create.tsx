@@ -85,8 +85,10 @@ const PrescriptionCreate = (props: Props) => {
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <Card radius="sm" withBorder>
-                    <Text weight={500}>Patient</Text>
+                <div className="card">
+                    <Text weight={500}>
+                        Patient
+                    </Text>
                     <Stack>
                         <Grid>
                             <Grid.Col md={4} xs={12}>
@@ -125,7 +127,7 @@ const PrescriptionCreate = (props: Props) => {
                             <IconCircleCheck size="1rem" /> Verify
                         </Button>
                     </Stack>
-                </Card>
+                </div>
 
                 <Space h="xl" />
 
@@ -141,6 +143,7 @@ const PrescriptionCreate = (props: Props) => {
                     color="red"
                     fullWidth
                     type="submit"
+                    disabled={!patient}
                 >
                     Submit
                 </Button>
