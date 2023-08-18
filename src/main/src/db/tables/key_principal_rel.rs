@@ -62,8 +62,8 @@ impl TableSubscriber<TableName> for KeyPrincipalRelTable {
         event: &TableEvent<TableName>
     ) {
         if let (
-                TableEventKey::Principal(principal), 
-                TableEventKey::Text(key)
+                TableEventKey::Text(key),
+                TableEventKey::Principal(principal)
             ) = (event.pkey.clone(), event.keys[0].clone()) {
             match event.kind {
                 TableEventKind::Create => {

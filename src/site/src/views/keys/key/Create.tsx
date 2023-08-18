@@ -1,36 +1,33 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import * as yup from 'yup';
 import { Button, Container, Select, Space, TextInput } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
-import { useAuth } from "../../../hooks/auth";
-import { userFindMe, userGetPrincipal } from "../../../libs/users";
-import { kinds, thirdPartyGetKind } from "../../../libs/thirdparties";
-import { useThirdParty } from "../../../hooks/thirdparty";
-import { ThirdPartyResponse } from "../../../../../declarations/main/main.did";
+import { kinds } from "../../../libs/keys";
+import { useKey } from "../../../hooks/keys";
+import countries from "../../../libs/countries";
 
 const schema = yup.object().shape({
     kind: yup.string().required(),
-    name: yup.string().min(3).max(64),
-    email: yup.string().email().min(3).max(128),
+    country: yup.string().min(2).max(2),
+    value: yup.string().min(3).max(64),
 });
 
 interface Props {
-    entity: ThirdPartyResponse,
     onSuccess: (msg: string) => void;
 }
 
-const ThirdPartyEdit = (props: Props) => {
+const KeyCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
-    const {user, update: userUpdate} = useAuth();
-    const {update} = useThirdParty();
+    const {create} = useKey();
     
     const form = useForm({
         initialValues: {
-            ...props.entity,
-            kind: thirdPartyGetKind(props.entity.kind).value
+          kind: '',
+          country: '',
+          value: '',
         },
     
         validate: yupResolver(schema),
@@ -44,11 +41,9 @@ const ThirdPartyEdit = (props: Props) => {
     const handleCreate = useCallback(async (values: any) => {
         try {
             toggleLoading(true);
-            
-            await update(userGetPrincipal(user), values);
-            props.onSuccess('Third party updated!');
 
-            userUpdate(await userFindMe(main));
+            await create(values);
+            props.onSuccess('Key created!');
         }
         catch(e: any) {
             showError(e);
@@ -58,30 +53,30 @@ const ThirdPartyEdit = (props: Props) => {
         }
     }, [main]);
 
+    const _countries = useMemo(() => {
+        return countries.map(c => ({label: c.name, value: c.code}))
+    }, []);
+
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <TextInput
-                    label="Id"
-                    placeholder="Your id"
-                    {...form.getInputProps('id')}
-                    readOnly
-                />
                 <Select
                     label="Kind"
-                    placeholder="Kind"
+                    placeholder="Key kind"
                     data={kinds}
                     {...form.getInputProps('kind')}
                 />
-                <TextInput
-                    label="Name"
-                    placeholder="Your name"
-                    {...form.getInputProps('name')}
+                <Select
+                    label="Country"
+                    placeholder="Your country"
+                    data={_countries}
+                    searchable
+                    {...form.getInputProps('country')}
                 />
                 <TextInput
-                    label="Email"
-                    placeholder="Your e-mail"
-                    {...form.getInputProps('email')}
+                    label="Value"
+                    placeholder="Key value"
+                    {...form.getInputProps('value')}
                 />
                 <Space h="lg"/>
                 <Button
@@ -96,4 +91,4 @@ const ThirdPartyEdit = (props: Props) => {
     );
 };
 
-export default ThirdPartyEdit;
+export default KeyCreate;

@@ -56,3 +56,25 @@ export const userFindMe = async (
     }
     return res.Ok; 
 };
+
+export const userFindById = async (
+    main: Main,
+    id: Principal
+): Promise<UserResponse> => {
+    const res = await main.user_find_by_id(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};
+
+export const userFindByKey = async (
+    main: Main,
+    key: string
+): Promise<UserResponse> => {
+    const res = await main.user_find_by_key(key);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};

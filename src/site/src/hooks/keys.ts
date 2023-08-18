@@ -1,11 +1,12 @@
 import { UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQueryClient } from "react-query";
 import { KeyRequest, KeyResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { keyCreate, keyFindByUser } from "../libs/keys";
+import { keyCreate, keyDelete, keyFindByUser } from "../libs/keys";
 import { userGetPrincipal } from "../libs/users";
 
 interface KeyMethods {
     create: (req: KeyRequest) => Promise<KeyResponse>;
+    remove: (id: string) => Promise<void>;
 }
 
 export const useKey = (
@@ -30,8 +31,26 @@ export const useKey = (
         return createMut.mutateAsync({req});
     };
 
+    const deleteMut = useMutation(
+        async (options: {id: string}) => {
+            return keyDelete(main, options.id);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['keys']);
+            }   
+        }
+    );
+
+    const remove = (
+        id: string
+    ): Promise<void> => {
+        return deleteMut.mutateAsync({id});
+    };
+
     return {
         create,
+        remove,
     }
 };
 

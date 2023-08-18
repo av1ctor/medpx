@@ -6,21 +6,25 @@ export const GlobalStyles = () => {
         <Global
             styles={(theme) => ({
                 '.list-item': {
-                  '& + &': {
-                      paddingTop: theme.spacing.sm,
-                      marginTop: theme.spacing.sm,
-                      borderTop: `${rem(1)} solid ${
-                        theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[2]
-                      }`,
+                    '& + &': {
+                        paddingTop: theme.spacing.sm,
+                        marginTop: theme.spacing.sm,
+                        borderTop: `${rem(1)} solid ${
+                            theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[2]
+                        }`,
                     },
                 },
+                '.list-create-button': {
+                    position: 'absolute',
+                    top: '4px',
+                    right: '4px',
+                },
                 '.card': {
-                  backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+                    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
                 },
                 '.card-title': {
-                  lineHeight: 1,
+                    lineHeight: 1,
                 },
-            
             })}
         />
     );

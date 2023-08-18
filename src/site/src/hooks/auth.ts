@@ -314,7 +314,7 @@ const _loadAuthenticatedUser = async (
         return await userFindMe(main);
     }
     catch(e) {
-        console.log(e)
+        //console.log(e)
     }
 
     return undefined;

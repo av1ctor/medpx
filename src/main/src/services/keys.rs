@@ -54,7 +54,7 @@ impl KeysService {
     pub fn find_by_id(
         id: &KeyId,
         db: &DB,
-        caller: &Principal
+        _caller: &Principal
     ) -> Result<Key, String> {
         let keys = db.keys.borrow();
 
@@ -62,10 +62,6 @@ impl KeysService {
             None => return Err("Not found".to_string()),
             Some(e) => e
         };
-
-        if key.created_by != *caller {
-            return Err("Forbidden".to_string());
-        }
 
         Ok(key.clone())
     }

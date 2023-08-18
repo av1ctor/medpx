@@ -10,7 +10,7 @@ const Item = (props: Props) => {
     const {item} = props;
     
     return (
-        <Group key={item.id} position="apart" className="list-item" noWrap spacing="xl">
+        <Group position="apart" className="list-item" noWrap spacing="xl">
             <div>
                 <Text>{item.id}</Text>
                 <Text size="xs" color="dimmed">

@@ -1,7 +1,12 @@
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::Crud;
-use crate::models::user::{User, UserId};
+use crate::models::user::{User, UserId, UserKind, UserKindResponse};
+
+use super::doctors::DoctorsService;
+use super::patients::PatientsService;
+use super::staff::StaffService;
+use super::thirdparties::ThirdPartiesService;
 
 pub struct UsersService {}
 
@@ -22,17 +27,23 @@ impl UsersService {
             Some(e) => e
         };
 
-        let created_by = match user.kind {
-            crate::models::user::UserKind::Doctor(p) => p,
-            crate::models::user::UserKind::Patient(p) => p,
-            crate::models::user::UserKind::ThirdParty(p) => p,
-            crate::models::user::UserKind::Staff(p) => p,
-        };
-        
-        if *id != created_by || *caller != created_by {
-            return Err("Forbidden".to_string());
-        }
-
         Ok((*user).clone())
+    }
+
+    pub fn find_by_kind(
+        id: &UserId,
+        kind: UserKind,
+        db: &DB,
+    ) -> UserKindResponse {
+        match kind {
+            UserKind::Doctor(_) => 
+                UserKindResponse::Doctor(DoctorsService::find_by_id(id, db).unwrap().into()),
+            UserKind::Patient(_) =>     
+                UserKindResponse::Patient(PatientsService::find_by_id(id, db).unwrap().into()),
+            UserKind::ThirdParty(_) => 
+                UserKindResponse::ThirdParty(ThirdPartiesService::find_by_id(id, db).unwrap().into()),
+            UserKind::Staff(_) => 
+                UserKindResponse::Staff(StaffService::find_by_id(id, db).unwrap().into()),
+        }
     }
 }

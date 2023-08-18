@@ -9,14 +9,28 @@ export const kinds = [
 
 export const thirdPartyGetKind = (
     kind: ThirdPartyKind
-): string => {
-    if('Hospital' in kind)
-        return 'Hospital'
-    else if('DrugStore' in kind)
-        return 'DrugStore'
-    else
-        return 'Other';
+): {value: string, label: string} => {
+    let values = kinds.map(k => k.value);
+    for(let value of values) {
+        if(value in kind) {
+            return kinds.filter(k => k.value === value)[0];
+        }
+    }
+    
+    return {label: 'Unkonwn', value: 'Unkonwn'};
 };
+
+
+export const thirdPartyCreate = async (
+    main: Main,
+    req: ThirdPartyRequest
+): Promise<ThirdPartyResponse> => {
+    const res = await main.thirdparty_create(req);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+}
 
 export const thirdPartyUpdate = async (
     main: Main,
@@ -30,13 +44,14 @@ export const thirdPartyUpdate = async (
     return res.Ok; 
 };
 
-export const thirdPartyCreate = async (
+export const thirdPartyDelete = async (
     main: Main,
-    req: ThirdPartyRequest
-): Promise<ThirdPartyResponse> => {
-    const res = await main.thirdparty_create(req);
+    id: Principal
+): Promise<void> => {
+    const res = await main.thirdparty_delete(id);
     if('Err' in res) {
         throw new Error(res.Err);
     }
-    return res.Ok; 
-}
+    return; 
+};
+

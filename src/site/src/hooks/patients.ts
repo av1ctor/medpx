@@ -2,11 +2,12 @@ import { useMutation, useQueryClient } from "react-query";
 import { Principal } from "@dfinity/principal";
 import { PatientRequest, PatientResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { patientCreate, patientUpdate } from "../libs/patients";
+import { patientCreate, patientDelete, patientUpdate } from "../libs/patients";
 
 interface PatientMethods {
     create: (req: PatientRequest) => Promise<PatientResponse>;
     update: (id: Principal, req: PatientRequest) => Promise<PatientResponse>;
+    remove: (id: Principal) => Promise<void>;
 }
 
 export const usePatient = (
@@ -49,8 +50,26 @@ export const usePatient = (
         return updateMut.mutateAsync({id, req});
     };
 
+    const deleteMut = useMutation(
+        async (options: {id: Principal}) => {
+            return patientDelete(main, options.id);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['patients']);
+            }   
+        }
+    );
+
+    const remove = (
+        id: Principal
+    ): Promise<void> => {
+        return deleteMut.mutateAsync({id});
+    };
+
     return {
         create,
         update,
+        remove,
     }
 };

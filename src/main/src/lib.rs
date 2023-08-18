@@ -11,15 +11,17 @@ use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
-use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, PrescriptionAuth, PrescriptionAuthId};
+use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, 
+    PrescriptionAuth, PrescriptionAuthId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
 use models::key::{KeyRequest, KeyResponse, Key, KeyId};
 use models::patient::{Patient, PatientRequest, PatientResponse, PatientId};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
 use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
-use models::user::{UserResponse, UserKind, UserKindResponse, UserId};
-use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService};
+use models::user::{UserResponse, UserId};
+use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
+    thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService};
 use utils::serdeser::{serialize, deserialize};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -146,21 +148,57 @@ fn user_find_me(
     DB.with(|db| {
         match UsersService::find_by_id(&caller, &db.borrow(), &caller) {
             Ok(user) => {
-                Ok(UserResponse{ 
-                    kind: match user.kind {
-                        UserKind::Doctor(_) => 
-                            UserKindResponse::Doctor(DoctorsService::find_by_id(&caller, &db.borrow()).unwrap().into()),
-                        UserKind::Patient(_) =>     
-                            UserKindResponse::Patient(PatientsService::find_by_id(&caller, &db.borrow()).unwrap().into()),
-                        UserKind::ThirdParty(_) => 
-                            UserKindResponse::ThirdParty(ThirdPartiesService::find_by_id(&caller, &db.borrow()).unwrap().into()),
-                        UserKind::Staff(_) => 
-                            UserKindResponse::Staff(StaffService::find_by_id(&caller, &db.borrow()).unwrap().into()),
-                    }, 
+                Ok(UserResponse {
+                    kind: UsersService::find_by_kind(&caller, user.kind, &db.borrow()),
                     active: user.active, 
                     banned: user.banned, 
                 })
             },
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn user_find_id(
+    id: UserId
+) -> Result<UserResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        match UsersService::find_by_id(&id, &db.borrow(), &caller) {
+            Ok(user) => {
+                Ok(UserResponse {
+                    kind: UsersService::find_by_kind(&id, user.kind, &db.borrow()),
+                    active: user.active, 
+                    banned: user.banned, 
+                })
+            },
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn user_find_by_key(
+    key: KeyId
+) -> Result<UserResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        match KeysService::find_by_id(&key, &db.borrow(), &caller) {
+            Ok(key) => {
+                match UsersService::find_by_id(&key.created_by, &db.borrow(), &caller) {
+                    Ok(user) => {
+                        Ok(UserResponse {
+                            kind: UsersService::find_by_kind(&key.created_by, user.kind, &db.borrow()),
+                            active: user.active, 
+                            banned: user.banned, 
+                        })
+                    },
+                    Err(msg) => Err(msg)
+                }
+            },    
             Err(msg) => Err(msg)
         }
     })
@@ -433,6 +471,17 @@ fn key_create(
             Ok(()) => Ok(key.into()),
             Err(msg) => Err(msg)
         }
+    })
+}
+
+#[ic_cdk::update]
+fn key_delete(
+    id: KeyId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        KeysService::delete(&id, &mut db.borrow_mut(), &caller)
     })
 }
 

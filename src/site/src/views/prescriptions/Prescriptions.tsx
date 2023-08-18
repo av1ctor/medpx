@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { Button, Card, Center, Text } from "@mantine/core";
+import { Button, Card, Center, Divider, Group, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
 import { IconClipboardList, IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
@@ -16,17 +16,24 @@ const Prescriptions = (props: Props) => {
 
     return (
         <Card withBorder radius="md" p="xl" className="card">
-            <Text fz="lg" className="card-title" fw={500}>
-                <IconClipboardList size="1rem" /> Prescriptions
-            </Text>
-            <Text fz="xs" c="dimmed" mt={3} mb="xl">
-                View your prescriptions
-            </Text>
+            <Group position="apart" noWrap spacing="xl">
+                <div>
+                    <Text fz="lg" className="card-title" fw={500}>
+                        <IconClipboardList size="1rem" /> Prescriptions
+                    </Text>
+                    <Text fz="xs" c="dimmed" mt={3} mb="xl">
+                        View your prescriptions
+                    </Text>
+                </div>
+            </Group>
+            
+            <Divider pb="md" />
+
             {query.status === 'success' && query.data && 
                 query.data.pages.map((page, index) => 
                     <Fragment key={index}>
                         {page.map(item =>
-                            <Item item={item} />
+                            <Item key={item.id} item={item} />
                         )}
                     </Fragment>
                 )
