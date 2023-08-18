@@ -44,7 +44,7 @@ const TimeFromNow = (props: Props) => {
         }
     }
 
-    return <span>{res}</span>;
+    return <span title={date.toLocaleString()}>{res}</span>;
 }
 
 export default TimeFromNow;

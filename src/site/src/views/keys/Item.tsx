@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { IconAlertTriangle, IconTrash } from "@tabler/icons-react";
+import { IconAlertTriangle, IconClockHour4, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { ActionIcon, Button, Grid, Group, Modal, Space, Text } from "@mantine/core";
 import { KeyResponse } from "../../../../declarations/main/main.did";
@@ -40,7 +40,7 @@ const Item = (props: Props) => {
             <Group position="apart" className="list-item" noWrap spacing="xl">
                 <div>
                     <Text>{item.value}</Text>
-                    <Text size="xs"><TimeFromNow date={item.created_at} /></Text>
+                    <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                     <Text size="xs" color="dimmed">
                         {keyGetKind(item.kind).label}
                     </Text>
