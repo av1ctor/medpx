@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import * as yup from 'yup';
-import { ActionIcon, Button, Container, Grid, Loader, Select, Space, Stack, TextInput, Textarea } from "@mantine/core";
+import { Button, Card, Container, Grid, Select, Space, Stack, TextInput, Textarea, Text } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { useUI } from "../../../hooks/ui";
@@ -55,6 +55,7 @@ const PrescriptionCreate = (props: Props) => {
             setPatient(pat);
         }
         catch(e) {
+            setPatient(undefined);
             showError(e);
         }
         finally {
@@ -84,44 +85,49 @@ const PrescriptionCreate = (props: Props) => {
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <Stack>
-                    <Grid>
-                        <Grid.Col span={4}>
-                            <Select
-                                label="Kind"
-                                placeholder="Key kind"
-                                data={kinds}
-                                {...form.getInputProps('kind')}
-                            />
-                        </Grid.Col>
-                        <Grid.Col span={4}>
-                            <Select
-                                label="Country"
-                                placeholder="Your country"
-                                data={_countries}
-                                searchable
-                                {...form.getInputProps('country')}
-                            />
-                        </Grid.Col>
-                        <Grid.Col span={4}>
-                            <TextInput
-                                label="Key"
-                                placeholder="Patient key"
-                                rightSection={isVerifing && <Loader size="xs" />}
-                                {...form.getInputProps('patient')}
-                            />
-                        </Grid.Col>
-                    </Grid>
-                    <Button
-                        variant="filled" 
-                        color="blue"
-                        disabled={!form.values.patient}
-                        fullWidth
-                        onClick={handleVerify}
-                    >
-                        <IconCircleCheck size="1rem" /> Verify
-                    </Button>
-                </Stack>
+                <Card radius="sm" withBorder>
+                    <Text weight={500}>Patient</Text>
+                    <Stack>
+                        <Grid>
+                            <Grid.Col md={4} xs={12}>
+                                <Select
+                                    label="Country"
+                                    placeholder="Patient's country"
+                                    data={_countries}
+                                    searchable
+                                    {...form.getInputProps('country')}
+                                />
+                            </Grid.Col>
+                            <Grid.Col md={4} xs={12}>
+                                <Select
+                                    label="Kind"
+                                    placeholder="Patient's key kind"
+                                    data={kinds}
+                                    {...form.getInputProps('kind')}
+                                />
+                            </Grid.Col>
+                            <Grid.Col md={4} xs={12}>
+                                <TextInput
+                                    label="Key"
+                                    placeholder="Patient's key"
+                                    {...form.getInputProps('patient')}
+                                />
+                            </Grid.Col>
+                        </Grid>
+                        <Button
+                            variant="filled" 
+                            color="blue"
+                            disabled={!form.values.patient}
+                            loading={isVerifing}
+                            fullWidth
+                            onClick={handleVerify}
+                        >
+                            <IconCircleCheck size="1rem" /> Verify
+                        </Button>
+                    </Stack>
+                </Card>
+
+                <Space h="xl" />
 
                 <Textarea
                     label="Contents"
