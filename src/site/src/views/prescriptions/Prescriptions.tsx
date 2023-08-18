@@ -11,6 +11,7 @@ import { PrescriptionResponse } from "../../../../declarations/main/main.did";
 import Item from "./Item";
 import PrescriptionCreate from "./prescription/Create";
 import PrescriptionView from "./prescription/View";
+import { useBrowser } from "../../hooks/browser";
 
 interface Props {
 }
@@ -18,6 +19,7 @@ interface Props {
 const Prescriptions = (props: Props) => {
     const {user} = useAuth();
     const {showSuccess} = useUI();
+    const {isMobile} = useBrowser()
     const [createOpened, { open: createOpen, close: createClose }] = useDisclosure(false);
     const [viewOpened, { open: viewOpen, close: viewClose }] = useDisclosure(false);
     const [item, setItem] = useState<PrescriptionResponse|undefined>();
@@ -100,6 +102,7 @@ const Prescriptions = (props: Props) => {
             <Modal
                 opened={viewOpened}
                 size="xl"
+                fullScreen={isMobile}
                 centered
                 onClose={viewClose}
             >

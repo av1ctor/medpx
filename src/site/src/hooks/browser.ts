@@ -25,7 +25,7 @@ export const useBrowser = (): BrowserProps => {
     }, []);
     
     return {
-        isMobile: useMediaQuery('(max-width: 640px)'),
+        isMobile: !useMediaQuery('(min-width: 62em)'),
         returnToLastPage,
         navigateTo,
     };

@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import * as yup from 'yup';
-import { Button, Card, Container, Grid, Select, Space, Stack, TextInput, Textarea, Text } from "@mantine/core";
+import { Button, Container, Grid, Select, Space, Stack, TextInput, Textarea, Text } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
-import { IconCircleCheck } from "@tabler/icons-react";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
 import { usePrescription } from "../../../hooks/prescriptions";
@@ -124,7 +123,7 @@ const PrescriptionCreate = (props: Props) => {
                             fullWidth
                             onClick={handleVerify}
                         >
-                            <IconCircleCheck size="1rem" /> Verify
+                            Verify
                         </Button>
                     </Stack>
                 </div>

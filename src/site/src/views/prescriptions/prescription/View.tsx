@@ -17,8 +17,9 @@ const PrescriptionView = (props: Props) => {
             <Textarea
                 label="Contents"
                 placeholder="Contents"
-                minRows={20}
+                minRows={30}
                 value={contents}
+                readOnly
             />
         </Container>
     );
