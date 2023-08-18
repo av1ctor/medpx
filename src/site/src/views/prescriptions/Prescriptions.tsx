@@ -27,7 +27,7 @@ const Prescriptions = (props: Props) => {
                 </div>
             </Group>
             
-            <Divider pb="md" />
+            <Divider pb="xs" />
 
             {query.status === 'success' && query.data && 
                 query.data.pages.map((page, index) => 

@@ -39,7 +39,7 @@ const Keys = (props: Props) => {
                         <ActionIcon 
                             variant="filled"
                             color="green"
-                            title="Create key"
+                            title="New"
                             onClick={open}
                         >
                             <IconPlus size="1rem" />
@@ -47,7 +47,7 @@ const Keys = (props: Props) => {
                     </div>
                 </Group>
 
-                <Divider pb="md" />
+                <Divider pb="xs" />
 
                 {query.status === 'success' && query.data && 
                     query.data.pages.map((page, index) => 

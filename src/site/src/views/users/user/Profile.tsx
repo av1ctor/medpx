@@ -17,7 +17,7 @@ const Profile = () => {
                 </div>
             </Group>
 
-            <Divider pb="md" />
+            <Divider pb="xs" />
 
             <Container>
                 <UserEdit />
