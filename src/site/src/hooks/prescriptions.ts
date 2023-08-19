@@ -1,10 +1,10 @@
-import { UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQueryClient } from "react-query";
+import { UseInfiniteQueryResult, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "react-query";
 import { PrescriptionRequest, PrescriptionResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { patientFindPrescriptions } from "../libs/patients";
 import { userGetPrincipal, userIsKind } from "../libs/users";
 import { doctorFindPrescriptions } from "../libs/doctors";
-import { prescriptionCreate } from "../libs/prescriptions";
+import { prescriptionCreate, prescriptionFindById } from "../libs/prescriptions";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
@@ -58,5 +58,16 @@ export const usePrescriptionsFind = (
                     undefined:
                 pages.length * limit
         }
+    );
+};
+
+export const usePrescriptionsFindById = (
+    id: string
+): UseQueryResult<PrescriptionResponse, Error> => {
+    const {main} = useActors();
+
+    return useQuery<PrescriptionResponse, Error>(
+        ['prescriptions', id],
+        () => prescriptionFindById(main, id)
     );
 };

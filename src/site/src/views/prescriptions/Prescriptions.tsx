@@ -106,9 +106,9 @@ const Prescriptions = (props: Props) => {
                 centered
                 onClose={viewClose}
             >
-                <PrescriptionView 
+                {item && <PrescriptionView 
                     item={item} 
-                />
+                />}
             </Modal>
         </>
     );

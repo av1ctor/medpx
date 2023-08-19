@@ -7,6 +7,7 @@ import { Front } from "./Front";
 import { useUI } from "../../hooks/ui";
 import Signup from "../users/user/Signup";
 import Footer from "./Footer";
+import PrescriptionViewWrapper from "../prescriptions/prescription/ViewWrapper";
 
 interface Props {
 }
@@ -35,6 +36,7 @@ const Home = (props: Props) => {
                     <Routes>
                         <Route path="/user/login" element={<Login />} />
                         <Route path="/user/signup" element={<Signup />} />
+                        <Route path="/p/:id" element={<PrescriptionViewWrapper />} />
                         <Route path="/" element={<Front />} />
                     </Routes>
                 </Container>

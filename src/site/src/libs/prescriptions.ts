@@ -10,3 +10,14 @@ export const prescriptionCreate = async (
     }
     return res.Ok; 
 };
+
+export const prescriptionFindById = async (
+    main: Main,
+    id: string
+): Promise<PrescriptionResponse> => {
+    const res = await main.prescription_find_by_id(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};

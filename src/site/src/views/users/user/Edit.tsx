@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 import { useAuth } from "../../../hooks/auth";
-import { userGetKind } from "../../../libs/users";
 import PatientEdit from "../../patients/patient/Edit";
 import { useUI } from "../../../hooks/ui";
 import DoctorEdit from "../../doctors/doctor/Edit";
@@ -20,8 +19,6 @@ const UserEdit = (props: Props) => {
     if(!isLogged) {
         return null;
     }
-
-    const kind = userGetKind(user);
 
     return (
         user?.kind? 
