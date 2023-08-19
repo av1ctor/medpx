@@ -82,6 +82,7 @@ impl PatientsService {
             None => vec![],
             Some(list) =>
                 list.iter()
+                    .rev()
                     .skip(pag.offset as usize)
                     .take(pag.limit as usize)
                     .cloned()
