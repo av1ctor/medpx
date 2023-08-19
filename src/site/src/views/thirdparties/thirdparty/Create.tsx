@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import * as yup from 'yup';
-import { Button, Container, Select, Space, TextInput } from "@mantine/core";
+import { Button, Select, Space, TextInput } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -58,34 +58,32 @@ const ThirdPartyCreate = (props: Props) => {
     }, [main]);
 
     return (
-        <Container>
-            <form onSubmit={form.onSubmit(handleCreate)}>
-                <Select
-                    label="Kind"
-                    placeholder="Kind"
-                    data={kinds}
-                    {...form.getInputProps('kind')}
-                />
-                <TextInput
-                    label="Name"
-                    placeholder="Your name"
-                    {...form.getInputProps('name')}
-                />
-                <TextInput
-                    label="Email"
-                    placeholder="Your e-mail"
-                    {...form.getInputProps('email')}
-                />
-                <Space h="lg"/>
-                <Button
-                    color="red"
-                    fullWidth
-                    type="submit"
-                >
-                    Submit
-                </Button>
-            </form>
-        </Container>
+        <form onSubmit={form.onSubmit(handleCreate)}>
+            <Select
+                label="Kind"
+                placeholder="Kind"
+                data={kinds}
+                {...form.getInputProps('kind')}
+            />
+            <TextInput
+                label="Name"
+                placeholder="Your name"
+                {...form.getInputProps('name')}
+            />
+            <TextInput
+                label="Email"
+                placeholder="Your e-mail"
+                {...form.getInputProps('email')}
+            />
+            <Space h="lg"/>
+            <Button
+                color="red"
+                fullWidth
+                type="submit"
+            >
+                Submit
+            </Button>
+        </form>
     );
 };
 

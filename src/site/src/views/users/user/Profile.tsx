@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Container, Divider, Group, Text } from "@mantine/core";
+import { Card, Divider, Group, Text } from "@mantine/core";
 import { IconUserEdit } from "@tabler/icons-react";
 import UserEdit from "./Edit";
 
@@ -19,9 +19,9 @@ const Profile = () => {
 
             <Divider pb="xs" />
 
-            <Container>
+            <div>
                 <UserEdit />
-            </Container>
+            </div>
         </Card>
     );
 };

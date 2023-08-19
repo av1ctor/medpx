@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import * as yup from 'yup';
-import { Button, Container, Space, TextInput } from "@mantine/core";
+import { Button, Space, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
@@ -59,35 +59,33 @@ const PatientCreate = (props: Props) => {
     }, [main]);
 
     return (
-        <Container>
-            <form onSubmit={form.onSubmit(handleCreate)}>
-                <TextInput
-                    label="Name"
-                    placeholder="Your name"
-                    {...form.getInputProps('name')}
-                />
-                <TextInput
-                    label="Email"
-                    placeholder="Your e-mail"
-                    {...form.getInputProps('email')}
-                />
-                <DateInput
-                    label="Birth date"
-                    placeholder="Your birthday"
-                    valueFormat="YYYY-MM-DD"
-                    defaultLevel="decade"
-                    {...form.getInputProps('birth_date')}
-                />
-                <Space h="lg"/>
-                <Button
-                    color="red"
-                    fullWidth
-                    type="submit"
-                >
-                    Submit
-                </Button>
-            </form>
-        </Container>
+        <form onSubmit={form.onSubmit(handleCreate)}>
+            <TextInput
+                label="Name"
+                placeholder="Your name"
+                {...form.getInputProps('name')}
+            />
+            <TextInput
+                label="Email"
+                placeholder="Your e-mail"
+                {...form.getInputProps('email')}
+            />
+            <DateInput
+                label="Birth date"
+                placeholder="Your birthday"
+                valueFormat="YYYY-MM-DD"
+                defaultLevel="decade"
+                {...form.getInputProps('birth_date')}
+            />
+            <Space h="lg"/>
+            <Button
+                color="red"
+                fullWidth
+                type="submit"
+            >
+                Submit
+            </Button>
+        </form>
     );
 };
 

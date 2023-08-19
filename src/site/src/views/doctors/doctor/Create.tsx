@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import * as yup from 'yup';
-import { Button, Container, Space, TextInput } from "@mantine/core";
+import { Button, Space, TextInput } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -61,38 +61,36 @@ const DoctorCreate = (props: Props) => {
     }, [main]);
 
     return (
-        <Container>
-            <form onSubmit={form.onSubmit(handleCreate)}>
-                <TextInput
-                    label="Name"
-                    placeholder="Your name"
-                    {...form.getInputProps('name')}
-                />
-                <TextInput
-                    label="Email"
-                    placeholder="Your e-mail"
-                    {...form.getInputProps('email')}
-                />
-                <TextInput
-                    label="License num"
-                    placeholder="Your license number"
-                    {...form.getInputProps('license_num')}
-                />
-                <TextInput
-                    label="Prescription Template"
-                    placeholder="Your prescription template"
-                    {...form.getInputProps('prescription_template')}
-                />
-                <Space h="lg"/>
-                <Button
-                    color="red"
-                    fullWidth
-                    type="submit"
-                >
-                    Submit
-                </Button>
-            </form>
-        </Container>
+        <form onSubmit={form.onSubmit(handleCreate)}>
+            <TextInput
+                label="Name"
+                placeholder="Your name"
+                {...form.getInputProps('name')}
+            />
+            <TextInput
+                label="Email"
+                placeholder="Your e-mail"
+                {...form.getInputProps('email')}
+            />
+            <TextInput
+                label="License num"
+                placeholder="Your license number"
+                {...form.getInputProps('license_num')}
+            />
+            <TextInput
+                label="Prescription Template"
+                placeholder="Your prescription template"
+                {...form.getInputProps('prescription_template')}
+            />
+            <Space h="lg"/>
+            <Button
+                color="red"
+                fullWidth
+                type="submit"
+            >
+                Submit
+            </Button>
+        </form>
     );
 };
 
