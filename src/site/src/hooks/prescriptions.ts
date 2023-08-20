@@ -5,6 +5,7 @@ import { patientFindPrescriptions } from "../libs/patients";
 import { userGetPrincipal, userIsKind } from "../libs/users";
 import { doctorFindPrescriptions } from "../libs/doctors";
 import { prescriptionCreate, prescriptionFindById } from "../libs/prescriptions";
+import { useAuth } from "./auth";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
@@ -65,9 +66,13 @@ export const usePrescriptionsFindById = (
     id: string
 ): UseQueryResult<PrescriptionResponse, Error> => {
     const {main} = useActors();
+    const {isLogged} = useAuth()
 
     return useQuery<PrescriptionResponse, Error>(
         ['prescriptions', id],
-        () => prescriptionFindById(main, id)
+        () => prescriptionFindById(main, id),
+        {
+            enabled: isLogged
+        }
     );
 };

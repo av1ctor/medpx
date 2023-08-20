@@ -27,10 +27,6 @@ const Login = (props: Props) => {
                     props.onAuthenticated();
                     return;
                 }
-                else if(isLogged) {
-                    showSuccess('Welcome back!');
-                }
-                returnToLastPage();
             }
         }
         catch(e) {
@@ -55,6 +51,7 @@ const Login = (props: Props) => {
 
     useEffect(() => {
         if(isLogged) {
+            showSuccess('Welcome back!');
             returnToLastPage();
         }
     }, [isLogged]);

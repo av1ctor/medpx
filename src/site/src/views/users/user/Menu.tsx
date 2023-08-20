@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@mantine/core";
 import { useCallback } from "react";
 import { useAuth } from "../../../hooks/auth";
@@ -15,10 +15,6 @@ export const Menu = () => {
         await logout();
         showSuccess('Logged out!');
     }, [logout]);
-
-    useEffect(() => {
-
-    }, [isLogged]);
 
     return (!isLogged? 
         <>
