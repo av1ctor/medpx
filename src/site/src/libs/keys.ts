@@ -1,14 +1,20 @@
 import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main, Pagination, KeyRequest, KeyResponse, KeyKind } from "../../../declarations/main/main.did";
 
+export enum Uniqueness {
+    Worldwide,
+    Countrywide,
+    Statewide
+}
+
 export const kinds = [
-    { value: 'EmailAddress', label: 'Email address' },
-    { value: 'PassportNumber', label: 'Passport number' },
-    { value: 'PhoneNumber', label: 'Phone number' },
-    { value: 'IdCardNumber', label: 'Id card number' },
-    { value: 'DriverLicenseNumber', label: 'Driver license number' },
-    { value: 'DoctorLicenseNumber', label: 'Doctor license number' },
-    { value: 'Random', label: 'Random key' },
+    { value: 'EmailAddress', label: 'Email address', uniqueness: Uniqueness.Worldwide },
+    { value: 'PassportNumber', label: 'Passport number', uniqueness: Uniqueness.Countrywide },
+    { value: 'PhoneNumber', label: 'Phone number', uniqueness: Uniqueness.Countrywide },
+    { value: 'IdCardNumber', label: 'Id card number', uniqueness: Uniqueness.Countrywide },
+    { value: 'DriverLicenseNumber', label: 'Driver license number', uniqueness: Uniqueness.Statewide },
+    { value: 'DoctorLicenseNumber', label: 'Doctor license number', uniqueness: Uniqueness.Statewide },
+    { value: 'Random', label: 'Random key', uniqueness: Uniqueness.Worldwide },
 ];
 
 export const keyGetKind = (
@@ -21,14 +27,26 @@ export const keyGetKind = (
         }
     }
     
-    return {label: 'Unkonwn', value: 'Unkonwn'};
+    return {label: 'Unknown', value: 'Unknown'};
 };
 
-export const keyBuildKind = (
+export const keyStringTokind = (
     kind: string
 ): KeyKind => {
     return {[kind]: null} as KeyKind;
 };
+
+export const keyGetKindIndex = (
+    kind: string
+): number => {
+    return kinds.findIndex(k => k.value === kind);
+}
+
+export const keyGetKindUniqueness = (
+    kind: string
+): Uniqueness => {
+    return kinds.find(k => k.value === kind)?.uniqueness || Uniqueness.Worldwide;
+}
 
 export const keyCreate = async (
     main: Main,

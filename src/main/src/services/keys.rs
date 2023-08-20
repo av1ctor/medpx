@@ -67,15 +67,15 @@ impl KeysService {
     }
 
     pub fn find_by_value(
-        country: &String,
         kind: &KeyKind,
+        country: &Option<String>,
         value: &String,
         db: &DB,
         _caller: &Principal
     ) -> Result<Key, String> {
         let keys = db.keys.borrow();
 
-        let id = Key::unique_id(country, kind, value);
+        let id = Key::unique_id(kind, country, value);
 
         let key = match keys.find_by_id(&id) {
             None => return Err("Not found".to_string()),

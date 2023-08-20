@@ -81,11 +81,11 @@ export const userFindById = async (
 
 export const userFindByKey = async (
     main: Main,
-    country: string,
     kind: KeyKind,
+    country: [string] | [],
     key: string
 ): Promise<UserResponse> => {
-    const res = await main.user_find_by_key(country, kind, key);
+    const res = await main.user_find_by_key(kind, country, key);
     if('Err' in res) {
         throw new Error(res.Err);
     }

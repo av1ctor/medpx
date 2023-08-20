@@ -53,7 +53,15 @@ impl TableSerializable<TableName, KeyId, Key> for KeysTable {}
 
 impl TableDeserializable<TableName, KeyId, Key> for KeysTable {}
 
-impl TableVersioned<TableName, KeyId, Key> for KeysTable {}
+impl TableVersioned<TableName, KeyId, Key> for KeysTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<KeyId, Key>, String> {
+        crate::db::migrations::keys::migrate(from_version, buf)
+    }
+}
 
 impl CrudSubscribable<TableName, KeyId, Key> for KeysTable {}
 

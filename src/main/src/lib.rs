@@ -181,14 +181,14 @@ fn user_find_id(
 
 #[ic_cdk::query]
 fn user_find_by_key(
-    country: String,
     kind: KeyKind,
+    country: Option<String>,
     key: String,
 ) -> Result<UserResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
-        match KeysService::find_by_value(&country, &kind, &key, &db.borrow(), &caller) {
+        match KeysService::find_by_value(&kind, &country, &key, &db.borrow(), &caller) {
             Ok(key) => {
                 match UsersService::find_by_id(&key.created_by, &db.borrow(), &caller) {
                     Ok(user) => {
@@ -509,14 +509,14 @@ fn key_find_by_id(
 
 #[ic_cdk::query]
 fn key_find_by_value(
-    country: String,
     kind: KeyKind,
+    country: Option<String>,
     value: String
 ) -> Result<KeyResponse, String> {
     let caller = &caller();
 
     DB.with(|db| {
-        match KeysService::find_by_value(&country, &kind, &value, &db.borrow(), &caller) {
+        match KeysService::find_by_value(&kind, &country, &value, &db.borrow(), &caller) {
             Ok(e) => Ok(e.into()),
             Err(msg) => Err(msg)
         }

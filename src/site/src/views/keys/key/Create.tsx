@@ -4,13 +4,17 @@ import { Button, Container, Select, Space, TextInput } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
-import { kinds } from "../../../libs/keys";
+import { Uniqueness, keyGetKindIndex, keyGetKindUniqueness, kinds } from "../../../libs/keys";
 import { useKey } from "../../../hooks/keys";
 import countries from "../../../libs/countries";
 
 const schema = yup.object().shape({
     kind: yup.string().required(),
-    country: yup.string().min(2).max(2),
+    country: yup.string().when(["kind"], (values, schema) => {
+        if(values[0] !== '' && keyGetKindUniqueness(values[0]) !== Uniqueness.Worldwide)
+            return schema.required().length(2);
+        return schema;
+    }),
     value: yup.string().min(3).max(64),
 });
 
@@ -35,6 +39,9 @@ const KeyCreate = (props: Props) => {
         transformValues: (values) => ({
             ...values,
             kind: {[values.kind]: null},
+            country: keyGetKindUniqueness(values.kind) === Uniqueness.Worldwide? 
+                []: 
+                [values.country], 
         }),
     });
 
@@ -66,17 +73,18 @@ const KeyCreate = (props: Props) => {
                     data={kinds}
                     {...form.getInputProps('kind')}
                 />
+                <TextInput
+                    label="Value"
+                    placeholder="Key value"
+                    {...form.getInputProps('value')}
+                />
                 <Select
                     label="Country"
                     placeholder="Your country"
                     data={_countries}
                     searchable
+                    disabled={form.values.kind === '' || kinds[keyGetKindIndex(form.values.kind)].uniqueness === Uniqueness.Worldwide}
                     {...form.getInputProps('country')}
-                />
-                <TextInput
-                    label="Value"
-                    placeholder="Key value"
-                    {...form.getInputProps('value')}
                 />
                 <Space h="lg"/>
                 <Button

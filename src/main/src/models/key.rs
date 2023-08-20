@@ -36,8 +36,8 @@ impl fmt::Display for KeyKind {
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Key {
     pub id: KeyId,
-    pub country: String,
     pub kind: KeyKind,
+    pub country: Option<String>,
     pub value: String,
     pub created_at: u64,
     pub created_by: Principal,
@@ -49,16 +49,16 @@ pub struct Key {
 
 #[derive(CandidType, Deserialize)]
 pub struct KeyRequest {
-    pub country: String,
     pub kind: KeyKind,
+    pub country: Option<String>,
     pub value: String,
 }
 
 #[derive(CandidType)]
 pub struct KeyResponse {
     id: KeyId,
-    country: String,
     kind: KeyKind,
+    country: Option<String>,
     value: String,
     created_at: u64,
 }
@@ -114,9 +114,9 @@ impl Key {
         caller: &Principal
     ) -> Self {
         Self {
-            id: Key::unique_id(&e.country, &e.kind, &e.value),
-            country: e.country.clone(),
+            id: Key::unique_id(&e.kind, &e.country, &e.value),
             kind: e.kind.clone(),
+            country: e.country.clone(),
             value: e.value.clone(),
             created_at: ic_cdk::api::time(),
             created_by: caller.clone(),
@@ -139,11 +139,15 @@ impl Key {
     }
 
     pub fn unique_id(
-        country: &String,
         kind: &KeyKind,
+        country: &Option<String>,
         value: &String
     ) -> String {
-        format!("{}#{}#{}", country, kind, value)
+        if let Some(c) = country {
+            format!("{}#{}#{}", c, kind, value)
+        } else {
+            format!("XX#{}#{}", kind, value)
+        }
     }
 }
 

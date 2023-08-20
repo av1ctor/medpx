@@ -26,14 +26,14 @@ export const useFindById = (
 }; 
 
 export const useFindByKey = (
-    country: string,
     kind: KeyKind,
+    country: [string] | [],
     key: string
 ): UseQueryResult<UserResponse, Error> => {
     const {main} = useActors();
     
     return useQuery<UserResponse, Error>(
         ['users', key],
-        () => userFindByKey(main, country, kind, key)
+        () => userFindByKey(main, kind, country, key)
     );
 }; 
