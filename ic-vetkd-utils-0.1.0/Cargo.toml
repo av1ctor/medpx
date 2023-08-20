@@ -1,0 +1,10 @@
+[package]
+name = "vetkd-utils"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ic-vetkd-utils = { git = "https://github.com/dfinity/ic", rev = "39a0e5858f8b3028252783c742b49f3eb924c287" }

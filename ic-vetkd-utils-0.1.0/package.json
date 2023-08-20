@@ -1,0 +1,9 @@
+{
+  "name": "vetkd-utils",
+  "private": true,
+  "scripts": {
+    "build": "wasm-pack build --target web --release"
+  },
+  "module": "pkg/vetkd_utils.js",
+  "types": "pkg/vetkd_utils.d.ts"
+}
