@@ -79,7 +79,7 @@ class StoicProvider implements ICProvider {
     private _createMainActor(
     ): ActorSubclass<any> {
         if(!mainCanisterId) {
-            throw Error('Metamob canister is undefined');
+            throw Error('Main canister is undefined');
         }
     
         return mainCreateActor(mainCanisterId, {agentOptions: buildAgentJsOptions(this.identity)})

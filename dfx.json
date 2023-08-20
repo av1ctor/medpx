@@ -27,6 +27,16 @@
           "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
         }
       }
+    },
+    "vetkd_system_api": {
+      "candid": "src/vetkd_system_api/vetkd_system_api.did",
+      "package": "vetkd_system_api",
+      "type": "rust",
+      "remote": {
+        "id": {
+          "ic": "s55qq-oqaaa-aaaaa-aaakq-cai"
+        }
+      }
     }
   },
   "defaults": {

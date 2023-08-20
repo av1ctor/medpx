@@ -1,5 +1,5 @@
 import { ActorSubclass, Agent, HttpAgent } from "@dfinity/agent";
-import { idlFactory as mainIdlFactory, canisterId as metamobCanisterId } from "../../../declarations/main";
+import { idlFactory as mainIdlFactory, canisterId as mainCanisterId } from "../../../declarations/main";
 import { ICProvider } from "../interfaces/icprovider";
 import { config } from "../config";
 import { Principal } from "@dfinity/principal";
@@ -67,7 +67,7 @@ class PlugProvider implements ICProvider {
     constructor() {
         this.plug = window.ic?.plug;
         
-        const whitelist: string[] = [metamobCanisterId];
+        const whitelist: string[] = [mainCanisterId];
         
         this.config = {
             whitelist,
@@ -105,7 +105,7 @@ class PlugProvider implements ICProvider {
         }
 
         switch(id) {
-            case metamobCanisterId:
+            case mainCanisterId:
                 return await this._createMainActor();
             default:
                 return undefined;
@@ -151,12 +151,12 @@ class PlugProvider implements ICProvider {
 
     private async _createMainActor(
     ): Promise<ActorSubclass<any>> {
-        if(!metamobCanisterId) {
-            throw Error('Metamob canister is undefined');
+        if(!mainCanisterId) {
+            throw Error('Main canister is undefined');
         }
 
         return await this.plug?.createActor({
-            canisterId: metamobCanisterId,
+            canisterId: mainCanisterId,
             interfaceFactory: mainIdlFactory,
         });
     }

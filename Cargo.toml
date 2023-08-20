@@ -1,4 +1,5 @@
 [workspace]
 members = [
     "src/main",
+    "src/vetkd_system_api",
 ]

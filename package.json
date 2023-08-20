@@ -45,7 +45,8 @@
     "react-qr-code": "^2.0.12",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.14.2",
-    "yup": "^1.2.0"
+    "yup": "^1.2.0",
+    "ic-vetkd-utils": "file:ic-vetkd-utils-0.1.0.tgz"
   },
   "devDependencies": {
     "@formatjs/ts-transformer": "^3.13.3",
