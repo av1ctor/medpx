@@ -29,7 +29,7 @@ const PatientCreate = (props: Props) => {
         initialValues: {
           name: '',
           email: '',
-          birth_date: Date.parse('2000-06-15'),
+          birth_date: new Date('2000-06-15'),
         },
     
         validate: yupResolver(schema),

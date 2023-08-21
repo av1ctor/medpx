@@ -16,7 +16,7 @@ interface AuthResponse {
     user?: UserResponse;
     principal?: Principal;
     accountId?: string,
-    login: (providerType: ICProviderType) => Promise<Result<any, string>>;
+    login: (providerType: ICProviderType) => Promise<Result<UserResponse, string>>;
     logout: () => Promise<void>;
     update: (user: UserResponse) => void;
 }
@@ -56,11 +56,11 @@ export const useAuth = (
 
     const _loadUser = async (
         provider: ICProvider,
-        main?: Main
-    ) => {
+        main: Main
+    ): Promise<Result<UserResponse, string>> => {
         if(!await provider.isAuthenticated()) {
             _destroyUser();
-            return;
+            return {Err: "User not authenticated"};
         }
 
         const principal = provider.getPrincipal();
@@ -75,12 +75,22 @@ export const useAuth = (
                     principalToAccountDefaultIdentifier(principal)):
                 undefined
         });
+        
+        const res = await _loadAuthenticatedUser(main);
+        if('Err' in res) {
+            return res;
+        }
+
+        const user = res.Ok;
+        
         authDisp({
             type: AuthActionType.SET_USER,
             payload: main? 
-                await _loadAuthenticatedUser(main): 
+                user: 
                 undefined
         });
+
+        return {Ok: user};
     };
 
     const _destroyUser = () => {
@@ -119,94 +129,124 @@ export const useAuth = (
     };
         
     const _initialize = async (
-        provider: ICProvider
-    ) => {
+        provider: ICProvider,
+        updateState: boolean 
+    ): Promise<boolean> => {
         if(locks.initialize) {
-            return;
+            return false;
         }
 
         locks.initialize = true;
 
         try {
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Initializing
-            });
-
-            if(!await provider.initialize()) {
+            if(updateState) {
                 authDisp({
                     type: AuthActionType.SET_STATE,
-                    payload: ICProviderState.Disconnected
+                    payload: ICProviderState.Initializing
                 });
-                return;
             }
 
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Initialized
-            });
+            if(!await provider.initialize()) {
+                if(updateState) {
+                    authDisp({
+                        type: AuthActionType.SET_STATE,
+                        payload: ICProviderState.Disconnected
+                    });
+                }
+                return  false;
+            }
+
+            if(updateState) {
+                authDisp({
+                    type: AuthActionType.SET_STATE,
+                    payload: ICProviderState.Initialized
+                });
+            }
         }
         finally {
             locks.initialize = false;
         }
+
+        return true;
     };
 
     const _connect = async (
-        provider: ICProvider
-    ) => {
+        provider: ICProvider,
+        updateState: boolean
+    ): Promise<boolean> => {
         if(locks.connect) {
-            return;
+            return false;
         }
 
         locks.connect = true;
 
         try {
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Connecting
-            });
+            if(updateState) {
+                authDisp({
+                    type: AuthActionType.SET_STATE,
+                    payload: ICProviderState.Connecting
+                });
+            }
 
             const res = await provider.connect();
             if(res.Err) {
-                authDisp({
-                    type: AuthActionType.SET_STATE,
-                    payload: ICProviderState.Disconnected
-                });
-                return;
+                if(updateState) {
+                    authDisp({
+                        type: AuthActionType.SET_STATE,
+                        payload: ICProviderState.Disconnected
+                    });
+                }
+                return false;
             }
 
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Connected
-            });
+            if(updateState) {
+                authDisp({
+                    type: AuthActionType.SET_STATE,
+                    payload: ICProviderState.Connected
+                });
+            }
         }
         finally {
             locks.connect = false;
         }
+
+        return true;
     };
 
     const _configure = async (
-        provider: ICProvider
-    ) => {
+        provider: ICProvider,
+        updateState: boolean
+    ): Promise<Result<UserResponse, string>> => {
         if(locks.configure) {
-            return;
+            return {Err: 'The configure lock stills held'};
         }
 
         locks.configure = true;
 
         try {
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Configuring
-            });
+            if(updateState) {
+                authDisp({
+                    type: AuthActionType.SET_STATE,
+                    payload: ICProviderState.Configuring
+                });
+            }
 
             const main = await _createActors(provider);
-            await _loadUser(provider, main);
+            const res = await _loadUser(provider, main);
+            if('Err' in res) {
+                return res;
+            }
 
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Configured
-            });
+            const user = res.Ok;
+
+            if(updateState) {
+                authDisp({
+                    type: AuthActionType.SET_STATE,
+                    payload: ICProviderState.Configured
+                });
+            }
+
+            return {Ok: user};
         }
         finally {
             locks.configure = false;
@@ -215,7 +255,7 @@ export const useAuth = (
 
     const login = async (
         providerType: ICProviderType
-    ): Promise<Result<any, string>> => {
+    ): Promise<Result<UserResponse, string>> => {
         
         //
         let provider: ICProvider | undefined = new IcProviderBuider().build(providerType);
@@ -223,24 +263,24 @@ export const useAuth = (
             return {Err: "Unknown provider"};
         }
 
-        // wait provider to initialize
         authDisp({
             type: AuthActionType.SET_STATE,
-            payload: ICProviderState.Initializing
+            payload: ICProviderState.Disconnected
         });
 
-        if(!await provider.initialize()) {
-            authDisp({
-                type: AuthActionType.SET_STATE,
-                payload: ICProviderState.Disconnected
-            });
-
+        // wait provider to initialize
+        if(!await _initialize(provider, false)) {
             return {Err: "IC Provider initialization failed"};
         }
 
+        // wait provider to connect
+        if(!await _connect(provider, false)) {
+            return {Err: "IC Provider connection failed"};
+        }
+
         // do the logon
-        const res = await provider?.login();
-        if(res.Err) {
+        const res = await _configure(provider, false)
+        if('Err' in res) {
             return res;
         }
 
@@ -248,10 +288,10 @@ export const useAuth = (
 
         authDisp({
             type: AuthActionType.SET_STATE,
-            payload: ICProviderState.Initialized
+            payload: ICProviderState.Configured
         });
 
-        return {Ok: null};
+        return {Ok: res.Ok};
     };
 
     const logout = async () => {
@@ -281,15 +321,15 @@ export const useAuth = (
 
         switch(auth.state) {
             case ICProviderState.Idle:
-                _initialize(auth.provider);
+                _initialize(auth.provider, true);
                 return;
 
             case ICProviderState.Initialized:
-                _connect(auth.provider);
+                _connect(auth.provider, true);
                 return;
 
             case ICProviderState.Connected:
-                _configure(auth.provider);
+                _configure(auth.provider, true);
                 return;
         }
         
@@ -309,13 +349,11 @@ export const useAuth = (
 
 const _loadAuthenticatedUser = async (
     main: Main
-): Promise<UserResponse|undefined> => {
+): Promise<Result<UserResponse, string>> => {
     try {
-        return await userFindMe(main);
+        return {Ok: await userFindMe(main)};
     }
     catch(e) {
-        //console.log(e)
+        return {Err: (e as Error).message};
     }
-
-    return undefined;
 };
