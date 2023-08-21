@@ -50,7 +50,7 @@ const DoctorCreate = (props: Props) => {
             await create(values);
             props.onSuccess('Doctor registered!');
 
-            update(await userFindMe(main));
+            await update(main, await userFindMe(main));
         }
         catch(e: any) {
             showError(e);

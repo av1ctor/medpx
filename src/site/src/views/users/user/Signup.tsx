@@ -85,7 +85,10 @@ const Signup = (props: Props) => {
                 label="Authentication" 
                 description="Authenticate with your provider"
             >
-                <Login onAuthenticated={handleAuthenticated} />
+                <Login 
+                    authenticateOnly={true}
+                    onAuthenticated={handleAuthenticated} 
+                />
             </Stepper.Step>
             <Stepper.Step 
                 label="Registration" 

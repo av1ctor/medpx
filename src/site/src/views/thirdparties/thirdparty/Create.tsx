@@ -47,7 +47,7 @@ const ThirdPartyCreate = (props: Props) => {
             await create(values);
             props.onSuccess('Third party registered!');
 
-            update(await userFindMe(main));
+            await update(main, await userFindMe(main));
         }
         catch(e: any) {
             showError(e);

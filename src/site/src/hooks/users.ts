@@ -3,6 +3,8 @@ import { Principal } from "@dfinity/principal";
 import { KeyKind, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { userFindById, userFindByKey, userFindMe } from "../libs/users";
+import { useAuth } from "./auth";
+import { useState } from "react";
 
 export const useFindMe = (
 ): UseQueryResult<UserResponse, Error> => {
@@ -36,4 +38,29 @@ export const useFindByKey = (
         ['users', key],
         () => userFindByKey(main, kind, country, key)
     );
-}; 
+};
+
+export interface DecryptResult {
+    Ok: string|undefined;
+    Err: string|undefined;
+}
+
+export const useDecrypt = (
+    message: Uint8Array
+): DecryptResult => {
+    const {aes_gcm} = useAuth();
+    const [text, setText] = useState<string|undefined>();
+    const [err, setErr] = useState<string|undefined>();
+
+    aes_gcm?.decrypt(message).then((value: string) => {
+        setText(value);
+    }, 
+    (reason: any) => {
+        setErr(reason);
+    });
+
+    return {
+        Ok: text,
+        Err: err,
+    };
+}

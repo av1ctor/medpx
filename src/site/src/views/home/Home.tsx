@@ -34,7 +34,7 @@ const Home = (props: Props) => {
             >
                 <Container size="md">
                     <Routes>
-                        <Route path="/user/login" element={<Login />} />
+                        <Route path="/user/login" element={<Login authenticateOnly={false} />} />
                         <Route path="/user/signup" element={<Signup />} />
                         <Route path="/p/:id" element={<PrescriptionViewWrapper />} />
                         <Route path="/" element={<Front />} />

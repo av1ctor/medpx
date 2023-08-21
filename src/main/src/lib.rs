@@ -22,7 +22,7 @@ use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, Thir
 use models::user::{UserResponse, UserId};
 use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
     thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService};
-use utils::serdeser::{serialize, deserialize};
+use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
 use crate::db::tables::users::UsersTable;
@@ -39,11 +39,13 @@ use crate::db::tables::staff::StaffTable;
 use crate::db::tables::thirdparties::ThirdPartiesTable;
 
 const STATE_VERSION: f32 = 0.1;
+const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {
     owner: Option<Principal>,
     counter: u128,
+    vetkd: VetKdUtil,
 }
 
 thread_local! {
@@ -85,6 +87,7 @@ fn init(
     STATE.with(|rc| {
         let mut state = rc.borrow_mut();
         state.owner = Some(caller());
+        state.vetkd = VetKdUtil::new(VETKD_SYSTEM_API_CANISTER_ID.to_string(), "test_key_1".to_string());
     });
 }
 
@@ -556,6 +559,51 @@ fn prescription_create(
             Err(msg) => Err(msg)
         }
     })
+}
+
+#[ic_cdk::update]
+async fn user_get_public_key(
+    derivation_path: Vec<u8>
+) -> Result<String, String> {
+    let caller = &caller();
+
+    match DB.with(|db| {
+        UsersService::find_by_id(caller, &db.borrow(), caller)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(_) => {}
+    };
+    
+    STATE.with(|state| {
+        UsersService::get_public_key(
+            state.borrow().vetkd.clone(),
+            derivation_path
+        )
+    }).await
+}
+
+#[ic_cdk::update]
+async fn user_get_encrypted_symmetric_key(
+    derivation_path: Vec<u8>,
+    encryption_public_key: Vec<u8>
+) -> Result<String, String> {
+    let caller = caller();
+
+    match DB.with(|db| {
+        UsersService::find_by_id(&caller, &db.borrow(), &caller)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(_) => {}
+    };
+
+    STATE.with(|rc| {
+        UsersService::get_encrypted_symmetric_key(
+            rc.borrow().vetkd.clone(), 
+            derivation_path,
+            encryption_public_key,
+            caller
+        )
+    }).await
 }
 
 #[ic_cdk::query]

@@ -48,7 +48,7 @@ const ThirdPartyEdit = (props: Props) => {
             await update(userGetPrincipal(user), values);
             props.onSuccess('Third party updated!');
 
-            userUpdate(await userFindMe(main));
+            await userUpdate(main, await userFindMe(main));
         }
         catch(e: any) {
             showError(e);

@@ -49,7 +49,7 @@ const PatientEdit = (props: Props) => {
             await update(userGetPrincipal(user), values );
             props.onSuccess('Patient updated!');
             
-            userUpdate(await userFindMe(main));
+            await userUpdate(main, await userFindMe(main));
         }
         catch(e: any) {
             showError(e);

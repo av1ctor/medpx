@@ -204,10 +204,17 @@ type FindKeysResult = variant {
     Ok: vec KeyResponse;
 };
 
+type PrescriptionKeyResult = variant {
+    Err: text;
+    Ok: text;
+};
+
 service : {
     user_find_me: () -> (UserResponseResult) query;
     user_find_by_id: (principal) -> (UserResponseResult) query;
     user_find_by_key: (KeyKind, opt text, text) -> (UserResponseResult) query;
+    user_get_public_key: (vec nat8) -> (PrescriptionKeyResult);
+    user_get_encrypted_symmetric_key: (vec nat8, vec nat8) -> (PrescriptionKeyResult);
     
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);

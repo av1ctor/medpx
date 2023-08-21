@@ -8,7 +8,8 @@ import { AuthActionType, AuthContext } from "../stores/auth";
 import { Result } from "../interfaces/result";
 import { IcProviderBuider } from "../libs/icproviderbuilder";
 import { accountIdentifierFromBytes, principalToAccountDefaultIdentifier } from "../libs/icp";
-import { userFindMe } from "../libs/users";
+import { userFindMe, userGetPrincipal } from "../libs/users";
+import { AES_GCM } from "../libs/vetkd";
 
 interface AuthResponse {
     isAuthenticated: boolean;
@@ -16,9 +17,10 @@ interface AuthResponse {
     user?: UserResponse;
     principal?: Principal;
     accountId?: string,
-    login: (providerType: ICProviderType) => Promise<Result<UserResponse, string>>;
+    aes_gcm?: AES_GCM,
+    login: (providerType: ICProviderType, authenticateOnly: boolean) => Promise<Result<UserResponse|undefined, string>>;
     logout: () => Promise<void>;
-    update: (user: UserResponse) => void;
+    update: (main: Main, user: UserResponse) => Promise<void>;
 }
 
 const locks = {
@@ -127,6 +129,15 @@ export const useAuth = (
             payload: undefined
         });
     };
+
+    const _createAesGcm = async (
+        main: Main,
+        userPrincipal: Principal
+    ): Promise<Result<AES_GCM, string>> => {
+        const aes_gcm = new AES_GCM();
+        await aes_gcm.init(main, userPrincipal, 'prescriptions');
+        return {Ok: aes_gcm};
+    };
         
     const _initialize = async (
         provider: ICProvider,
@@ -215,8 +226,9 @@ export const useAuth = (
 
     const _configure = async (
         provider: ICProvider,
+        authenticateOnly: boolean,
         updateState: boolean
-    ): Promise<Result<UserResponse, string>> => {
+    ): Promise<Result<UserResponse|undefined, string>> => {
         if(locks.configure) {
             return {Err: 'The configure lock stills held'};
         }
@@ -232,12 +244,34 @@ export const useAuth = (
             }
 
             const main = await _createActors(provider);
-            const res = await _loadUser(provider, main);
-            if('Err' in res) {
-                return res;
+            
+            if(authenticateOnly) {
+                if(updateState) {
+                    authDisp({
+                        type: AuthActionType.SET_STATE,
+                        payload: ICProviderState.Configured
+                    });
+                }
+
+                return {Ok: undefined};
+            }
+             
+            const ures = await _loadUser(provider, main);
+            if('Err' in ures) {
+                return ures;
             }
 
-            const user = res.Ok;
+            const user = ures.Ok;
+
+            const ares = await _createAesGcm(main, userGetPrincipal(user));
+            if('Err' in ares) {
+                return {Err: ares.Err};
+            }
+            
+            authDisp({
+                type: AuthActionType.SET_AES_GCM,
+                payload: ares.Ok
+            });
 
             if(updateState) {
                 authDisp({
@@ -254,8 +288,9 @@ export const useAuth = (
     };
 
     const login = async (
-        providerType: ICProviderType
-    ): Promise<Result<UserResponse, string>> => {
+        providerType: ICProviderType,
+        authenticateOnly: boolean
+    ): Promise<Result<UserResponse|undefined, string>> => {
         
         //
         let provider: ICProvider | undefined = new IcProviderBuider().build(providerType);
@@ -273,13 +308,18 @@ export const useAuth = (
             return {Err: "IC Provider initialization failed"};
         }
 
+        const pres = await provider?.login();
+        if(pres.Err) {
+            return pres;
+        }
+
         // wait provider to connect
         if(!await _connect(provider, false)) {
             return {Err: "IC Provider connection failed"};
         }
 
         // do the logon
-        const res = await _configure(provider, false)
+        const res = await _configure(provider, authenticateOnly, false)
         if('Err' in res) {
             return res;
         }
@@ -305,13 +345,22 @@ export const useAuth = (
         });
     };
 
-    const update = (
+    const update = async (
+        main: Main,
         user: UserResponse
-    ) => {
+    ): Promise<void> => {
         authDisp({
             type: AuthActionType.SET_USER,
             payload: user
         });
+
+        if(!auth.aes_gcm) {
+            const aes_gcm = await _createAesGcm(main, userGetPrincipal(user));
+            authDisp({
+                type: AuthActionType.SET_AES_GCM,
+                payload: aes_gcm
+            });
+        }
     };
 
     useEffect(() => {
@@ -329,7 +378,7 @@ export const useAuth = (
                 return;
 
             case ICProviderState.Connected:
-                _configure(auth.provider, true);
+                _configure(auth.provider, false, true);
                 return;
         }
         
@@ -341,6 +390,7 @@ export const useAuth = (
         user: auth.user,
         principal: auth.principal,
         accountId: auth.accountId,
+        aes_gcm: auth.aes_gcm,
         login,
         logout,
         update,

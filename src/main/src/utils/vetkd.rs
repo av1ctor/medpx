@@ -3,15 +3,13 @@ use ic_cdk::export::serde::Deserialize;
 use ic_cdk::export::Principal;
 use std::str::FromStr;
 
-pub type CanisterId = Principal;
-
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone)]
 pub enum VetKDCurve {
     #[serde(rename = "bls12_381")]
     Bls12_381,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(Clone, CandidType, Deserialize)]
 pub struct VetKDKeyId {
     pub curve: VetKDCurve,
     pub name: String,
@@ -19,7 +17,7 @@ pub struct VetKDKeyId {
 
 #[derive(CandidType, Deserialize)]
 pub struct VetKDPublicKeyRequest {
-    pub canister_id: Option<CanisterId>,
+    pub canister_id: Option<Principal>,
     pub derivation_path: Vec<Vec<u8>>,
     pub key_id: VetKDKeyId,
 }
@@ -42,97 +40,80 @@ pub struct VetKDEncryptedKeyReply {
     pub encrypted_key: Vec<u8>,
 }
 
-const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
-
-pub async fn symmetric_key_verification_key(
-) -> String {
-    let request = VetKDPublicKeyRequest {
-        canister_id: None,
-        derivation_path: vec![b"symmetric_key".to_vec()],
-        key_id: bls12_381_test_key_1(),
-    };
-
-    let (response,): (VetKDPublicKeyReply,) = ic_cdk::api::call::call(
-        vetkd_system_api_canister_id(),
-        "vetkd_public_key",
-        (request,),
-    )
-    .await
-    .expect("call to vetkd_public_key failed");
-
-    hex::encode(response.public_key)
+#[derive(Clone, CandidType, Deserialize)]
+pub struct VetKdUtil {
+    pub canister_id: Principal,
+    pub key_id: VetKDKeyId,
 }
 
-pub async fn encrypted_symmetric_key_for_caller(
-    encryption_public_key: Vec<u8>
-) -> String {
-    let request = VetKDEncryptedKeyRequest {
-        derivation_id: ic_cdk::caller().as_slice().to_vec(),
-        public_key_derivation_path: vec![b"symmetric_key".to_vec()],
-        key_id: bls12_381_test_key_1(),
-        encryption_public_key,
-    };
-
-    let (response,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
-        vetkd_system_api_canister_id(),
-        "vetkd_encrypted_key",
-        (request,),
-    )
-    .await
-    .expect("call to vetkd_encrypted_key failed");
-
-    hex::encode(response.encrypted_key)
-}
-
-pub async fn ibe_encryption_key(
-) -> String {
-    let request = VetKDPublicKeyRequest {
-        canister_id: None,
-        derivation_path: vec![b"ibe_encryption".to_vec()],
-        key_id: bls12_381_test_key_1(),
-    };
-
-    let (response,): (VetKDPublicKeyReply,) = ic_cdk::api::call::call(
-        vetkd_system_api_canister_id(),
-        "vetkd_public_key",
-        (request,),
-    )
-    .await
-    .expect("call to vetkd_public_key failed");
-
-    hex::encode(response.public_key)
-}
-
-pub async fn encrypted_ibe_decryption_key_for_caller(
-    encryption_public_key: Vec<u8>
-) -> String {
-    let request = VetKDEncryptedKeyRequest {
-        derivation_id: ic_cdk::caller().as_slice().to_vec(),
-        public_key_derivation_path: vec![b"ibe_encryption".to_vec()],
-        key_id: bls12_381_test_key_1(),
-        encryption_public_key,
-    };
-
-    let (response,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
-        vetkd_system_api_canister_id(),
-        "vetkd_encrypted_key",
-        (request,),
-    )
-    .await
-    .expect("call to vetkd_encrypted_key failed");
-
-    hex::encode(response.encrypted_key)
-}
-
-fn bls12_381_test_key_1(
-) -> VetKDKeyId {
-    VetKDKeyId {
-        curve: VetKDCurve::Bls12_381,
-        name: "test_key_1".to_string(),
+impl Default for VetKdUtil {
+    fn default() -> Self {
+        Self { 
+            canister_id: Principal::anonymous(), 
+            key_id: VetKDKeyId {
+                curve: VetKDCurve::Bls12_381,
+                name: "".to_string(),
+            }
+        }
     }
 }
 
-fn vetkd_system_api_canister_id(
-) -> CanisterId {
-    CanisterId::from_str(VETKD_SYSTEM_API_CANISTER_ID).expect("failed to create canister ID")
+impl VetKdUtil {
+    pub fn new(
+        canister_id: String,
+        key_name: String
+    ) -> Self {
+        Self {
+            canister_id: Principal::from_str(&canister_id)
+                .expect("failed to create canister ID"),
+            key_id: VetKDKeyId {
+                curve: VetKDCurve::Bls12_381,
+                name: key_name,
+            }
+        }
+    }
+
+    pub async fn get_public_key(
+        &self,
+        derivation_path: Vec<Vec<u8>>
+    ) -> Result<String, String> {
+        let req = VetKDPublicKeyRequest {
+            canister_id: None,
+            derivation_path,
+            key_id: self.key_id.clone(),
+        };
+    
+        let (res, ): (VetKDPublicKeyReply,) = ic_cdk::api::call::call(
+            self.canister_id.clone(),
+            "vetkd_public_key",
+            (req,),
+        ).await
+        .expect("call to vetkd_public_key failed");
+    
+        Ok(hex::encode(res.public_key))
+    }
+
+    pub async fn get_encrypted_symmetric_key(
+        &self,
+        public_key_derivation_path: Vec<Vec<u8>>,
+        derivation_id: Vec<u8>,
+        encryption_public_key: Vec<u8>
+    ) -> Result<String, String> {
+        let req = VetKDEncryptedKeyRequest {
+            derivation_id,
+            public_key_derivation_path,
+            key_id: self.key_id.clone(),
+            encryption_public_key,
+        };
+    
+        let (res,): (VetKDEncryptedKeyReply,) = ic_cdk::api::call::call(
+            self.canister_id.clone(),
+            "vetkd_encrypted_key",
+            (req,),
+        )
+        .await
+        .expect("call to vetkd_encrypted_key failed");
+    
+        Ok(hex::encode(res.encrypted_key))
+    }
 }

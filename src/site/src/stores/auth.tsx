@@ -2,12 +2,14 @@ import { Principal } from "@dfinity/principal";
 import React, {createContext, useReducer} from "react";
 import { ICProvider, ICProviderState } from "../interfaces/icprovider";
 import { UserResponse } from "../../../declarations/main/main.did";
+import { AES_GCM } from "../libs/vetkd";
 
 export interface AuthState {
     state: ICProviderState;
     provider?: ICProvider;
     principal?: Principal;
     accountId?: string;
+    aes_gcm?: AES_GCM;
     user?: UserResponse;
 };
 
@@ -17,6 +19,7 @@ export enum AuthActionType {
     SET_PRINCIPAL,
     SET_ACCOUNT_ID,
     SET_USER,
+    SET_AES_GCM,
 };
 
 export interface AuthAction {
@@ -30,6 +33,7 @@ const initialState: AuthState = {
     principal: undefined,
     accountId: undefined,
     user: undefined,
+    aes_gcm: undefined,
 };
 
 export const AuthContext = createContext<[AuthState, (action: AuthAction) => void]>(
@@ -65,6 +69,12 @@ const reducer = (state: AuthState, action: AuthAction): AuthState => {
             return {
                 ...state,
                 user: action.payload
+            };
+
+        case AuthActionType.SET_AES_GCM:
+            return {
+                ...state,
+                aes_gcm: action.payload
             };
 
         default:

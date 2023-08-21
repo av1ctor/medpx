@@ -25,7 +25,7 @@ interface Props {
 }
 
 const PrescriptionCreate = (props: Props) => {
-    const {principal} = useAuth();
+    const {principal, aes_gcm} = useAuth();
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {create} = usePrescription();
@@ -47,7 +47,7 @@ const PrescriptionCreate = (props: Props) => {
 
         transformValues: (values) => ({
             patient: userGetPrincipal(patient),
-            contents: new TextEncoder().encode(values.contents),
+            contents: values.contents,
 
         }),
     });
@@ -78,7 +78,12 @@ const PrescriptionCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            await create(values);
+            const contents = await aes_gcm?.encrypt(values.contents);
+
+            await create({
+                ...values,
+                contents,
+            });
             props.onSuccess('Prescription created!');
         }
         catch(e: any) {
@@ -87,7 +92,7 @@ const PrescriptionCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main]);
+    }, [main, aes_gcm]);
 
     const handlePreview = useCallback(() => {
         if(!principal) {

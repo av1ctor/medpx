@@ -1,23 +1,20 @@
-import React, { useMemo } from "react";
-import { Anchor, Center, Container, Divider, Flex, Grid, NavLink, Space, Text } from "@mantine/core";
+import React from "react";
+import { Anchor, Center, Container, Divider, Flex, Grid, Space, Text } from "@mantine/core";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 import { useDoctorFindById } from "../../../hooks/doctors";
 import { usePatientFindById } from "../../../hooks/patients";
 import QRCode from "react-qr-code";
 import { config } from "../../../config";
+import { useDecrypt } from "../../../hooks/users";
 
 interface Props {
     item: PrescriptionResponse;
 }
 
 const PrescriptionView = (props: Props) => {
-
     const doctor = useDoctorFindById(props.item.doctor);
     const patient = usePatientFindById(props.item.patient);
-
-    const contents = useMemo(() => {
-        return new TextDecoder().decode((props.item?.contents as Uint8Array) || new Uint8Array());
-    }, [props.item]);
+    const dec = useDecrypt((props.item?.contents as Uint8Array) || new Uint8Array());
 
     const {item} = props;
 
@@ -51,7 +48,7 @@ const PrescriptionView = (props: Props) => {
 
                 <Space h="2rem" />
 
-                {contents}
+                {dec.Ok}
 
                 <Space h="30rem" />
 

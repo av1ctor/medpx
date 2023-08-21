@@ -7,6 +7,7 @@ import { ICProviderType } from "../../../../../site/src/interfaces/icprovider";
 import { useBrowser } from "../../../hooks/browser";
 
 interface Props {
+    authenticateOnly: boolean;
     onAuthenticated?: () => void;
 }
 
@@ -18,7 +19,7 @@ const Login = (props: Props) => {
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
             toggleLoading(true);
-            const res = await login(providerType);
+            const res = await login(providerType, props.authenticateOnly);
             if(res.Err) {
                 showError(res.Err);
             }
@@ -35,7 +36,7 @@ const Login = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [login, isLogged, props.onAuthenticated]);
+    }, [login, isLogged, props.authenticateOnly, props.onAuthenticated]);
 
     const handleAuthenticateII = useCallback(async () => {
         handleLogin(ICProviderType.InternetIdentity);

@@ -48,7 +48,7 @@ const PatientCreate = (props: Props) => {
             props.onSuccess('Patient registered!');
 
             let user = await userFindMe(main);
-            update(user);
+            await update(main, user);
         }
         catch(e: any) {
             showError(e);
