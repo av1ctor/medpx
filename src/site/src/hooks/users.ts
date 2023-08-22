@@ -4,7 +4,7 @@ import { KeyKind, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { userFindById, userFindByKey, userFindMe } from "../libs/users";
 import { useAuth } from "./auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const useFindMe = (
 ): UseQueryResult<UserResponse, Error> => {
@@ -46,18 +46,26 @@ export interface DecryptResult {
 }
 
 export const useDecrypt = (
-    message: Uint8Array
+    message: Uint8Array,
+    isEncrypted: boolean
 ): DecryptResult => {
     const {aes_gcm} = useAuth();
     const [text, setText] = useState<string|undefined>();
     const [err, setErr] = useState<string|undefined>();
 
-    aes_gcm?.decrypt(message).then((value: string) => {
-        setText(value);
-    }, 
-    (reason: any) => {
-        setErr(reason);
-    });
+    useEffect(() => {
+        if(!isEncrypted) {
+            setText(new TextDecoder().decode(message));
+        }
+        else {
+            aes_gcm?.decrypt(message).then((value: string) => {
+                setText(value);
+            }, 
+            (reason: any) => {
+                setErr(reason);
+            });
+        }
+    }, [message, isEncrypted])
 
     return {
         Ok: text,

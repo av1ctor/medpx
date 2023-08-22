@@ -55,7 +55,10 @@ const PrescriptionViewWrapper = () => {
                 {item.isLoading || item.data?
                     <Card withBorder>
                         {item.data?
-                            <PrescriptionView item={item.data} />
+                            <PrescriptionView 
+                                item={item.data} 
+                                isEncrypted
+                            />
                         :
                             <Center>
                                 Please wait, loading...

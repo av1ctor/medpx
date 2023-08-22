@@ -31,6 +31,8 @@ export const GlobalStyles = () => {
                     border: '0.0625rem solid #dee2e6',
                     borderRadius: '0.5rem',
                     padding: '1rem',
+                },
+                '.main-card': {
                     minHeight: '40vh',
                 },
                 '.card-title': {

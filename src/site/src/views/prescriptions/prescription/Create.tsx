@@ -154,13 +154,13 @@ const PrescriptionCreate = (props: Props) => {
                             </Grid>
                             <Button
                                 variant="filled" 
-                                color="blue"
+                                color="green"
                                 disabled={!form.values.patient}
                                 loading={isVerifing}
                                 fullWidth
                                 onClick={handleVerify}
                             >
-                                Verify
+                                Look up
                             </Button>
                         </Stack>
                     </div>
@@ -217,9 +217,11 @@ const PrescriptionCreate = (props: Props) => {
                 centered
                 onClose={close}
             >
-                {previewItem && <PrescriptionView 
-                    item={previewItem} 
-                />}
+                {previewItem && 
+                    <PrescriptionView 
+                        item={previewItem}
+                        isEncrypted={false}
+                    />}
             </Modal>
         </>
     );

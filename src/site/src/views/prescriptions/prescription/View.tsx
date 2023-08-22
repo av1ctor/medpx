@@ -9,12 +9,13 @@ import { useDecrypt } from "../../../hooks/users";
 
 interface Props {
     item: PrescriptionResponse;
+    isEncrypted: boolean;
 }
 
 const PrescriptionView = (props: Props) => {
     const doctor = useDoctorFindById(props.item.doctor);
     const patient = usePatientFindById(props.item.patient);
-    const dec = useDecrypt((props.item?.contents as Uint8Array) || new Uint8Array());
+    const dec = useDecrypt((props.item?.contents as Uint8Array) || new Uint8Array(), props.isEncrypted);
 
     const {item} = props;
 

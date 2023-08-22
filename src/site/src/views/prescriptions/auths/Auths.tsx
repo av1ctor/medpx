@@ -51,7 +51,7 @@ const PrescriptionAuths = (props: Props) => {
 
     return (
         <>
-            <Card withBorder radius="md" p="xl" className="card">
+            <Card withBorder radius="md" p="xl" className="main-card card">
                 <Group position="apart" noWrap spacing="xl">
                     <div>
                         <Text fz="lg" className="card-title" fw={500}>
