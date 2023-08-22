@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Anchor, Center, Container, Divider, Flex, Grid, Space, Text } from "@mantine/core";
 import QRCode from "react-qr-code";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
@@ -6,6 +6,7 @@ import { useDoctorFindById } from "../../../hooks/doctors";
 import { usePatientFindById } from "../../../hooks/patients";
 import { config } from "../../../config";
 import { useDecrypt } from "../../../hooks/users";
+import { useUI } from "../../../hooks/ui";
 
 interface Props {
     item: PrescriptionResponse;
@@ -13,14 +14,21 @@ interface Props {
 }
 
 const PrescriptionView = (props: Props) => {
+    const {showError} = useUI()
     const doctor = useDoctorFindById(props.item.doctor);
     const patient = usePatientFindById(props.item.patient);
     const dec = useDecrypt((props.item?.contents as Uint8Array) || new Uint8Array(), props.isEncrypted);
 
+    useEffect(() => {
+        if(dec.Err) {
+            showError(dec.Err);
+        }
+    }, [dec.Err]);
+    
     const {item} = props;
 
     const url = `${config.APP_URL}/#/p/${item.id}`;
-    
+
     return (
         <div>
             <Center>

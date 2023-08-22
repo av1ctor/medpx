@@ -58,12 +58,11 @@ impl UsersService {
     pub async fn get_encrypted_symmetric_key(
         vetkd: VetKdUtil,
         derivation_path: Vec<u8>,
-        encryption_public_key: Vec<u8>,
-        caller: Principal
+        encryption_public_key: Vec<u8>
     ) -> Result<String, String> {
         vetkd.get_encrypted_symmetric_key(
             vec![derivation_path], 
-            caller.as_slice().to_vec(), 
+            ic_cdk::id().as_slice().to_vec(),
             encryption_public_key
         ).await
     }

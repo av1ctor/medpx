@@ -250,8 +250,7 @@ async fn user_get_encrypted_symmetric_key(
         UsersService::get_encrypted_symmetric_key(
             rc.borrow().vetkd.clone(), 
             derivation_path,
-            encryption_public_key,
-            caller
+            encryption_public_key
         )
     }).await
 }

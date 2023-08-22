@@ -8,7 +8,7 @@ import { AuthActionType, AuthContext } from "../stores/auth";
 import { Result } from "../interfaces/result";
 import { IcProviderBuider } from "../libs/icproviderbuilder";
 import { accountIdentifierFromBytes, principalToAccountDefaultIdentifier } from "../libs/icp";
-import { userFindMe, userGetPrincipal } from "../libs/users";
+import { userFindMe } from "../libs/users";
 import { AES_GCM } from "../libs/vetkd";
 
 interface AuthResponse {
@@ -131,11 +131,10 @@ export const useAuth = (
     };
 
     const _createAesGcm = async (
-        main: Main,
-        userPrincipal: Principal
+        main: Main
     ): Promise<Result<AES_GCM, string>> => {
         const aes_gcm = new AES_GCM();
-        await aes_gcm.init(main, userPrincipal, 'prescriptions');
+        await aes_gcm.init(main, 'prescriptions');
         return {Ok: aes_gcm};
     };
         
@@ -263,7 +262,7 @@ export const useAuth = (
 
             const user = ures.Ok;
 
-            const ares = await _createAesGcm(main, userGetPrincipal(user));
+            const ares = await _createAesGcm(main);
             if('Err' in ares) {
                 return {Err: ares.Err};
             }
@@ -355,7 +354,7 @@ export const useAuth = (
         });
 
         if(!auth.aes_gcm) {
-            const aes_gcm = await _createAesGcm(main, userGetPrincipal(user));
+            const aes_gcm = await _createAesGcm(main);
             authDisp({
                 type: AuthActionType.SET_AES_GCM,
                 payload: aes_gcm

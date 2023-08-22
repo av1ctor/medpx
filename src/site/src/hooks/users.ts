@@ -58,14 +58,16 @@ export const useDecrypt = (
             setText(new TextDecoder().decode(message));
         }
         else {
-            aes_gcm?.decrypt(message).then((value: string) => {
-                setText(value);
-            }, 
-            (reason: any) => {
-                setErr(reason);
-            });
+            if(aes_gcm) {
+                aes_gcm.decrypt(message).then((value: string) => {
+                    setText(value);
+                }, 
+                (reason: any) => {
+                    setErr(reason.message || "Call to AES GCM decrypt failed");
+                });
+            }
         }
-    }, [message, isEncrypted])
+    }, [message, isEncrypted, aes_gcm])
 
     return {
         Ok: text,

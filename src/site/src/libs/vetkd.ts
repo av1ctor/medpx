@@ -1,6 +1,7 @@
 import * as vetkd from "ic-vetkd-utils";
 import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main } from "../../../declarations/main/main.did";
+import { canisterId } from "../../../declarations/main";
 import { Result } from "../interfaces/result";
 
 export class AES_GCM {
@@ -8,7 +9,6 @@ export class AES_GCM {
 
     async init(
         main: Main,
-        userPrincipal: Principal,
         derivationPath: string
     ): Promise<Result<null, string>> {
         await vetkd.default();
@@ -35,7 +35,7 @@ export class AES_GCM {
                 this.rawKey = tsk.decrypt_and_hash(
                     hex_decode(ek_bytes_hex || ''),
                     hex_decode(pk_bytes_hex || ''),
-                    userPrincipal.toUint8Array(),
+                    Principal.fromText(canisterId).toUint8Array(),
                     32,
                     new TextEncoder().encode("aes-256-gcm")
                 );
@@ -52,18 +52,28 @@ export class AES_GCM {
         message: string
     ): Promise<Uint8Array> {
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["encrypt"]);
-        const message_encoded = new TextEncoder().encode(message);
-        const ciphertext_buffer = await window.crypto.subtle.encrypt(
-            { name: "AES-GCM", iv: iv },
-            aes_key,
-            message_encoded
-        );
-        const ciphertext = new Uint8Array(ciphertext_buffer);
-        var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
-        iv_and_ciphertext.set(iv, 0);
-        iv_and_ciphertext.set(ciphertext, iv.length);
-        return iv_and_ciphertext;
+        try {
+            const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["encrypt"]);
+            try {
+                const message_encoded = new TextEncoder().encode(message);
+                const ciphertext_buffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    aes_key,
+                    message_encoded
+                );
+                const ciphertext = new Uint8Array(ciphertext_buffer);
+                var iv_and_ciphertext = new Uint8Array(iv.length + ciphertext.length);
+                iv_and_ciphertext.set(iv, 0);
+                iv_and_ciphertext.set(ciphertext, iv.length);
+                return iv_and_ciphertext;
+            }
+            catch(e: any) {
+                throw new Error( `Error at window.crypto.subtle.encrypt: "${e.message}"`);    
+            }
+        }
+        catch(e: any) {
+            throw new Error( `Error at window.crypto.subtle.importKey: "${e.message}"`);
+        }
     }
 
     async decrypt (
@@ -71,13 +81,25 @@ export class AES_GCM {
     ): Promise<string> {
         const iv = iv_and_ciphertext.subarray(0, 12);
         const ciphertext = iv_and_ciphertext.subarray(12);
-        const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["decrypt"]);
-        let decrypted = await window.crypto.subtle.decrypt(
-            { name: "AES-GCM", iv: iv },
-            aes_key,
-            ciphertext
-        );
-        return new TextDecoder().decode(decrypted);
+        
+        try {
+            const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["decrypt"]);
+            
+            try {
+                let decrypted = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    aes_key,
+                    ciphertext
+                );
+                return new TextDecoder().decode(decrypted);
+            }
+            catch(e: any) {
+                return `Error at window.crypto.subtle.decrypt: "${e.message}"`;
+            }
+        }
+        catch(e: any) {
+            return `Error at window.crypto.subtle.importKey: "${e.message}"`;
+        }
     }
 }
 
@@ -93,10 +115,3 @@ const hex_decode = (
         .map((byte) => parseInt(byte, 16))
     );
 };
-
-const hex_encode = (
-    bytes: Uint8Array
-): string => {
-    return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
-};
-  
