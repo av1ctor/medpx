@@ -1,6 +1,6 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId};
 
 pub struct PrescriptionsService {}
@@ -72,7 +72,16 @@ impl PrescriptionsService {
         };
 
         if prescription.doctor != *caller && prescription.patient != *caller {
-            return Err("Forbidden".to_string());
+            match db.prescription_auths_rel.borrow().find_by_id(&prescription.id) {
+                None => return Err("Forbidden".to_string()),
+                Some(ids) => {
+                    if !ids.iter().map(|id| 
+                        db.prescription_auths.borrow().get(id).clone()
+                        ).any(|e| e.to == *caller) {
+                            return Err("Forbidden".to_string());
+                    }
+                }
+            }
         }
 
         Ok(prescription.clone())

@@ -101,8 +101,10 @@ impl PrescriptionAuthsService {
             db.prescription_auths.borrow().get(id).clone()
         ).collect();
         
-        if auths.first().unwrap().created_by != *caller {
-            return Err("Forbidden".to_string());
+        if let Some(first) = auths.first() {
+            if first.created_by != *caller {
+                return Err("Forbidden".to_string());
+            }
         }
 
         Ok(auths)

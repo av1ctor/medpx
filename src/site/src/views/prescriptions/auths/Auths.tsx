@@ -37,7 +37,7 @@ const PrescriptionAuths = (props: Props) => {
                 await remove(item);
             }
             deleteClose()
-            showSuccess("PrescriptionAuth removed!");
+            showSuccess("Prescription share removed!");
         }
         catch(e) {
             showError(e);
