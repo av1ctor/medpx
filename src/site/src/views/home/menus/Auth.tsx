@@ -6,28 +6,49 @@ import { useUI } from "../../../hooks/ui";
 import { IconUserBolt, IconUserPlus, IconUserX } from "@tabler/icons-react";
 import { useBrowser } from "../../../hooks/browser";
 
-export const AuthMenu = () => {
+interface Props {
+    onClick?: () => void;
+}
+
+export const AuthMenu = (props: Props) => {
     const {isLogged, logout} = useAuth();
     const {showSuccess} = useUI();
     const {redirectToLogin, redirectToSignup} = useBrowser();
     
     const handleLogout = useCallback(async () => {
+        if(props.onClick) {
+            props.onClick();
+        }
         await logout();
         showSuccess('Logged out!');
-    }, [logout]);
+    }, [logout, props.onClick]);
+
+    const handleRedirectToLogin = useCallback(() => {
+        if(props.onClick) {
+            props.onClick();
+        }
+        redirectToLogin();
+    }, [props.onClick]);
+
+    const handleRedirectToSignup = useCallback(() => {
+        if(props.onClick) {
+            props.onClick();
+        }
+        redirectToSignup();
+    }, [props.onClick]);
 
     return (!isLogged? 
         <>
             <Button 
                 variant="default" 
                 leftIcon={<IconUserBolt/>}
-                onClick={redirectToLogin}
+                onClick={handleRedirectToLogin}
             >
                 Log in
             </Button>
             <Button 
                 leftIcon={<IconUserPlus/>}
-                onClick={redirectToSignup}
+                onClick={handleRedirectToSignup}
             >
                 Sign up
             </Button>

@@ -35,7 +35,7 @@ export const App = () => {
                             <UIContextProvider>
                                 <MantineProvider withGlobalStyles withNormalizeCSS>
                                     <GlobalStyles />
-                                    <Notifications position="top-right" />
+                                    <Notifications position="bottom-right" />
                                     <Router> 
                                         <Home />
                                     </Router>

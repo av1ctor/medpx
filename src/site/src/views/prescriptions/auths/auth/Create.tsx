@@ -1,12 +1,14 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Select, Space, TextInput } from "@mantine/core";
+import { Button, Container, Flex, Select, Space } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
 import { kinds } from "../../../../libs/prescription_auths";
 import { usePrescriptionAuth } from "../../../../hooks/prescription_auths";
-import { Principal } from "@dfinity/principal";
+import { UserLookup } from "../../../users/user/Lookup";
+import { UserResponse } from "../../../../../../declarations/main/main.did";
+import { userGetPrincipal } from "../../../../libs/users";
 
 const schema = yup.object().shape({
     prescription_id: yup.string().required(),
@@ -23,38 +25,28 @@ const PrescriptionAuthCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {create} = usePrescriptionAuth();
+    const [thirdParty, setThirdParty] = useState<UserResponse|undefined>()
     
     const form = useForm({
         initialValues: {
             prescription_id: props.prescriptionId,
             kind: '',
-            to: '',
             expires_at: []
         },
     
         validate: yupResolver(schema),
-
-        transformValues: (values) => {
-            try {
-                const to = Principal.fromText(values.to);
-                return {
-                    ...values,
-                    kind: {[values.kind]: null},
-                    to,
-                }
-            }
-            catch(e) {
-                showError(e);
-                return values;
-            }
-        },
     });
 
     const handleCreate = useCallback(async (values: any) => {
         try {
             toggleLoading(true);
 
-            await create(values);
+            await create({
+                ...values,
+                kind: {[values.kind]: null},
+                to: userGetPrincipal(thirdParty),
+            });
+
             props.onSuccess('Prescription shared!');
         }
         catch(e: any) {
@@ -63,17 +55,28 @@ const PrescriptionAuthCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main]);
+    }, [main, thirdParty]);
+
+    const data = thirdParty && 'ThirdParty' in thirdParty.kind?
+        thirdParty.kind.ThirdParty:
+        null;
 
     return (
         <Container>
+            <UserLookup 
+                setUser={setThirdParty}
+            />                    
+
+            <Space h="xl" />
+
+            <Flex direction="column">
+                <div><b>Name:</b> {data?.name}</div>
+                <div><b>Id:</b> {data?.id.toString()}</div>
+            </Flex>
+
+            <Space h="1rem" />
+
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <TextInput
-                    label="User"
-                    placeholder="User id to share with"
-                    required
-                    {...form.getInputProps('to')}
-                />
                 <Select
                     label="Kind"
                     placeholder="Sharing kind"
@@ -86,6 +89,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                     color="red"
                     fullWidth
                     type="submit"
+                    disabled={!thirdParty}
                 >
                     Submit
                 </Button>

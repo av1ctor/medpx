@@ -1,10 +1,6 @@
 import React from 'react';
 import { Group, UnstyledButton, createStyles, rem, Text, ThemeIcon } from '@mantine/core';
-import {
-    IconUser,
-    IconKey,
-    IconClipboardList,
-  } from '@tabler/icons-react';
+import { IconUser, IconKey, IconClipboardList } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 const useStyles = createStyles((theme) => ({
@@ -47,7 +43,11 @@ const data = [
     },
 ];
 
-export const UserMenu = () => {
+interface Props {
+    onClick?: () => void;
+}
+
+export const UserMenu = (props: Props) => {
     const { classes, theme } = useStyles();
 
     return data.map((item) => (
@@ -55,7 +55,7 @@ export const UserMenu = () => {
             className={classes.subLink} 
             key={item.title}
         >
-            <Link to={item.to} className={classes.url}>
+            <Link to={item.to} className={classes.url} onClick={props.onClick}>
                 <Group noWrap align="flex-start">
                     <ThemeIcon size={34} variant="default" radius="md">
                         <item.icon size={rem(22)} color={theme.fn.primaryColor()} />

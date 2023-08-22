@@ -1,13 +1,10 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, SimpleGrid, UnstyledButton, createStyles, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import {
-    IconChevronDown,
-    IconHome2,
-    IconUser,
-  } from '@tabler/icons-react';
+import { IconChevronDown, IconHome2, IconUser } from '@tabler/icons-react';
 import { AuthMenu } from './menus/Auth';
 import { UserMenu } from './menus/User';
+import { useAuth } from '../../hooks/auth';
 
 const useStyles = createStyles((theme) => ({
     link: {
@@ -50,13 +47,10 @@ interface Props {
 }
 
 const AppHeader = (props: Props) => {
+    const {isLogged} = useAuth();
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
     const { classes, theme } = useStyles();
-
-    const menu = useMemo(() => {
-        return <UserMenu />;
-    }, []);
 
     return (
         <Box pb={120}>
@@ -69,24 +63,26 @@ const AppHeader = (props: Props) => {
                             <IconHome2 size="1rem" />&nbsp;Home
                         </a>
                         
-                        <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
-                            <HoverCard.Target>
-                                <a href="#" className={classes.link}>
-                                    <Center inline>
-                                        <Box component="span" mr={5}>
-                                            <IconUser size="1rem" />&nbsp;User
-                                        </Box>
-                                        <IconChevronDown size={16} color={theme.fn.primaryColor()} />
-                                    </Center>
-                                </a>
-                            </HoverCard.Target>
+                        {isLogged && 
+                            <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
+                                <HoverCard.Target>
+                                    <a href="#" className={classes.link}>
+                                        <Center inline>
+                                            <Box component="span" mr={5}>
+                                                <IconUser size="1rem" />&nbsp;User
+                                            </Box>
+                                            <IconChevronDown size={16} color={theme.fn.primaryColor()} />
+                                        </Center>
+                                    </a>
+                                </HoverCard.Target>
 
-                            <HoverCard.Dropdown sx={{ overflow: 'hidden' }}>
-                                <SimpleGrid cols={2} spacing={0}>
-                                    {menu}
-                                </SimpleGrid>
-                            </HoverCard.Dropdown>
-                        </HoverCard>
+                                <HoverCard.Dropdown sx={{ overflow: 'hidden' }}>
+                                    <SimpleGrid cols={2} spacing={0}>
+                                        <UserMenu />
+                                    </SimpleGrid>
+                                </HoverCard.Dropdown>
+                            </HoverCard>
+                        }
                     </Group>
 
                     <Group className={classes.hiddenMobile}>
@@ -109,23 +105,30 @@ const AppHeader = (props: Props) => {
                 <ScrollArea h={`calc(100vh - ${rem(60)})`} mx="-md">
                     <Divider my="sm" color={theme.colorScheme === 'dark' ? 'dark.5' : 'gray.1'} />
         
-                    <a href="#" className={classes.link}>
+                    <a href="#" className={classes.link} onClick={closeDrawer}>
                         <IconHome2 size="1rem" />&nbsp;Home
                     </a>
-                    <UnstyledButton className={classes.link} onClick={toggleLinks}>
-                        <Center inline>
-                            <Box component="span" mr={5}>
-                                <IconUser size="1rem" />&nbsp;User
-                            </Box>
-                            <IconChevronDown size={16} color={theme.fn.primaryColor()} />
-                        </Center>
-                    </UnstyledButton>
-                    <Collapse in={linksOpened}>{menu}</Collapse>
+                    
+                    {isLogged && 
+                        <>
+                            <UnstyledButton className={classes.link} onClick={toggleLinks}>
+                                <Center inline>
+                                    <Box component="span" mr={5}>
+                                        <IconUser size="1rem" />&nbsp;User
+                                    </Box>
+                                    <IconChevronDown size={16} color={theme.fn.primaryColor()} />
+                                </Center>
+                            </UnstyledButton>
+                            <Collapse in={linksOpened}>
+                                <UserMenu onClick={closeDrawer} />
+                            </Collapse>
+                        </>
+                    }
         
                     <Divider my="sm" color={theme.colorScheme === 'dark' ? 'dark.5' : 'gray.1'} />
         
                     <Group className={classes.hiddenDesktop} position="center" grow pb="xl" px="md">
-                        <AuthMenu />
+                        <AuthMenu onClick={closeDrawer} />
                     </Group>
                 </ScrollArea>
             </Drawer>

@@ -30,7 +30,7 @@ const showError = (e: any) => {
             title: 'Error',
             message: `Error${e.constructor === Array? 's:\n': ': '}${text}`,
             color: 'red',
-            autoClose: 10000,
+            autoClose: 5000,
         });
     }
 };
@@ -40,7 +40,7 @@ const showSuccess = (text: string) => {
         title: 'Success',
         message: text,
         color: 'green',
-        autoClose: 5000,
+        autoClose: 2500,
     });
 }
 
