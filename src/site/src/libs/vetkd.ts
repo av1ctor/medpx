@@ -1,7 +1,6 @@
 import * as vetkd from "ic-vetkd-utils";
 import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main } from "../../../declarations/main/main.did";
-import { canisterId } from "../../../declarations/main";
 import { Result } from "../interfaces/result";
 
 export class AES_GCM {

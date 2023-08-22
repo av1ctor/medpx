@@ -6,12 +6,12 @@ pub mod services;
 use std::cell::RefCell;
 use std::rc::Rc;
 use candid::{Principal, CandidType};
-use db::traits::{table::Table, crud::{Crud, Pagination}};
+use db::traits::{table::Table, crud::Pagination};
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use serde::Deserialize;
 use db::DB;
-use models::prescription_auth::{PrescritipionAuthRequest, PrescriptionAuthResponse, 
+use models::prescription_auth::{PrescriptionAuthRequest, PrescriptionAuthResponse, 
     PrescriptionAuth, PrescriptionAuthId};
 use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
 use models::key::{KeyRequest, KeyResponse, Key, KeyId, KeyKind};
@@ -21,7 +21,7 @@ use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
 use models::user::{UserResponse, UserId};
 use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
-    thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService};
+    thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
@@ -207,6 +207,51 @@ fn user_find_by_key(
             Err(msg) => Err(msg)
         }
     })
+}
+
+#[ic_cdk::update]
+async fn user_get_public_key(
+    derivation_path: Vec<u8>
+) -> Result<String, String> {
+    let caller = &caller();
+
+    match DB.with(|db| {
+        UsersService::find_by_id(caller, &db.borrow(), caller)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(_) => {}
+    };
+    
+    STATE.with(|state| {
+        UsersService::get_public_key(
+            state.borrow().vetkd.clone(),
+            derivation_path
+        )
+    }).await
+}
+
+#[ic_cdk::update]
+async fn user_get_encrypted_symmetric_key(
+    derivation_path: Vec<u8>,
+    encryption_public_key: Vec<u8>
+) -> Result<String, String> {
+    let caller = caller();
+
+    match DB.with(|db| {
+        UsersService::find_by_id(&caller, &db.borrow(), &caller)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(_) => {}
+    };
+
+    STATE.with(|rc| {
+        UsersService::get_encrypted_symmetric_key(
+            rc.borrow().vetkd.clone(), 
+            derivation_path,
+            encryption_public_key,
+            caller
+        )
+    }).await
 }
 
 /*
@@ -561,51 +606,6 @@ fn prescription_create(
     })
 }
 
-#[ic_cdk::update]
-async fn user_get_public_key(
-    derivation_path: Vec<u8>
-) -> Result<String, String> {
-    let caller = &caller();
-
-    match DB.with(|db| {
-        UsersService::find_by_id(caller, &db.borrow(), caller)
-    }) {
-        Err(msg) => return Err(msg),
-        Ok(_) => {}
-    };
-    
-    STATE.with(|state| {
-        UsersService::get_public_key(
-            state.borrow().vetkd.clone(),
-            derivation_path
-        )
-    }).await
-}
-
-#[ic_cdk::update]
-async fn user_get_encrypted_symmetric_key(
-    derivation_path: Vec<u8>,
-    encryption_public_key: Vec<u8>
-) -> Result<String, String> {
-    let caller = caller();
-
-    match DB.with(|db| {
-        UsersService::find_by_id(&caller, &db.borrow(), &caller)
-    }) {
-        Err(msg) => return Err(msg),
-        Ok(_) => {}
-    };
-
-    STATE.with(|rc| {
-        UsersService::get_encrypted_symmetric_key(
-            rc.borrow().vetkd.clone(), 
-            derivation_path,
-            encryption_public_key,
-            caller
-        )
-    }).await
-}
-
 #[ic_cdk::query]
 fn prescription_find_by_id(
     id: PrescriptionId
@@ -625,17 +625,28 @@ fn prescription_find_by_id(
  */
 #[ic_cdk::update]
 fn prescription_auth_create(
-    req: PrescritipionAuthRequest
+    req: PrescriptionAuthRequest
 ) -> Result<PrescriptionAuthResponse, String> {
     let caller = caller();
 
     DB.with(|rc| {
         let id = _gen_id();
         let auth = PrescriptionAuth::new(&id, &req, &caller);
-        match rc.borrow_mut().prescription_auths.borrow_mut().insert(id, auth.clone()) {
+        match PrescriptionAuthsService::create(&auth, &mut rc.borrow_mut(), &caller) {
             Ok(()) => Ok(auth.into()),
             Err(msg) => Err(msg)
         }
+    })
+}
+
+#[ic_cdk::update]
+fn prescription_auth_delete(
+    id: PrescriptionAuthId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|rc| {
+        PrescriptionAuthsService::delete(&id, &mut rc.borrow_mut(), &caller)
     })
 }
 
@@ -644,9 +655,21 @@ fn prescription_auth_find_by_id(
     id: PrescriptionAuthId
 ) -> Result<PrescriptionAuthResponse, String> {
     DB.with(|db| {
-        match db.borrow_mut().prescription_auths.borrow_mut().find_by_id(&id) {
-            Some(e) => Ok(e.to_owned().into()),
-            None => Err("Not found".to_string())
+        match PrescriptionAuthsService::find_by_id(&id, &db.borrow(), &caller()) {
+            Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn prescription_auth_find_by_prescription(
+    id: PrescriptionId
+) -> Result<Vec<PrescriptionAuthResponse>, String> {
+    DB.with(|db| {
+        match PrescriptionAuthsService::find_by_prescription(&id, &db.borrow(), &caller()) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
+            Err(msg) => Err(msg)
         }
     })
 }

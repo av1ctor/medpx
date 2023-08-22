@@ -3,20 +3,20 @@ use candid::{CandidType, ser::IDLBuilder, utils::ArgumentEncoder, Principal};
 use ic_cdk::api::stable::{StableWriter, StableReader};
 use serde::Deserialize;
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum TableEventKind {
     Create,
     Update,
     Delete
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TableEventKey {
     Text(String),
     Principal(Principal),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TableEvent<'a, TN> {
     pub table_name: &'a TN,
     pub kind: TableEventKind,

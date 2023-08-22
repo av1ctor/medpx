@@ -1,16 +1,17 @@
 import React, { useCallback } from "react";
-import { Group, Text } from "@mantine/core";
+import { ActionIcon, Group, Text } from "@mantine/core";
 import { PrescriptionResponse } from "../../../../declarations/main/main.did";
 import { useAuth } from "../../hooks/auth";
 import { userIsKind } from "../../libs/users";
 import { useDoctorFindById } from "../../hooks/doctors";
 import { usePatientFindById } from "../../hooks/patients";
-import { IconClockHour4, IconStethoscope, IconVaccine } from "@tabler/icons-react";
+import { IconClockHour4, IconShare, IconStethoscope, IconVaccine } from "@tabler/icons-react";
 import TimeFromNow from "../../components/TimeFromNow";
 
 interface Props {
     item: PrescriptionResponse
     onView: (item: PrescriptionResponse) => void;
+    onShare: (item: PrescriptionResponse) => void;
 }
 
 const Item = (props: Props) => {
@@ -20,6 +21,10 @@ const Item = (props: Props) => {
 
     const handleView = useCallback(() => {
         props.onView(props.item);
+    }, [props.item]);
+
+    const handleShare = useCallback(() => {
+        props.onShare(props.item);
     }, [props.item]);
     
     const {item} = props;
@@ -37,6 +42,14 @@ const Item = (props: Props) => {
                     }
                 </Text>
             </div>
+            <ActionIcon
+                variant="filled"
+                color="red"
+                title="Share"
+                onClick={handleShare}
+            >
+                <IconShare size="1rem" />
+            </ActionIcon>
         </Group>
     )
 };

@@ -165,15 +165,16 @@ type PrescriptionAuthKind = variant {
 type PrescriptionAuthRequest = record {
     prescription_id: text;
     kind: PrescriptionAuthKind;
-    to: text;
+    to: principal;
     expires_at: opt nat64;
 };
 
 type PrescriptionAuthResponse = record {
+    id: text;
     prescription_id: text;
     kind: PrescriptionAuthKind;
-    from: text;
-    to: text;
+    from: principal;
+    to: principal;
     expires_at: opt nat64;
     created_at: nat64;
     updated_at: opt nat64;
@@ -204,7 +205,12 @@ type FindKeysResult = variant {
     Ok: vec KeyResponse;
 };
 
-type PrescriptionKeyResult = variant {
+type FindPrescriptionAuthsResult = variant {
+    Err: text;
+    Ok: vec PrescriptionAuthResponse;
+};
+
+type UserKeyResult = variant {
     Err: text;
     Ok: text;
 };
@@ -213,8 +219,8 @@ service : {
     user_find_me: () -> (UserResponseResult) query;
     user_find_by_id: (principal) -> (UserResponseResult) query;
     user_find_by_key: (KeyKind, opt text, text) -> (UserResponseResult) query;
-    user_get_public_key: (vec nat8) -> (PrescriptionKeyResult);
-    user_get_encrypted_symmetric_key: (vec nat8, vec nat8) -> (PrescriptionKeyResult);
+    user_get_public_key: (vec nat8) -> (UserKeyResult);
+    user_get_encrypted_symmetric_key: (vec nat8, vec nat8) -> (UserKeyResult);
     
     doctor_create: (DoctorRequest) -> (DoctorResponseResult);
     doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
@@ -248,5 +254,7 @@ service : {
     prescription_find_by_id: (text) -> (PrescriptionResponseResult) query;
     
     prescription_auth_create: (PrescriptionAuthRequest) -> (PrescriptionAuthResponseResult);
+    prescription_auth_delete: (text) -> (DefaultResponseResult);
     prescription_auth_find_by_id: (text) -> (PrescriptionAuthResponseResult) query;
+    prescription_auth_find_by_prescription: (text) -> (FindPrescriptionAuthsResult) query;
 }

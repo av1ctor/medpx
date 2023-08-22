@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use crate::db::TableName;
 use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned};
-use crate::db::traits::crud::Crud;
+use crate::db::traits::crud::CrudSubscribable;
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
 
 pub struct PrescriptionAuthsTable {
@@ -55,7 +55,7 @@ impl TableVersioned<TableName, PrescriptionAuthId, PrescriptionAuth> for Prescri
 
 impl TableDeserializable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
-impl Crud<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
+impl CrudSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
 impl TableSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
     fn get_subs(

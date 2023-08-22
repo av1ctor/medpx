@@ -1,7 +1,7 @@
-import React, { Fragment, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ActionIcon, Button, Card, Center, Divider, Drawer, Group, Modal, Space, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
-import { IconClipboardList, IconPlus, IconRefresh } from "@tabler/icons-react";
+import { IconClipboardList, IconPlus, IconRefresh, IconShare } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../hooks/auth";
 import { usePrescriptionsFind } from "../../hooks/prescriptions";
@@ -12,6 +12,7 @@ import Item from "./Item";
 import PrescriptionCreate from "./prescription/Create";
 import PrescriptionView from "./prescription/View";
 import { useBrowser } from "../../hooks/browser";
+import PrescriptionAuths from "./auths/Auths";
 
 interface Props {
 }
@@ -22,6 +23,7 @@ const Prescriptions = (props: Props) => {
     const {isMobile} = useBrowser()
     const [createOpened, { open: createOpen, close: createClose }] = useDisclosure(false);
     const [viewOpened, { open: viewOpen, close: viewClose }] = useDisclosure(false);
+    const [shareOpened, { open: shareOpen, close: shareClose }] = useDisclosure(false);
     const [item, setItem] = useState<PrescriptionResponse|undefined>();
     const query = usePrescriptionsFind(user, 10);
     
@@ -34,6 +36,11 @@ const Prescriptions = (props: Props) => {
         setItem(item);
         viewOpen()
     }, [setItem, viewOpen]);
+
+    const handleShare = useCallback((item: PrescriptionResponse) => {
+        setItem(item);
+        shareOpen()
+    }, [setItem, shareOpen]);
 
     const isDoctor = userIsKind(user, 'Doctor');
 
@@ -72,6 +79,7 @@ const Prescriptions = (props: Props) => {
                                 key={item.id} 
                                 item={item} 
                                 onView={handleView}
+                                onShare={handleShare}
                             />
                         )
                     )
@@ -98,6 +106,20 @@ const Prescriptions = (props: Props) => {
             >
                 <PrescriptionCreate onSuccess={handleCreated} />
             </Drawer>
+
+            <Drawer 
+                opened={shareOpened} 
+                title={<b><IconShare size="1.25rem" /> Share prescription</b>}
+                position="right"
+                size="xl"
+                onClose={shareClose} 
+            >
+                {item && 
+                    <PrescriptionAuths 
+                        item={item} 
+                    />
+                }
+            </Drawer>
             
             <Modal
                 opened={viewOpened}
@@ -106,9 +128,11 @@ const Prescriptions = (props: Props) => {
                 centered
                 onClose={viewClose}
             >
-                {item && <PrescriptionView 
-                    item={item} 
-                />}
+                {item && 
+                    <PrescriptionView 
+                        item={item} 
+                    />
+                }
             </Modal>
         </>
     );

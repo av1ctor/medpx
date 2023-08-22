@@ -30,7 +30,7 @@ pub struct PrescriptionAuth {
 }
 
 #[derive(CandidType, Deserialize)]
-pub struct PrescritipionAuthRequest {
+pub struct PrescriptionAuthRequest {
     pub prescription_id: PrescriptionId,
     pub kind: PrescriptionAuthKind,
     pub to: Principal,
@@ -95,7 +95,7 @@ impl Ord for PrescriptionAuth {
 impl PrescriptionAuth {
     pub fn new(
         id: &String,
-        e: &PrescritipionAuthRequest,
+        e: &PrescriptionAuthRequest,
         caller: &Principal
     ) -> Self {
         Self {

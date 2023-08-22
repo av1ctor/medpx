@@ -21,7 +21,7 @@ use self::tables::thirdparties::ThirdPartiesTable;
 use self::tables::users::UsersTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TableName {
     Doctors,
     Patients,

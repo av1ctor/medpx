@@ -1,9 +1,9 @@
 import React from "react";
 import { Anchor, Center, Container, Divider, Flex, Grid, Space, Text } from "@mantine/core";
+import QRCode from "react-qr-code";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 import { useDoctorFindById } from "../../../hooks/doctors";
 import { usePatientFindById } from "../../../hooks/patients";
-import QRCode from "react-qr-code";
 import { config } from "../../../config";
 import { useDecrypt } from "../../../hooks/users";
 
