@@ -55,13 +55,17 @@ export const usePrescriptionAuth = (
 };
 
 export const usePrescriptionAuthsFindByPrescription = (
-    prescriptionId: string
+    prescriptionId: string|undefined
 ): UseQueryResult<PrescriptionAuthResponse[], Error> => {
     const {main} = useActors();
+    const {isLogged} = useAuth()
 
     return useQuery<PrescriptionAuthResponse[], Error>(
         ['prescription-auths', prescriptionId], 
-        () => prescriptionAuthFindByPrescription(main, prescriptionId)
+        () => prescriptionAuthFindByPrescription(main, prescriptionId),
+        {
+            enabled: isLogged
+        }
     );
 };
 

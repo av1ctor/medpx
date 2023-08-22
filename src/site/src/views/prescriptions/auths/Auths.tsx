@@ -4,12 +4,12 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconAlertTriangle, IconPlus, IconShare } from "@tabler/icons-react";
 import { usePrescriptionAuth, usePrescriptionAuthsFindByPrescription } from "../../../hooks/prescription_auths";
 import { useUI } from "../../../hooks/ui";
-import { PrescriptionAuthResponse, PrescriptionResponse } from "../../../../../declarations/main/main.did";
+import { PrescriptionAuthResponse } from "../../../../../declarations/main/main.did";
 import Item from "./Item";
 import PrescriptionAuthCreate from "./auth/Create";
+import { useParams } from "react-router-dom";
 
 interface Props {
-    item: PrescriptionResponse;
 }
 
 const PrescriptionAuths = (props: Props) => {
@@ -18,7 +18,8 @@ const PrescriptionAuths = (props: Props) => {
     const [deleteOpened, { open: deleteOpen, close: deleteClose }] = useDisclosure(false);
     const [item, setItem] = useState<PrescriptionAuthResponse|undefined>();
     const {remove} = usePrescriptionAuth();
-    const query = usePrescriptionAuthsFindByPrescription(props.item.id);
+    const {id} = useParams();
+    const query = usePrescriptionAuthsFindByPrescription(id);
 
     const handleCreated = useCallback((msg: string) => {
         showSuccess(msg);
@@ -37,7 +38,7 @@ const PrescriptionAuths = (props: Props) => {
                 await remove(item);
             }
             deleteClose()
-            showSuccess("Prescription share removed!");
+            showSuccess("Prescription authorization removed!");
         }
         catch(e) {
             showError(e);
@@ -87,26 +88,28 @@ const PrescriptionAuths = (props: Props) => {
             
             <Drawer 
                 opened={createOpened} 
-                title={<b><IconShare size="1.25rem" /> Share prescription</b>}
+                title={<b><IconShare size="1.25rem" /> Prescription authorizations</b>}
                 position="right"
                 size="xl"
                 onClose={createClose} 
             >
-                <PrescriptionAuthCreate 
-                    item={props.item}
-                    onSuccess={handleCreated} 
-                />
+                {id &&
+                    <PrescriptionAuthCreate 
+                        prescriptionId={id}
+                        onSuccess={handleCreated} 
+                    />
+                }
             </Drawer>
 
             <Modal 
                 opened={deleteOpened} 
-                title={<b><IconAlertTriangle size="1rem" /> Remove share</b>}
+                title={<b><IconAlertTriangle size="1rem" /> Remove authorization</b>}
                 centered
                 size="xl"
                 onClose={deleteClose} 
             >
                 <Text size="sm" mb="xs" weight={500}>
-                    Do you really want to delete this prescription sharing? <b>This operation can't be reversed!</b>
+                    Do you really want to delete this authorization? <b>This operation can't be reversed!</b>
                 </Text>
 
                 <Space h="xl" />

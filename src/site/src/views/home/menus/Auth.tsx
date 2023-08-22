@@ -6,7 +6,7 @@ import { useUI } from "../../../hooks/ui";
 import { IconUserBolt, IconUserPlus, IconUserX } from "@tabler/icons-react";
 import { useBrowser } from "../../../hooks/browser";
 
-export const Menu = () => {
+export const AuthMenu = () => {
     const {isLogged, logout} = useAuth();
     const {showSuccess} = useUI();
     const {redirectToLogin, redirectToSignup} = useBrowser();

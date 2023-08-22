@@ -6,7 +6,6 @@ import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
 import { kinds } from "../../../../libs/prescription_auths";
 import { usePrescriptionAuth } from "../../../../hooks/prescription_auths";
-import { PrescriptionResponse } from "../../../../../../declarations/main/main.did";
 import { Principal } from "@dfinity/principal";
 
 const schema = yup.object().shape({
@@ -16,7 +15,7 @@ const schema = yup.object().shape({
 });
 
 interface Props {
-    item: PrescriptionResponse,
+    prescriptionId: string,
     onSuccess: (msg: string) => void;
 }
 
@@ -27,7 +26,7 @@ const PrescriptionAuthCreate = (props: Props) => {
     
     const form = useForm({
         initialValues: {
-            prescription_id: props.item.id,
+            prescription_id: props.prescriptionId,
             kind: '',
             to: '',
             expires_at: []
@@ -35,11 +34,20 @@ const PrescriptionAuthCreate = (props: Props) => {
     
         validate: yupResolver(schema),
 
-        transformValues: (values) => ({
-            ...values,
-            kind: {[values.kind]: null},
-            to: Principal.fromText(values.to),
-        }),
+        transformValues: (values) => {
+            try {
+                const to = Principal.fromText(values.to);
+                return {
+                    ...values,
+                    kind: {[values.kind]: null},
+                    to,
+                }
+            }
+            catch(e) {
+                showError(e);
+                return values;
+            }
+        },
     });
 
     const handleCreate = useCallback(async (values: any) => {

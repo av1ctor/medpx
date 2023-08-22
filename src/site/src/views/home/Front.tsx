@@ -1,24 +1,24 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useAuth } from "../../hooks/auth";
-import Prescriptions from "../prescriptions/Prescriptions";
-import Profile from "../users/user/Profile";
-import Keys from "../keys/Keys";
-import { Space } from "@mantine/core";
+import { UserMenu } from "./menus/User";
+import { Card, SimpleGrid } from "@mantine/core";
 
 export const Front = () => {
     const {isLogged} = useAuth();
+
+    const menu = useMemo(() => {
+        return <UserMenu />;
+    }, []);
 
     if(!isLogged) {
         return null;
     }
 
     return (
-        <>
-            <Prescriptions />
-            <Space h="xl" />
-            <Keys />
-            <Space h="xl" />
-            <Profile />
-        </>
+        <Card withBorder radius="md" p="xl" className="card">
+            <SimpleGrid cols={2} spacing={0}>
+                <UserMenu />
+            </SimpleGrid>
+        </Card>
     );
 }

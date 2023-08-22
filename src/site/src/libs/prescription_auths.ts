@@ -67,8 +67,11 @@ export const prescriptionAuthFindById = async (
 
 export const prescriptionAuthFindByPrescription = async (
     main: Main,
-    id: string
+    id: string|undefined
 ): Promise<PrescriptionAuthResponse[]> => {
+    if(!id) {
+        throw new Error('Invalid id');
+    }
     const res = await main.prescription_auth_find_by_prescription(id);
     if('Err' in res) {
         throw new Error(res.Err);
