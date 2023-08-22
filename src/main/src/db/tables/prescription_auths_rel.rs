@@ -60,7 +60,6 @@ impl TableSubscriber<TableName> for PrescriptionAuthsRelTable {
         &mut self,
         event: &TableEvent<TableName>
     ) {
-        ic_cdk::print(format!("{:?}", event));
         if let (
                 TableEventKey::Text(prescription_auth_key), 
                 TableEventKey::Text(prescription_key)

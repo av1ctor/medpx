@@ -4,6 +4,7 @@ import { ActionIcon, Group, Text } from "@mantine/core";
 import { PrescriptionAuthResponse } from "../../../../../declarations/main/main.did";
 import { prescriptionAuthGetKind } from "../../../libs/prescription_auths";
 import TimeFromNow from "../../../components/TimeFromNow";
+import { useThirdPartyFindById } from "../../../hooks/thirdparty";
 
 interface Props {
     item: PrescriptionAuthResponse;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const Item = (props: Props) => {
+    const thirdparty = useThirdPartyFindById(props.item.to);
+    
     const handleDelete = useCallback(async () => {
         props.onDelete(props.item);
     }, [props.item]);
@@ -20,7 +23,7 @@ const Item = (props: Props) => {
     return (
         <Group position="apart" className="list-item" noWrap spacing="xl">
             <div>
-                <Text>{item.id}</Text>
+                <Text>{thirdparty.data?.name}</Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
                     {prescriptionAuthGetKind(item.kind).label}

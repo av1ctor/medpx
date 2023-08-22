@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "react-query";
+import { UseQueryResult, useMutation, useQuery, useQueryClient } from "react-query";
 import { ThirdPartyRequest, ThirdPartyResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { thirdPartyCreate, thirdPartyDelete, thirdPartyUpdate } from "../libs/thirdparties";
+import { thirdPartyCreate, thirdPartyDelete, thirdPartyFindById, thirdPartyUpdate } from "../libs/thirdparties";
 import { Principal } from "@dfinity/principal";
 
 interface ThirdPartyMethods {
@@ -73,3 +73,14 @@ export const useThirdParty = (
         remove,
     }
 };
+
+export const useThirdPartyFindById = (
+    id: Principal
+): UseQueryResult<ThirdPartyResponse, Error> => {
+    const {main} = useActors();
+    
+    return useQuery<ThirdPartyResponse, Error>(
+        ['thirdparties', id],
+        () => thirdPartyFindById(main, id)
+    );
+}; 

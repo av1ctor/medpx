@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import { _SERVICE as Main, ThirdPartyKind, ThirdPartyRequest, ThirdPartyResponse } from "../../../declarations/main/main.did";
+import { _SERVICE as Main, Pagination, PrescriptionResponse, ThirdPartyKind, ThirdPartyRequest, ThirdPartyResponse } from "../../../declarations/main/main.did";
 
 export const kinds = [
     { value: 'Hospital', label: 'Hospital' },
@@ -19,7 +19,6 @@ export const thirdPartyGetKind = (
     
     return {label: 'Unkonwn', value: 'Unkonwn'};
 };
-
 
 export const thirdPartyCreate = async (
     main: Main,
@@ -55,3 +54,25 @@ export const thirdPartyDelete = async (
     return; 
 };
 
+export const thirdPartyFindById = async (
+    main: Main,
+    id: Principal
+): Promise<ThirdPartyResponse> => {
+    const res = await main.thirdparty_find_by_id(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};
+
+export const thirdPartyFindPrescriptions = async (
+    main: Main,
+    principal: Principal,
+    pag: Pagination
+): Promise<PrescriptionResponse[]> => {
+    const res = await main.thirdparty_find_prescriptions(principal, pag);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};

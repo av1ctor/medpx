@@ -25,6 +25,7 @@ use services::{doctors::DoctorsService, users::UsersService, patients::PatientsS
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
+use crate::db::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
 use crate::db::tables::users::UsersTable;
 use crate::db::tables::keys::KeysTable;
 use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
@@ -62,6 +63,7 @@ thread_local! {
         Rc::new(RefCell::new(PrescriptionTemplatesTable::new())),
         Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new())),
         Rc::new(RefCell::new(PatientPrescriptionsRelTable::new())),
+        Rc::new(RefCell::new(ThirdPartyPrescriptionsRelTable::new())),
         Rc::new(RefCell::new(PrescriptionAuthsRelTable::new())),
         Rc::new(RefCell::new(PrincipalKeysRelTable::new())),
         Rc::new(RefCell::new(KeyPrincipalRelTable::new())),
@@ -507,6 +509,21 @@ fn thirdparty_find_by_id(
     DB.with(|db| {
         match ThirdPartiesService::find_by_id(&id, &db.borrow()) {
             Ok(e) => Ok(e.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::query]
+fn thirdparty_find_prescriptions(
+    id: ThirdPartyId,
+    pag: Pagination
+) -> Result<Vec<PrescriptionResponse>, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        match ThirdPartiesService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
             Err(msg) => Err(msg)
         }
     })

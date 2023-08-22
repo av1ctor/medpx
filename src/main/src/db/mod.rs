@@ -18,6 +18,7 @@ use self::tables::prescriptions::PrescriptionsTable;
 use self::tables::principal_keys_rel::PrincipalKeysRelTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparties::ThirdPartiesTable;
+use self::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
 use self::tables::users::UsersTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
 
@@ -34,6 +35,7 @@ pub enum TableName {
     PrescriptionTemplates,
     DoctorPrescriptionsRel,
     PatientPrescriptionsRel,
+    ThirdPartyPrescriptionsRel,
     PrescriptionAuthsRel,
     PrincipalKeysRel,
     KeyPrincipalRel,
@@ -51,6 +53,7 @@ pub struct DB {
     pub keys: Rc<RefCell<KeysTable>>,
     pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
     pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
+    pub thirdparty_prescriptions_rel: Rc<RefCell<ThirdPartyPrescriptionsRelTable>>,
     pub prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
     pub principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
     pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
@@ -69,6 +72,7 @@ impl DB {
         prescription_templates: Rc<RefCell<PrescriptionTemplatesTable>>,
         doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
         patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
+        thirdparty_prescriptions_rel: Rc<RefCell<ThirdPartyPrescriptionsRelTable>>,
         prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
         principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
         key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
@@ -82,6 +86,7 @@ impl DB {
         keys.borrow_mut().subscribe(key_principal_rel.clone());
         //
         prescription_auths.borrow_mut().subscribe(prescription_auths_rel.clone());
+        prescription_auths.borrow_mut().subscribe(thirdparty_prescriptions_rel.clone());
         //
         doctors.borrow_mut().subscribe(users.clone());
         patients.borrow_mut().subscribe(users.clone());
@@ -100,6 +105,7 @@ impl DB {
             prescription_templates,
             doctor_prescriptions_rel,
             patient_prescriptions_rel,
+            thirdparty_prescriptions_rel,
             prescription_auths_rel,
             principal_keys_rel,
             key_principal_rel,
@@ -121,6 +127,7 @@ impl DB {
         self.prescription_templates.borrow().serialize(writer)?;
         self.doctor_prescriptions_rel.borrow().serialize(writer)?;
         self.patient_prescriptions_rel.borrow().serialize(writer)?;
+        self.thirdparty_prescriptions_rel.borrow().serialize(writer)?;
         self.prescription_auths_rel.borrow().serialize(writer)?;
         self.principal_keys_rel.borrow().serialize(writer)?;
         self.key_principal_rel.borrow().serialize(writer)?;
@@ -142,6 +149,7 @@ impl DB {
         self.prescription_templates.borrow_mut().deserialize(reader)?;
         self.doctor_prescriptions_rel.borrow_mut().deserialize(reader)?;
         self.patient_prescriptions_rel.borrow_mut().deserialize(reader)?;
+        self.thirdparty_prescriptions_rel.borrow_mut().deserialize(reader)?;
         self.prescription_auths_rel.borrow_mut().deserialize(reader)?;
         self.principal_keys_rel.borrow_mut().deserialize(reader)?;
         self.key_principal_rel.borrow_mut().deserialize(reader)?;

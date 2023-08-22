@@ -6,6 +6,7 @@ import { userGetPrincipal, userIsKind } from "../libs/users";
 import { doctorFindPrescriptions } from "../libs/doctors";
 import { prescriptionCreate, prescriptionFindById } from "../libs/prescriptions";
 import { useAuth } from "./auth";
+import { thirdPartyFindPrescriptions } from "../libs/thirdparties";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
@@ -45,14 +46,18 @@ export const usePrescriptionsFind = (
     const {main} = useActors();
 
     const principal = userGetPrincipal(user);
-    const isDoctor = userIsKind(user, 'Doctor');
+
+    const fn = userIsKind(user, 'Doctor')? 
+        doctorFindPrescriptions
+    : 
+        userIsKind(user, 'ThirdParty')?
+            thirdPartyFindPrescriptions
+        :
+            patientFindPrescriptions;
 
     return useInfiniteQuery<PrescriptionResponse[], Error>(
         ['prescriptions', principal, limit], 
-        ({pageParam = 0}) => isDoctor? 
-            doctorFindPrescriptions(main, principal, {offset: pageParam, limit})
-        :
-            patientFindPrescriptions(main, principal, {offset: pageParam, limit}),
+        ({pageParam = 0}) => fn(main, principal, {offset: pageParam, limit}),
         {
             getNextPageParam: (lastPage, pages) => 
                 lastPage.length < limit?

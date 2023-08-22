@@ -243,6 +243,7 @@ service : {
     thirdparty_update: (principal, ThirdPartyRequest) -> (ThirdPartyResponseResult);
     thirdparty_delete: (principal) -> (DefaultResponseResult);
     thirdparty_find_by_id: (principal) -> (ThirdPartyResponseResult) query;
+    thirdparty_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
 
     key_create: (KeyRequest) -> (KeyResponseResult);
     key_delete: (text) -> (DefaultResponseResult);

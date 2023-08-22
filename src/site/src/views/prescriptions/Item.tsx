@@ -29,6 +29,7 @@ const Item = (props: Props) => {
     
     const {item} = props;
     const isDoctor = userIsKind(user, 'Doctor');
+    const isPatient = userIsKind(user, 'Patient');
     
     return (
         <Group position="apart" className="list-item" noWrap spacing="xl">
@@ -42,14 +43,16 @@ const Item = (props: Props) => {
                     }
                 </Text>
             </div>
-            <ActionIcon
-                variant="filled"
-                color="red"
-                title="Share"
-                onClick={handleShare}
-            >
-                <IconShare size="1rem" />
-            </ActionIcon>
+            {isPatient &&
+                <ActionIcon
+                    variant="filled"
+                    color="red"
+                    title="Share"
+                    onClick={handleShare}
+                >
+                    <IconShare size="1rem" />
+                </ActionIcon>
+            }
         </Group>
     )
 };

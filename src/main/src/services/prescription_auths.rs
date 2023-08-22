@@ -91,7 +91,6 @@ impl PrescriptionAuthsService {
     ) -> Result<Vec<PrescriptionAuth>, String> {
         let rel = db.prescription_auths_rel.borrow();
 
-        ic_cdk::print(rel.data.0.len().to_string());
         let ids = match rel.find_by_id(id) {
             None => return Ok(vec![]),
             Some(e) => e

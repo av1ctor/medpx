@@ -1,6 +1,7 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::crud::{CrudSubscribable, Pagination, Crud};
+use crate::models::prescription::Prescription;
 use crate::models::thirdparty::{ThirdParty, ThirdPartyId};
 
 pub struct ThirdPartiesService {}
@@ -58,5 +59,38 @@ impl ThirdPartiesService {
             None => return Err("Not found".to_string()),
             Some(e) => Ok(e.clone())
         }
+    }
+
+    pub fn find_prescriptions(
+        id: &ThirdPartyId,
+        pag: Pagination,
+        db: &DB,
+        caller: &Principal
+    ) -> Result<Vec<Prescription>, String> {
+        let thirdparties = db.thirdparties.borrow();
+
+        let tparty = match thirdparties.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
+        if *id != tparty.created_by || *caller != tparty.created_by {
+            return Err("Forbidden".to_string());
+        }
+
+        let ids = match db.thirdparty_prescriptions_rel.borrow().find_by_id(id) {
+            None => vec![],
+            Some(list) => 
+                list.iter()
+                    .rev()
+                    .skip(pag.offset as usize)
+                    .take(pag.limit as usize)
+                    .cloned()
+                    .collect()
+        };
+        
+        Ok(ids.iter().map(|id| 
+            db.prescriptions.borrow().get(id).clone()
+        ).collect())
     }
 }

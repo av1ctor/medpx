@@ -8,6 +8,7 @@ pub mod prescription_auths;
 pub mod prescription_templates;
 pub mod doctor_prescriptions_rel;
 pub mod patient_prescriptions_rel;
+pub mod thirdparty_prescriptions_rel;
 pub mod principal_keys_rel;
 pub mod key_principal_rel;
 pub mod prescription_auths_rel;
