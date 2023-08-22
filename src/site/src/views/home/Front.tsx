@@ -1,14 +1,10 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useAuth } from "../../hooks/auth";
 import { UserMenu } from "./menus/User";
 import { Card, SimpleGrid } from "@mantine/core";
 
 export const Front = () => {
     const {isLogged} = useAuth();
-
-    const menu = useMemo(() => {
-        return <UserMenu />;
-    }, []);
 
     if(!isLogged) {
         return null;
