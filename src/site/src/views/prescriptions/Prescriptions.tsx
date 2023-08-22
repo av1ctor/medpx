@@ -109,7 +109,7 @@ const Prescriptions = (props: Props) => {
 
             <Drawer 
                 opened={shareOpened} 
-                title={<b><IconShare size="1.25rem" /> Share prescription</b>}
+                title={<b><IconShare size="1.25rem" /> Prescription sharing</b>}
                 position="right"
                 size="xl"
                 onClose={shareClose} 

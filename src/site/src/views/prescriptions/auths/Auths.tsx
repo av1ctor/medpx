@@ -54,10 +54,10 @@ const PrescriptionAuths = (props: Props) => {
                 <Group position="apart" noWrap spacing="xl">
                     <div>
                         <Text fz="lg" className="card-title" fw={500}>
-                            <IconShare size="1rem" /> Prescription sharing
+                            <IconShare size="1rem" /> Authorizations
                         </Text>
                         <Text fz="xs" c="dimmed" mt={3} mb="xl">
-                            View your prescription sharing
+                            See who can access this prescription
                         </Text>
                     </div>
                     <div>

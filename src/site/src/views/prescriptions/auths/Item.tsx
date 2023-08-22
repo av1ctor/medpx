@@ -5,6 +5,7 @@ import { PrescriptionAuthResponse } from "../../../../../declarations/main/main.
 import { prescriptionAuthGetKind } from "../../../libs/prescription_auths";
 import TimeFromNow from "../../../components/TimeFromNow";
 import { useThirdPartyFindById } from "../../../hooks/thirdparty";
+import { thirdPartyGetKind } from "../../../libs/thirdparties";
 
 interface Props {
     item: PrescriptionAuthResponse;
@@ -26,7 +27,7 @@ const Item = (props: Props) => {
                 <Text>{thirdparty.data?.name}</Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
-                    {prescriptionAuthGetKind(item.kind).label}
+                    {thirdparty.data && thirdPartyGetKind(thirdparty.data.kind).label} / {prescriptionAuthGetKind(item.kind).label}
                 </Text>
             </div>
             <ActionIcon

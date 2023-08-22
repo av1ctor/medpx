@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
-import { ActionIcon, Group, Text } from "@mantine/core";
-import { PrescriptionResponse } from "../../../../declarations/main/main.did";
+import { ActionIcon, Group, Skeleton, Text } from "@mantine/core";
+import { DoctorResponse, PatientResponse, PrescriptionResponse } from "../../../../declarations/main/main.did";
 import { useAuth } from "../../hooks/auth";
 import { userIsKind } from "../../libs/users";
 import { useDoctorFindById } from "../../hooks/doctors";
@@ -13,6 +13,24 @@ interface Props {
     onView: (item: PrescriptionResponse) => void;
     onShare: (item: PrescriptionResponse) => void;
 }
+
+const Patient = (props: {data: PatientResponse|undefined}) => 
+    <span>
+        {!props.data? 
+            <Skeleton h="1rem" w="10rem"></Skeleton>
+        :
+            <span><IconVaccine size="0.75rem"/> Patient: {props.data?.name}</span>
+        }
+    </span>;
+
+const Doctor = (props: {data: DoctorResponse|undefined}) => 
+    <span>
+        {!props.data? 
+            <Skeleton h="1rem" w="10rem"></Skeleton>
+        :
+            <span><IconStethoscope size="0.75rem"/> Doctor: {props.data.name}</span>
+        }
+    </span>;
 
 const Item = (props: Props) => {
     const {user} = useAuth();
@@ -30,6 +48,7 @@ const Item = (props: Props) => {
     const {item} = props;
     const isDoctor = userIsKind(user, 'Doctor');
     const isPatient = userIsKind(user, 'Patient');
+    const isThirdParty = userIsKind(user, 'ThirdParty');
     
     return (
         <Group position="apart" className="list-item" noWrap spacing="xl">
@@ -37,9 +56,16 @@ const Item = (props: Props) => {
                 <Text>{item.id}</Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
-                    {isDoctor?
-                        <span><IconVaccine size="0.75rem"/> {patient.data?.name}</span>:
-                        <span><IconStethoscope size="0.75rem"/> {doctor.data?.name}</span>
+                    {isThirdParty?
+                        <>
+                            <Doctor data={doctor.data} /><br/>
+                            <Patient data={patient.data} />
+                        </>
+                        :
+                        isDoctor?
+                            <Patient data={patient.data} />
+                        :
+                            <Doctor data={doctor.data} />
                     }
                 </Text>
             </div>

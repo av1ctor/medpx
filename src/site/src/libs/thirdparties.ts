@@ -17,7 +17,7 @@ export const thirdPartyGetKind = (
         }
     }
     
-    return {label: 'Unkonwn', value: 'Unkonwn'};
+    return {label: 'Unknown', value: 'Unknown'};
 };
 
 export const thirdPartyCreate = async (
