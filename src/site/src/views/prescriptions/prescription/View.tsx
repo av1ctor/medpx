@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Anchor, Center, Container, Divider, Flex, Grid, Space, Text } from "@mantine/core";
+import { Anchor, Center, Container, Divider, Flex, Grid, Skeleton, Space, Text } from "@mantine/core";
 import QRCode from "react-qr-code";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 import { useDoctorFindById } from "../../../hooks/doctors";
@@ -17,7 +17,12 @@ const PrescriptionView = (props: Props) => {
     const {showError} = useUI()
     const doctor = useDoctorFindById(props.item.doctor);
     const patient = usePatientFindById(props.item.patient);
-    const dec = useDecrypt((props.item?.contents as Uint8Array) || new Uint8Array(), props.isEncrypted);
+    
+    const dec = useDecrypt(
+        (props.item?.contents as Uint8Array) || new Uint8Array(), 
+        props.item.patient, 
+        Number(props.isEncrypted)
+    );
 
     useEffect(() => {
         if(dec.Err) {
@@ -57,9 +62,22 @@ const PrescriptionView = (props: Props) => {
 
                 <Space h="2rem" />
 
-                {dec.Ok}
+                <div className="prescription-contents">
+                    {dec.Ok?
+                        <>
+                            {dec.Ok}
+                        </>
+                    :
+                        <>
+                            <Skeleton h="1rem" w="100%" mb="1rem" />
+                            <Skeleton h="1rem" w="100%" mb="1rem" />
+                            <Skeleton h="1rem" w="100%" mb="1rem" />
+                            <Skeleton h="1rem" w="100%" />
+                        </>
+                    }
+                </div>
 
-                <Space h="30rem" />
+                <Space h="2rem" />
 
                 <Divider />
 

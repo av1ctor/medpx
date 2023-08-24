@@ -47,10 +47,17 @@ const PrescriptionCreate = (props: Props) => {
                 throw Error("AES-GCM undefined");
             }
 
-            const contents = await aes_gcm.encrypt(values.contents);
+            const principal = userGetPrincipal(patient);
+            
+            const rawKey = await aes_gcm.genRawKey('prescriptions', principal);
+            if('Err' in rawKey || !rawKey.Ok) {
+                throw new Error('Raw key generation failed');
+            }
+            
+            const contents = await aes_gcm.encrypt(values.contents, rawKey.Ok);
 
             await create({
-                patient: userGetPrincipal(patient),
+                patient: principal,
                 contents,
             });
 

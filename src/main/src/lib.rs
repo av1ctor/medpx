@@ -235,6 +235,7 @@ async fn user_get_public_key(
 #[ic_cdk::update]
 async fn user_get_encrypted_symmetric_key(
     derivation_path: Vec<u8>,
+    derivation_id: Vec<u8>,
     encryption_public_key: Vec<u8>
 ) -> Result<String, String> {
     let caller = caller();
@@ -250,6 +251,7 @@ async fn user_get_encrypted_symmetric_key(
         UsersService::get_encrypted_symmetric_key(
             rc.borrow().vetkd.clone(), 
             derivation_path,
+            derivation_id,
             encryption_public_key
         )
     }).await

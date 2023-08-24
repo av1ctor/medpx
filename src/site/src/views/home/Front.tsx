@@ -2,12 +2,13 @@ import React from "react";
 import { useAuth } from "../../hooks/auth";
 import { UserMenu } from "./menus/User";
 import { Card, SimpleGrid } from "@mantine/core";
+import Landing from "./Landing";
 
 export const Front = () => {
     const {isLogged} = useAuth();
 
     if(!isLogged) {
-        return null;
+        return <Landing />;
     }
 
     return (

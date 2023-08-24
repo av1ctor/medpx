@@ -1,59 +1,72 @@
 import * as vetkd from "ic-vetkd-utils";
 import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main } from "../../../declarations/main/main.did";
-import { canisterId } from "../../../declarations/main";
 import { Result } from "../interfaces/result";
 
 export class AES_GCM {
-    rawKey: Uint8Array = new Uint8Array([]);
+    main: Main;
+    pk_bytes: Uint8Array = Uint8Array.from([]);
+
+    constructor(main: Main) {
+        this.main = main;
+    }
 
     async init(
-        main: Main,
         derivationPath: string
     ): Promise<Result<null, string>> {
         await vetkd.default();
+        
+        const res = await this.main.user_get_public_key(new TextEncoder().encode(derivationPath));
+        if('Err' in res) {
+            return res;
+        }
+
+        this.pk_bytes = hex_decode(res.Ok);
+
+        return {Ok: null};
+    }
+
+    async genRawKey(
+        derivationPath: string,
+        derivationId: Principal
+    ): Promise<Result<Uint8Array, string>> {
+        
         const seed = window.crypto.getRandomValues(new Uint8Array(32));
         const tsk = new vetkd.TransportSecretKey(seed);
-        
-        const derivation = new TextEncoder().encode(derivationPath);
-        
-        return await Promise.all([
-            main.user_get_encrypted_symmetric_key(derivation, tsk.public_key()), 
-            main.user_get_public_key(derivation)
-        ]).then(
-            (res) => {
-                if('Err' in res[0]) {
-                    return res[0];
-                }
-                if('Err' in res[1]) {
-                    return res[1];
-                }
+        const res = await this.main.user_get_encrypted_symmetric_key(
+            new TextEncoder().encode(derivationPath), 
+            derivationId.toUint8Array(),
+            tsk.public_key()
+        );
+        if('Err' in res) {
+            return res;
+        }
 
-                const ek_bytes_hex = 'Ok' in res[0] && res[0].Ok;
-                const pk_bytes_hex = 'Ok' in res[1] && res[1].Ok;
+        try {
+            const ek_bytes = hex_decode(res.Ok);
 
-                this.rawKey = tsk.decrypt_and_hash(
-                    hex_decode(ek_bytes_hex || ''),
-                    hex_decode(pk_bytes_hex || ''),
-                    Principal.fromText(canisterId).toUint8Array(),
-                    32,
-                    new TextEncoder().encode("aes-256-gcm")
-                );
+            const rawKey = tsk.decrypt_and_hash(
+                ek_bytes,
+                this.pk_bytes,
+                derivationId.toUint8Array(),
+                32,
+                new TextEncoder().encode("aes-256-gcm")
+            );
 
-                return {Ok: null};
-            },
-            (reason: any) => {
-                return {Err: reason}
-            }
-        )
+            return {Ok: rawKey};
+        }
+        catch(e: any) {
+            return {Err: e.message};
+        }
     }
 
     async encrypt (
-        message: string
+        message: string,
+        rawKey: Uint8Array
     ): Promise<Uint8Array> {
         const iv = window.crypto.getRandomValues(new Uint8Array(12));
         try {
-            const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["encrypt"]);
+            const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["encrypt"]);
             try {
                 const message_encoded = new TextEncoder().encode(message);
                 const ciphertext_buffer = await window.crypto.subtle.encrypt(
@@ -77,13 +90,14 @@ export class AES_GCM {
     }
 
     async decrypt (
-        iv_and_ciphertext: Uint8Array
+        iv_and_ciphertext: Uint8Array,
+        rawKey: Uint8Array
     ): Promise<string> {
         const iv = iv_and_ciphertext.subarray(0, 12);
         const ciphertext = iv_and_ciphertext.subarray(12);
         
         try {
-            const aes_key = await window.crypto.subtle.importKey("raw", this.rawKey, "AES-GCM", false, ["decrypt"]);
+            const aes_key = await window.crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
             
             try {
                 let decrypted = await window.crypto.subtle.decrypt(

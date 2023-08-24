@@ -133,8 +133,8 @@ export const useAuth = (
     const _createAesGcm = async (
         main: Main
     ): Promise<Result<AES_GCM, string>> => {
-        const aes_gcm = new AES_GCM();
-        await aes_gcm.init(main, 'prescriptions');
+        const aes_gcm = new AES_GCM(main);
+        await aes_gcm.init('prescriptions');
         return {Ok: aes_gcm};
     };
         

@@ -38,6 +38,9 @@ export const GlobalStyles = () => {
                 '.card-title': {
                     lineHeight: 1,
                 },
+                '.prescription-contents': {
+                    minHeight: '30rem',
+                },
             })}
         />
     );

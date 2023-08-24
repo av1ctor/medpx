@@ -4,7 +4,7 @@ import { KeyKind, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { userFindById, userFindByKey, userFindMe } from "../libs/users";
 import { useAuth } from "./auth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const useFindMe = (
 ): UseQueryResult<UserResponse, Error> => {
@@ -47,27 +47,42 @@ export interface DecryptResult {
 
 export const useDecrypt = (
     message: Uint8Array,
-    isEncrypted: boolean
+    principal: Principal,
+    isEncrypted: number
 ): DecryptResult => {
     const {aes_gcm} = useAuth();
     const [text, setText] = useState<string|undefined>();
     const [err, setErr] = useState<string|undefined>();
-
-    useEffect(() => {
+    
+    const decrypt = useCallback(async (        
+    ): Promise<void> => {
         if(!isEncrypted) {
             setText(new TextDecoder().decode(message));
+            return;
         }
-        else {
-            if(aes_gcm) {
-                aes_gcm.decrypt(message).then((value: string) => {
-                    setText(value);
-                }, 
-                (reason: any) => {
-                    setErr(reason.message || "Call to AES GCM decrypt failed");
-                });
-            }
+
+        if(!aes_gcm) {
+            return;
         }
-    }, [message, isEncrypted, aes_gcm])
+
+        const rawKey = await aes_gcm.genRawKey('prescriptions', principal);
+        if('Err' in rawKey || !rawKey.Ok) {
+            setErr('Raw key generation failed');
+            return;
+        }
+        
+        try {
+            setText(await aes_gcm.decrypt(message, rawKey.Ok));
+        }
+        catch(e: any) {
+            setErr(e.message || "Call to AES GCM decrypt failed");
+        }
+
+    }, [aes_gcm, message, principal, isEncrypted]);
+    
+    useEffect(() => {
+        decrypt();
+    }, [decrypt])
 
     return {
         Ok: text,
