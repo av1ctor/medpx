@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { ReactElement, useEffect, useMemo } from "react";
 import { Anchor, Center, Container, Divider, Flex, Grid, Skeleton, Space, Text } from "@mantine/core";
 import QRCode from "react-qr-code";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
@@ -33,6 +33,15 @@ const PrescriptionView = (props: Props) => {
     const {item} = props;
 
     const url = `${config.APP_URL}/#/p/${item.id}`;
+
+    const rowsSkeleton = useMemo(() => {
+        const rows = new Array<ReactElement>();
+
+        for(let i = 0; i < 14; i++)
+            rows.push(<Skeleton h="1rem" w="100%" mb="1rem" />);
+
+        return rows;
+    }, []);
 
     return (
         <div>
@@ -69,9 +78,7 @@ const PrescriptionView = (props: Props) => {
                         </>
                     :
                         <>
-                            <Skeleton h="1rem" w="100%" mb="1rem" />
-                            <Skeleton h="1rem" w="100%" mb="1rem" />
-                            <Skeleton h="1rem" w="100%" mb="1rem" />
+                            {rowsSkeleton}
                             <Skeleton h="1rem" w="100%" />
                         </>
                     }
