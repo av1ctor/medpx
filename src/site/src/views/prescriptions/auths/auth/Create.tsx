@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Flex, Grid, Select, Space, Switch } from "@mantine/core";
+import { Button, Container, Flex, Grid, Select, Space, Stepper, Switch } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
@@ -28,6 +28,7 @@ const PrescriptionAuthCreate = (props: Props) => {
     const {toggleLoading, showError} = useUI();
     const {create} = usePrescriptionAuth();
     const [thirdParty, setThirdParty] = useState<UserResponse|undefined>()
+    const [active, setActive] = useState(0);
     
     const form = useForm({
         initialValues: {
@@ -69,50 +70,68 @@ const PrescriptionAuthCreate = (props: Props) => {
         }
     }, [main, thirdParty]);
 
+    useEffect(() => {
+        setActive(thirdParty? 1: 0);
+    }, [thirdParty]);
+
     const data = thirdParty && 'ThirdParty' in thirdParty.kind?
         thirdParty.kind.ThirdParty:
         null;
 
     return (
         <Container>
-            <UserLookup 
-                setUser={setThirdParty}
-            />                    
-
-            <Space h="xl" />
-
-            <Flex direction="column">
-                <div><b>Name:</b> {data?.name}</div>
-                <div><b>Id:</b> {data?.id.toString()}</div>
-            </Flex>
-
-            <Space h="1rem" />
-
-            <form onSubmit={form.onSubmit(handleCreate)}>
-                <Select
-                    label="Kind"
-                    placeholder="Sharing kind"
-                    data={kinds}
-                    required
-                    {...form.getInputProps('kind')}
-                />
-                <DateInput
-                    label="Expiration date"
-                    placeholder="Expirates at"
-                    valueFormat="YYYY-MM-DD"
-                    preserveTime={false}
-                    {...form.getInputProps('expires_at')}
-                />
-                <Space h="lg"/>
-                <Button
-                    color="red"
-                    fullWidth
-                    type="submit"
-                    disabled={!thirdParty}
+            <Stepper 
+                active={active} 
+                onStepClick={setActive}
+                breakpoint="sm"
+            >
+                <Stepper.Step 
+                    label="Third party" 
+                    description="Lookup third party"
                 >
-                    Submit
-                </Button>
-            </form>
+                    <UserLookup 
+                        setUser={setThirdParty}
+                    />                    
+                </Stepper.Step>
+                <Stepper.Step 
+                    label="Options" 
+                    description="Authorization options"
+                    allowStepSelect={!!thirdParty}
+                >
+                    <Flex direction="column">
+                        <div><b>Name:</b> {data?.name}</div>
+                        <div><b>Id:</b> {data?.id.toString()}</div>
+                    </Flex>
+
+                    <Space h="1rem" />
+
+                    <form onSubmit={form.onSubmit(handleCreate)}>
+                        <Select
+                            label="Kind"
+                            placeholder="Sharing kind"
+                            data={kinds}
+                            required
+                            {...form.getInputProps('kind')}
+                        />
+                        <DateInput
+                            label="Expiration date"
+                            placeholder="Expirates at"
+                            valueFormat="YYYY-MM-DD"
+                            preserveTime={false}
+                            {...form.getInputProps('expires_at')}
+                        />
+                        <Space h="lg"/>
+                        <Button
+                            color="red"
+                            fullWidth
+                            type="submit"
+                            disabled={!thirdParty}
+                        >
+                            Submit
+                        </Button>
+                    </form>
+                </Stepper.Step>
+            </Stepper>
         </Container>
     );
 };

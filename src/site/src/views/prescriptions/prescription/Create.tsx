@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Grid, Space, Textarea, Flex, Modal } from "@mantine/core";
+import { Button, Container, Grid, Space, Textarea, Flex, Modal, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -30,6 +30,7 @@ const PrescriptionCreate = (props: Props) => {
     const [opened, { open, close }] = useDisclosure(false);
     const [previewItem, setPreviewItem] = useState<PrescriptionResponse|undefined>();
     const [patient, setPatient] = useState<UserResponse|undefined>();
+    const [active, setActive] = useState(0);
     
     const form = useForm({
         initialValues: {
@@ -85,6 +86,10 @@ const PrescriptionCreate = (props: Props) => {
         open()
     }, [open, principal, form.values, patient]);
 
+    useEffect(() => {
+        setActive(patient? 1: 0);
+    }, [patient]);
+
     const data = patient && 'Patient' in patient.kind?
         patient.kind.Patient:
         null;
@@ -92,54 +97,70 @@ const PrescriptionCreate = (props: Props) => {
     return (
         <>
             <Container>
-                <UserLookup 
-                    setUser={setPatient}
-                />                    
+                <Stepper 
+                    active={active} 
+                    onStepClick={setActive}
+                    breakpoint="sm"
+                >
+                    <Stepper.Step 
+                        label="Patient" 
+                        description="Lookup patient"
+                    >
+                        <UserLookup 
+                            setUser={setPatient}
+                        />
+                    </Stepper.Step>
+                    <Stepper.Step 
+                        label="Contents" 
+                        description="Prescription contents"
+                        allowStepSelect={!!patient}
+                    >
+                        <Flex direction="column">
+                            <div><b>Name:</b> {data?.name}</div>
+                            <div><b>Id:</b> {data?.id.toString()}</div>
+                        </Flex>
 
-                <Space h="xl" />
+                        <Space h="1rem" />
 
-                <Flex direction="column">
-                    <div><b>Name:</b> {data?.name}</div>
-                    <div><b>Id:</b> {data?.id.toString()}</div>
-                </Flex>
-
-                <Space h="1rem" />
-
-                <form onSubmit={form.onSubmit(handleCreate)}>
-                    <Textarea
-                        label="Contents"
-                        placeholder="Contents"
-                        minRows={20}
-                        disabled={!patient}
-                        {...form.getInputProps('contents')}
-                    />
-                    
-                    <Space h="lg"/>
-                    
-                    <Grid>
-                        <Grid.Col md={6} sm={12}>
-                            <Button
-                                color="blue"
-                                fullWidth
+                        <form onSubmit={form.onSubmit(handleCreate)}>
+                            <Textarea
+                                label="Contents"
+                                placeholder="Contents"
+                                minRows={20}
                                 disabled={!patient}
-                                onClick={handlePreview}
-                            >
-                                Preview
-                            </Button>
-                        </Grid.Col>
-                        <Grid.Col md={6} sm={12}>
-                            <Button
-                                color="red"
-                                fullWidth
-                                disabled={!patient}
-                                type="submit"
-                            >
-                                Submit
-                            </Button>
-                        </Grid.Col>
-                    </Grid>
-                    
-                </form>
+                                {...form.getInputProps('contents')}
+                            />
+                            
+                            <Space h="lg"/>
+                            
+                            <Grid>
+                                <Grid.Col md={6} sm={12}>
+                                    <Button
+                                        color="blue"
+                                        fullWidth
+                                        disabled={!patient || form.values.contents.length < 3}
+                                        onClick={handlePreview}
+                                    >
+                                        Preview
+                                    </Button>
+                                </Grid.Col>
+                                <Grid.Col md={6} sm={12}>
+                                    <Button
+                                        color="red"
+                                        fullWidth
+                                        disabled={!patient || form.values.contents.length < 3}
+                                        type="submit"
+                                    >
+                                        Submit
+                                    </Button>
+                                </Grid.Col>
+                            </Grid>
+                            
+                        </form>
+                    </Stepper.Step>
+                </Stepper>
+                
+                
             </Container>
 
             <Modal

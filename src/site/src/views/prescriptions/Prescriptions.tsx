@@ -122,7 +122,7 @@ const Prescriptions = () => {
 
             <Drawer 
                 opened={createOpened} 
-                title={<b><IconClipboardList size="1.25rem" /> Create prescription</b>}
+                title={<b><IconClipboardList size="1.25rem" /> New prescription</b>}
                 position="right"
                 size="xl"
                 onClose={createClose} 

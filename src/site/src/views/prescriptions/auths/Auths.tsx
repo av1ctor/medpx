@@ -88,7 +88,7 @@ const PrescriptionAuths = (props: Props) => {
             
             <Drawer 
                 opened={createOpened} 
-                title={<b><IconShare size="1.25rem" /> Prescription authorizations</b>}
+                title={<b><IconShare size="1.25rem" /> New authorization</b>}
                 position="right"
                 size="xl"
                 onClose={createClose} 
