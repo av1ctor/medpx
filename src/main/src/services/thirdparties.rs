@@ -4,6 +4,8 @@ use crate::db::traits::crud::{CrudSubscribable, Pagination, Crud};
 use crate::models::prescription::Prescription;
 use crate::models::thirdparty::{ThirdParty, ThirdPartyId};
 
+use super::prescriptions::PrescriptionsService;
+
 pub struct ThirdPartiesService {}
 
 impl ThirdPartiesService {
@@ -83,6 +85,7 @@ impl ThirdPartiesService {
             Some(list) => 
                 list.iter()
                     .rev()
+                    .filter(|id| PrescriptionsService::has_access(db, id, caller))
                     .skip(pag.offset as usize)
                     .take(pag.limit as usize)
                     .cloned()

@@ -27,7 +27,9 @@ const Item = (props: Props) => {
                 <Text>{thirdparty.data?.name}</Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
-                    {thirdparty.data && thirdPartyGetKind(thirdparty.data.kind).label} / {prescriptionAuthGetKind(item.kind).label}
+                    {thirdparty.data && thirdPartyGetKind(thirdparty.data.kind).label} /&nbsp;
+                    {prescriptionAuthGetKind(item.kind).label} /&nbsp;
+                    {item.expires_at.length > 0? `Expires at: ${new Date(Number((item.expires_at[0] as bigint) / 1000000n)).toISOString()}`: 'Never expires'}
                 </Text>
             </div>
             <ActionIcon

@@ -72,18 +72,31 @@ impl PrescriptionsService {
         };
 
         if prescription.doctor != *caller && prescription.patient != *caller {
-            match db.prescription_auths_rel.borrow().find_by_id(&prescription.id) {
-                None => return Err("Forbidden".to_string()),
-                Some(ids) => {
-                    if !ids.iter().map(|id| 
-                        db.prescription_auths.borrow().get(id).clone()
-                        ).any(|e| e.to == *caller) {
-                            return Err("Forbidden".to_string());
-                    }
-                }
+            if !Self::has_access(db, &prescription.id, caller) {
+                return Err("Forbidden".to_string());
             }
         }
 
         Ok(prescription.clone())
     }
+
+    pub fn has_access(
+        db: &DB, 
+        prescription_id: &PrescriptionId, 
+        user: &Principal
+    ) -> bool {
+        let now = ic_cdk::api::time();
+        match db.prescription_auths_rel.borrow().find_by_id(prescription_id) {
+            None => return false,
+            Some(ids) => {
+                if !ids.iter().map(|id| 
+                    db.prescription_auths.borrow().get(id).clone()
+                    ).any(|e| e.to == *user && (e.expires_at.is_none() || now <= e.expires_at.unwrap())) {
+                        return false;
+                }
+            }
+        }
+        true
+    }
 }
+
