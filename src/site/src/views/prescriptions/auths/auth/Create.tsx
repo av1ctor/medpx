@@ -47,9 +47,11 @@ const PrescriptionAuthCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            values.expires_at.setHours(23);
-            values.expires_at.setMinutes(59);
-            values.expires_at.setSeconds(59);
+            if(values.expires) {
+                values.expires_at.setHours(23);
+                values.expires_at.setMinutes(59);
+                values.expires_at.setSeconds(59);
+            }
 
             await create({
                 ...values,
