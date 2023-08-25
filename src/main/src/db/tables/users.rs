@@ -137,8 +137,7 @@ impl TableSubscriber<TableName> for UsersTable {
                     }
                 }
             },
-            _ => {
-            }
+            _ => panic!("Unsupported")
         }
     }
 }

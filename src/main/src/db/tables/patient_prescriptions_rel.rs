@@ -60,27 +60,32 @@ impl TableSubscriber<TableName> for PatientPrescriptionsRelTable {
         &mut self,
         event: &TableEvent<TableName>
     ) {
-        if let (
-                TableEventKey::Text(prescription_key), 
-                TableEventKey::Principal(patient_key)
-            ) = (event.pkey.clone(), event.keys[1].clone()) {
-            match event.kind {
-                TableEventKind::Create => {
-                    if !self.data.0.contains_key(&patient_key) {
-                        self.data.0.insert(patient_key.clone(), BTreeSet::new());
-                    }
+        match event.table_name {
+            TableName::Prescriptions => {
+                if let (
+                        TableEventKey::Text(prescription_key), 
+                        TableEventKey::Principal(patient_key)
+                    ) = (event.pkey.clone(), event.keys[1].clone()) {
+                    match event.kind {
+                        TableEventKind::Create => {
+                            if !self.data.0.contains_key(&patient_key) {
+                                self.data.0.insert(patient_key.clone(), BTreeSet::new());
+                            }
 
-                    self.data.0.get_mut(&patient_key).unwrap()
-                        .insert(prescription_key.clone());
-                },
-                TableEventKind::Update => {
-                    // assuming patient_key won't be updated
-                },
-                TableEventKind::Delete => {
-                    self.data.0.get_mut(&patient_key).unwrap()
-                        .remove(&prescription_key);
-                },
-            }
+                            self.data.0.get_mut(&patient_key).unwrap()
+                                .insert(prescription_key.clone());
+                        },
+                        TableEventKind::Update => {
+                            // assuming patient_key won't be updated
+                        },
+                        TableEventKind::Delete => {
+                            self.data.0.get_mut(&patient_key).unwrap()
+                                .remove(&prescription_key);
+                        },
+                    }
+                }
+            },
+            _ => panic!("Unsupported")
         }
     }
 }

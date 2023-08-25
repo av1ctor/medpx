@@ -1,6 +1,6 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::group::{Group, GroupId};
 
 pub struct GroupsService {}
@@ -15,7 +15,7 @@ impl GroupsService {
             return Err("Anonymous not allowed".to_string());
         }
         
-        db.groups.borrow_mut().insert(group.id.to_owned(), group.clone())
+        db.groups.borrow_mut().insert_and_notify(group.id.to_owned(), group.clone())
     }
 
     pub fn update(
@@ -28,7 +28,7 @@ impl GroupsService {
             return Err("Forbidden".to_string());
         }
 
-        db.groups.borrow_mut().update(id.to_owned(), group.clone())
+        db.groups.borrow_mut().update_and_notify(id.to_owned(), group.clone())
     }
 
     pub fn delete(
@@ -47,7 +47,7 @@ impl GroupsService {
             return Err("Forbidden".to_string());
         }
         
-        groups.delete(id)
+        groups.delete_and_notify(id)
     }
 
     pub fn find_by_id(

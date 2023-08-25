@@ -1,13 +1,26 @@
+use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::rc::Rc;
 use crate::db::TableName;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned};
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned, TableSubscriber, TableEvent, TableEventKind};
+use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
+use super::prescription_auths_rel::PrescriptionAuthsRelTable;
 
 pub struct PrescriptionAuthsTable {
     pub schema: TableSchema<TableName>,
     pub data: TableData<PrescriptionAuthId, PrescriptionAuth>,
     pub subs: TableSubs<TableName>,
+    pub aux: Option<Rc<RefCell<PrescriptionAuthsRelTable>>>,
+}
+
+impl PrescriptionAuthsTable {
+    pub fn set_aux(
+        &mut self,
+        aux: Rc<RefCell<PrescriptionAuthsRelTable>>
+    ) {
+        self.aux = Some(aux);
+    }
 }
 
 impl Table<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
@@ -20,6 +33,7 @@ impl Table<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuth
             },
             data: TableData(BTreeMap::new()),
             subs: TableSubs(Vec::new()),
+            aux: None,
         }
     }
 
@@ -55,6 +69,8 @@ impl TableVersioned<TableName, PrescriptionAuthId, PrescriptionAuth> for Prescri
 
 impl TableDeserializable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
+impl Crud<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
+
 impl CrudSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {}
 
 impl TableSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for PrescriptionAuthsTable {
@@ -83,5 +99,35 @@ impl TableSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for Pres
             TableEventKey::Text(v.prescription_id.clone()),
             TableEventKey::Principal(v.to),
         ]
+    }
+}
+
+impl TableSubscriber<TableName> for PrescriptionAuthsTable {
+    fn on(
+        &mut self,
+        event: &TableEvent<TableName>
+    ) {
+        match event.table_name {
+            TableName::Prescriptions => {
+                if let TableEventKey::Text(prescription_key) = event.pkey.clone() {
+                    match event.kind {
+                        TableEventKind::Create => {
+                        },
+                        TableEventKind::Update => {
+                        },
+                        TableEventKind::Delete => {
+                            let ids: Vec<_> = match self.aux.as_deref().unwrap().borrow().find_by_id(&prescription_key) {
+                                Some(ids) => ids.iter().cloned().collect(),
+                                None => return
+                            };
+                            ids.iter().cloned().for_each(|id| {
+                                _ = self.delete_and_notify(&id);
+                            })
+                        },
+                    }
+                }
+            },
+            _ => panic!("Unsupported")
+        }
     }
 }

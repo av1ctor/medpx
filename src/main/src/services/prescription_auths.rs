@@ -30,7 +30,7 @@ impl PrescriptionAuthsService {
             return Err("Forbidden".to_string());
         }
         
-        db.prescription_auths.borrow_mut().insert(auth.id.clone(), auth.clone())
+        db.prescription_auths.borrow_mut().insert_and_notify(auth.id.clone(), auth.clone())
     }
 
     pub fn update(
@@ -43,7 +43,7 @@ impl PrescriptionAuthsService {
             return Err("Forbidden".to_string());
         }
 
-        db.prescription_auths.borrow_mut().update(id.to_owned(), auth.clone())
+        db.prescription_auths.borrow_mut().update_and_notify(id.to_owned(), auth.clone())
     }
 
     pub fn delete(
@@ -62,7 +62,7 @@ impl PrescriptionAuthsService {
             return Err("Forbidden".to_string());
         }
         
-        auths.delete(id)
+        auths.delete_and_notify(id)
     }
 
     pub fn find_by_id(

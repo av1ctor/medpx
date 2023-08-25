@@ -16,7 +16,7 @@ impl PatientsService {
             return Err("Anonymous not allowed".to_string());
         }
         
-        db.patients.borrow_mut().insert(caller.to_owned(), patient.clone())
+        db.patients.borrow_mut().insert_and_notify(caller.to_owned(), patient.clone())
     }
 
     pub fn update(
@@ -29,7 +29,7 @@ impl PatientsService {
             return Err("Forbidden".to_string());
         }
 
-        db.patients.borrow_mut().update(id.to_owned(), patient.clone())
+        db.patients.borrow_mut().update_and_notify(id.to_owned(), patient.clone())
     }
 
     pub fn delete(
@@ -48,7 +48,7 @@ impl PatientsService {
             return Err("Forbidden".to_string());
         }
         
-        patients.delete(id)
+        patients.delete_and_notify(id)
     }
 
     pub fn find_by_id(

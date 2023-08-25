@@ -107,7 +107,8 @@ pub trait TableDeserializable<TN, K, V>
         Self: Table<TN, K, V> + TableVersioned<TN, K, V> {
     fn deserialize(
         &mut self, 
-        reader: &mut StableReader
+        reader: &mut StableReader,
+        decode_data: bool
     ) -> Result<(), String> {
         // load version
         let mut version_buf = [0u8; 4];
@@ -121,14 +122,16 @@ pub trait TableDeserializable<TN, K, V>
         let mut table_buf = vec![0u8; size as usize];
         reader.read(&mut table_buf).map_err(|e| format!("{:?}", e))?;
         // decode table
-        let data = if version == self.get_schema().version {
-            candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
-                .map_err(|e| format!("{:?}", e))?.0
+        if decode_data {
+            let data = if version == self.get_schema().version {
+                candid::decode_args::<'_, (TableData<K, V>, )>(&table_buf)
+                    .map_err(|e| format!("{:?}", e))?.0
+            }
+            else {
+                self.migrate(version, &table_buf)?
+            };
+            self.set_data(data);
         }
-        else {
-            self.migrate(version, &table_buf)?
-        };
-        self.set_data(data);
         Ok(())
     }
 }

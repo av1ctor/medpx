@@ -1,6 +1,6 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::staff::{Staff, StaffId};
 
 pub struct StaffService {}
@@ -15,7 +15,7 @@ impl StaffService {
             return Err("Anonymous not allowed".to_string());
         }
         
-        db.staff.borrow_mut().insert(caller.to_owned(), staff.clone())
+        db.staff.borrow_mut().insert_and_notify(caller.to_owned(), staff.clone())
     }
 
     pub fn update(
@@ -28,7 +28,7 @@ impl StaffService {
             return Err("Forbidden".to_string());
         }
 
-        db.staff.borrow_mut().update(id.to_owned(), staff.clone())
+        db.staff.borrow_mut().update_and_notify(id.to_owned(), staff.clone())
     }
 
     pub fn delete(
@@ -47,7 +47,7 @@ impl StaffService {
             return Err("Forbidden".to_string());
         }
         
-        staffs.delete(id)
+        staffs.delete_and_notify(id)
     }
 
     pub fn find_by_id(

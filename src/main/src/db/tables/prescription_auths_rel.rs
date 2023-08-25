@@ -60,27 +60,32 @@ impl TableSubscriber<TableName> for PrescriptionAuthsRelTable {
         &mut self,
         event: &TableEvent<TableName>
     ) {
-        if let (
-                TableEventKey::Text(prescription_auth_key), 
-                TableEventKey::Text(prescription_key)
-            ) = (event.pkey.clone(), event.keys[0].clone()) {
-            match event.kind {
-                TableEventKind::Create => {
-                    if !self.data.0.contains_key(&prescription_key) {
-                        self.data.0.insert(prescription_key.clone(), BTreeSet::new());
-                    }
+        match event.table_name {
+            TableName::PrescriptionAuths => {
+                if let (
+                        TableEventKey::Text(prescription_auth_key), 
+                        TableEventKey::Text(prescription_key)
+                    ) = (event.pkey.clone(), event.keys[0].clone()) {
+                    match event.kind {
+                        TableEventKind::Create => {
+                            if !self.data.0.contains_key(&prescription_key) {
+                                self.data.0.insert(prescription_key.clone(), BTreeSet::new());
+                            }
 
-                    self.data.0.get_mut(&prescription_key).unwrap()
-                        .insert(prescription_auth_key.clone());
-                },
-                TableEventKind::Update => {
-                    // assuming doctor_key won't be updated
-                },
-                TableEventKind::Delete => {
-                    self.data.0.get_mut(&prescription_key).unwrap()
-                        .remove(&prescription_auth_key);
-                },
-            }
+                            self.data.0.get_mut(&prescription_key).unwrap()
+                                .insert(prescription_auth_key.clone());
+                        },
+                        TableEventKind::Update => {
+                            // assuming doctor_key won't be updated
+                        },
+                        TableEventKind::Delete => {
+                            self.data.0.get_mut(&prescription_key).unwrap()
+                                .remove(&prescription_auth_key);
+                        },
+                    }
+                }
+            },
+            _ => panic!("Unsupported")
         }
     }
 }

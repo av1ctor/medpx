@@ -61,27 +61,32 @@ impl TableSubscriber<TableName> for PrincipalKeysRelTable {
         &mut self,
         event: &TableEvent<TableName>
     ) {
-        if let (
-                TableEventKey::Text(key),
-                TableEventKey::Principal(principal) 
-            ) = (event.pkey.clone(), event.keys[0].clone()) {
-            match event.kind {
-                TableEventKind::Create => {
-                    if !self.data.0.contains_key(&principal) {
-                        self.data.0.insert(principal.clone(), BTreeSet::new());
-                    }
+        match event.table_name {
+            TableName::Keys => {
+                if let (
+                        TableEventKey::Text(key),
+                        TableEventKey::Principal(principal) 
+                    ) = (event.pkey.clone(), event.keys[0].clone()) {
+                    match event.kind {
+                        TableEventKind::Create => {
+                            if !self.data.0.contains_key(&principal) {
+                                self.data.0.insert(principal.clone(), BTreeSet::new());
+                            }
 
-                    self.data.0.get_mut(&principal).unwrap()
-                        .insert(key.clone());
-                },
-                TableEventKind::Update => {
-                    // assuming principal won't be updated
-                },
-                TableEventKind::Delete => {
-                    self.data.0.get_mut(&principal).unwrap()
-                        .remove(&key);
-                },
-            }
+                            self.data.0.get_mut(&principal).unwrap()
+                                .insert(key.clone());
+                        },
+                        TableEventKind::Update => {
+                            // assuming principal won't be updated
+                        },
+                        TableEventKind::Delete => {
+                            self.data.0.get_mut(&principal).unwrap()
+                                .remove(&key);
+                        },
+                    }
+                }
+            },
+            _ => panic!("Unsupported")
         }
     }
 }

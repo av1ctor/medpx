@@ -85,10 +85,12 @@ impl DB {
         //
         prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());
         prescriptions.borrow_mut().subscribe(patient_prescriptions_rel.clone());
+        prescriptions.borrow_mut().subscribe(prescription_auths.clone());
         //
         keys.borrow_mut().subscribe(principal_keys_rel.clone());
         keys.borrow_mut().subscribe(key_principal_rel.clone());
         //
+        prescription_auths.borrow_mut().set_aux(prescription_auths_rel.clone());
         prescription_auths.borrow_mut().subscribe(prescription_auths_rel.clone());
         prescription_auths.borrow_mut().subscribe(thirdparty_prescriptions_rel.clone());
         //
@@ -144,22 +146,22 @@ impl DB {
         &mut self,
         reader: &mut StableReader
     ) -> Result<(), String> {
-        self.doctors.borrow_mut().deserialize(reader)?;
-        self.patients.borrow_mut().deserialize(reader)?;
-        self.staff.borrow_mut().deserialize(reader)?;
-        self.thirdparties.borrow_mut().deserialize(reader)?;
-        self.users.borrow_mut().deserialize(reader)?;
-        self.keys.borrow_mut().deserialize(reader)?;
-        self.prescriptions.borrow_mut().deserialize(reader)?;
-        self.prescription_auths.borrow_mut().deserialize(reader)?;
-        self.prescription_templates.borrow_mut().deserialize(reader)?;
-        self.doctor_prescriptions_rel.borrow_mut().deserialize(reader)?;
-        self.patient_prescriptions_rel.borrow_mut().deserialize(reader)?;
-        self.thirdparty_prescriptions_rel.borrow_mut().deserialize(reader)?;
-        self.prescription_auths_rel.borrow_mut().deserialize(reader)?;
-        self.principal_keys_rel.borrow_mut().deserialize(reader)?;
-        self.key_principal_rel.borrow_mut().deserialize(reader)?;
-        self.groups.borrow_mut().deserialize(reader)?;
+        self.doctors.borrow_mut().deserialize(reader, true)?;
+        self.patients.borrow_mut().deserialize(reader, true)?;
+        self.staff.borrow_mut().deserialize(reader, true)?;
+        self.thirdparties.borrow_mut().deserialize(reader, true)?;
+        self.users.borrow_mut().deserialize(reader, true)?;
+        self.keys.borrow_mut().deserialize(reader, true)?;
+        self.prescriptions.borrow_mut().deserialize(reader, true)?;
+        self.prescription_auths.borrow_mut().deserialize(reader, true)?;
+        self.prescription_templates.borrow_mut().deserialize(reader, true)?;
+        self.doctor_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
+        self.patient_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
+        self.thirdparty_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
+        self.prescription_auths_rel.borrow_mut().deserialize(reader, true)?;
+        self.principal_keys_rel.borrow_mut().deserialize(reader, true)?;
+        self.key_principal_rel.borrow_mut().deserialize(reader, true)?;
+        self.groups.borrow_mut().deserialize(reader, true)?;
         Ok(())
     }
 }

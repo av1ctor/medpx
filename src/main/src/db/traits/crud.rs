@@ -72,8 +72,8 @@ pub trait CrudSubscribable<TN, K, V>
     where 
         K: Ord + CandidType, 
         V: CandidType, 
-        Self: Table<TN, K, V> + TableSubscribable<TN, K, V> {
-    fn insert(
+        Self: Table<TN, K, V> + Crud<TN, K, V> + TableSubscribable<TN, K, V> {
+    fn insert_and_notify(
         &mut self,
         k: K,
         v: V
@@ -93,21 +93,7 @@ pub trait CrudSubscribable<TN, K, V>
         }
     }
 
-    fn find_by_id<'a>(
-        &'a self,
-        k: &'a K
-    ) -> Option<&'a V> {
-       self.get_data().0.get(k)
-    }
-
-    fn get<'a>(
-        &'a self,
-        k: &'a K
-    ) -> &'a V {
-        self.get_data().0.get(k).unwrap()
-    }
-
-    fn update(
+    fn update_and_notify(
         &mut self,
         k: K,
         v: V
@@ -127,7 +113,7 @@ pub trait CrudSubscribable<TN, K, V>
         }
     }
 
-    fn delete(
+    fn delete_and_notify(
         &mut self,
         k: &K
     ) -> Result<(), String> {

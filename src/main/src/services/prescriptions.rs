@@ -24,7 +24,7 @@ impl PrescriptionsService {
             return Err("Patient not found".to_string());
         }
         
-        db.prescriptions.borrow_mut().insert(prescription.id.clone(), prescription.clone())
+        db.prescriptions.borrow_mut().insert_and_notify(prescription.id.clone(), prescription.clone())
     }
 
     pub fn update(
@@ -37,7 +37,7 @@ impl PrescriptionsService {
             return Err("Forbidden".to_string());
         }
 
-        db.prescriptions.borrow_mut().update(id.to_owned(), prescription.clone())
+        db.prescriptions.borrow_mut().update_and_notify(id.to_owned(), prescription.clone())
     }
 
     pub fn delete(
@@ -56,7 +56,7 @@ impl PrescriptionsService {
             return Err("Forbidden".to_string());
         }
         
-        prescriptions.delete(id)
+        prescriptions.delete_and_notify(id)
     }
 
     pub fn find_by_id(

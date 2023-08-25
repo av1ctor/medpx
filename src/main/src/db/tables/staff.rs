@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use crate::db::TableName;
 use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned, TableSubscribable, TableSubs, TableEventKey};
-use crate::db::traits::crud::CrudSubscribable;
+use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::staff::{StaffId, Staff};
 
 pub struct StaffTable {
@@ -54,6 +54,8 @@ impl TableSerializable<TableName, StaffId, Staff> for StaffTable {}
 impl TableVersioned<TableName, StaffId, Staff> for StaffTable {}
 
 impl TableDeserializable<TableName, StaffId, Staff> for StaffTable {}
+
+impl Crud<TableName, StaffId, Staff> for StaffTable {}
 
 impl CrudSubscribable<TableName, StaffId, Staff> for StaffTable {}
 

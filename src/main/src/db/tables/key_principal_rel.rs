@@ -61,22 +61,27 @@ impl TableSubscriber<TableName> for KeyPrincipalRelTable {
         &mut self,
         event: &TableEvent<TableName>
     ) {
-        if let (
-                TableEventKey::Text(key),
-                TableEventKey::Principal(principal)
-            ) = (event.pkey.clone(), event.keys[0].clone()) {
-            match event.kind {
-                TableEventKind::Create => {
-                    self.data.0
-                        .insert(key.clone(), principal.clone());
-                },
-                TableEventKind::Update => {
-                    // assuming key won't be updated
-                },
-                TableEventKind::Delete => {
-                    self.data.0.remove(&key);
-                },
+        match event.table_name {
+            TableName::Keys => {
+                if let (
+                        TableEventKey::Text(key),
+                        TableEventKey::Principal(principal)
+                    ) = (event.pkey.clone(), event.keys[0].clone()) {
+                    match event.kind {
+                        TableEventKind::Create => {
+                            self.data.0
+                                .insert(key.clone(), principal.clone());
+                        },
+                        TableEventKind::Update => {
+                            // assuming key won't be updated
+                        },
+                        TableEventKind::Delete => {
+                            self.data.0.remove(&key);
+                        },
+                    }
+                }
             }
+            _ => panic!("Unsupported")
         }
     }
 }

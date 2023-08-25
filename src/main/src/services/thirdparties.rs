@@ -18,7 +18,7 @@ impl ThirdPartiesService {
             return Err("Anonymous not allowed".to_string());
         }
         
-        db.thirdparties.borrow_mut().insert(caller.to_owned(), thirdparty.clone())
+        db.thirdparties.borrow_mut().insert_and_notify(caller.to_owned(), thirdparty.clone())
     }
 
     pub fn update(
@@ -31,7 +31,7 @@ impl ThirdPartiesService {
             return Err("Forbidden".to_string());
         }
 
-        db.thirdparties.borrow_mut().update(id.to_owned(), thirdparty.clone())
+        db.thirdparties.borrow_mut().update_and_notify(id.to_owned(), thirdparty.clone())
     }
 
     pub fn delete(
@@ -50,7 +50,7 @@ impl ThirdPartiesService {
             return Err("Forbidden".to_string());
         }
         
-        thirdparties.delete(id)
+        thirdparties.delete_and_notify(id)
     }
 
     pub fn find_by_id(

@@ -16,7 +16,7 @@ impl KeysService {
             return Err("Anonymous not allowed".to_string());
         }
 
-        db.keys.borrow_mut().insert(key.id.clone(), key.clone())
+        db.keys.borrow_mut().insert_and_notify(key.id.clone(), key.clone())
     }
 
     pub fn update(
@@ -29,7 +29,7 @@ impl KeysService {
             return Err("Forbidden".to_string());
         }
 
-        db.keys.borrow_mut().update(id.to_owned(), key.clone())
+        db.keys.borrow_mut().update_and_notify(id.to_owned(), key.clone())
     }
 
     pub fn delete(
@@ -48,7 +48,7 @@ impl KeysService {
             return Err("Forbidden".to_string());
         }
         
-        keys.delete(id)
+        keys.delete_and_notify(id)
     }
 
     pub fn find_by_id(
