@@ -38,7 +38,7 @@ const PrescriptionView = (props: Props) => {
         const rows = new Array<ReactElement>();
 
         for(let i = 0; i < 14; i++)
-            rows.push(<Skeleton h="1rem" w="100%" mb="1rem" />);
+            rows.push(<Skeleton key={i} h="1rem" w="100%" mb="1rem" />);
 
         return rows;
     }, []);
