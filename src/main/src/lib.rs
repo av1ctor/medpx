@@ -9,6 +9,7 @@ use candid::{Principal, CandidType};
 use db::traits::{table::Table, crud::Pagination};
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
+use models::group::{GroupRequest, GroupResponse, Group, GroupId};
 use serde::Deserialize;
 use db::DB;
 use models::prescription_auth::{PrescriptionAuthRequest, PrescriptionAuthResponse, 
@@ -20,11 +21,13 @@ use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescripti
 use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
 use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
 use models::user::{UserResponse, UserId};
+use services::groups::GroupsService;
 use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
     thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 use crate::db::tables::doctors::DoctorsTable;
 use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
+use crate::db::tables::groups::GroupsTable;
 use crate::db::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
 use crate::db::tables::users::UsersTable;
 use crate::db::tables::keys::KeysTable;
@@ -67,6 +70,7 @@ thread_local! {
         Rc::new(RefCell::new(PrescriptionAuthsRelTable::new())),
         Rc::new(RefCell::new(PrincipalKeysRelTable::new())),
         Rc::new(RefCell::new(KeyPrincipalRelTable::new())),
+        Rc::new(RefCell::new(GroupsTable::new())),
     ));    
 }
 
@@ -78,7 +82,7 @@ fn _gen_id(
         cnt.clone()
     });
 
-    ulid::Ulid::from_parts(ic_cdk::api::time(), counter).to_string()
+    ulid::Ulid::from_parts(ic_cdk::api::time() / 1000000, counter).to_string()
 }
 
 #[ic_cdk::init]
@@ -624,6 +628,17 @@ fn prescription_create(
     })
 }
 
+#[ic_cdk::update]
+fn prescription_delete(
+    id: PrescriptionId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        PrescriptionsService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
 #[ic_cdk::query]
 fn prescription_find_by_id(
     id: PrescriptionId
@@ -687,6 +702,64 @@ fn prescription_auth_find_by_prescription(
     DB.with(|db| {
         match PrescriptionAuthsService::find_by_prescription(&id, &db.borrow(), &caller()) {
             Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+/*
+ * groups facade
+ */
+#[ic_cdk::update]
+fn group_create(
+    req: GroupRequest
+) -> Result<GroupResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let id = _gen_id();
+        let group = Group::new(&id, &req, &caller);
+        match GroupsService::create(&group, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(group.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn group_update(
+    id: GroupId,
+    req: GroupRequest
+) -> Result<GroupResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let group = Group::new(&id, &req, &caller);
+        match GroupsService::update(&id, &group, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(group.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn group_delete(
+    id: GroupId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        GroupsService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+#[ic_cdk::query]
+fn group_find_by_id(
+    id: GroupId
+) -> Result<GroupResponse, String> {
+    DB.with(|db| {
+        match GroupsService::find_by_id(&id, &db.borrow()) {
+            Ok(e) => Ok(e.into()),
             Err(msg) => Err(msg)
         }
     })

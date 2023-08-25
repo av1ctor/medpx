@@ -7,3 +7,4 @@ pub mod prescription;
 pub mod staff;
 pub mod thirdparty;
 pub mod user;
+pub mod group;

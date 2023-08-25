@@ -4,12 +4,13 @@ import { useActors } from "./actors";
 import { patientFindPrescriptions } from "../libs/patients";
 import { userGetPrincipal, userIsKind } from "../libs/users";
 import { doctorFindPrescriptions } from "../libs/doctors";
-import { prescriptionCreate, prescriptionFindById } from "../libs/prescriptions";
+import { prescriptionCreate, prescriptionDelete, prescriptionFindById } from "../libs/prescriptions";
 import { useAuth } from "./auth";
 import { thirdPartyFindPrescriptions } from "../libs/thirdparties";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
+    remove: (id: string) => Promise<void>;
 }
 
 export const usePrescription = (
@@ -34,8 +35,26 @@ export const usePrescription = (
         return createMut.mutateAsync({req});
     };
 
+    const deleteMut = useMutation(
+        async (options: {id: string}) => {
+            return prescriptionDelete(main, options.id);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['prescriptions']);
+            }   
+        }
+    );
+
+    const remove = (
+        id: string
+    ): Promise<void> => {
+        return deleteMut.mutateAsync({id});
+    };
+
     return {
         create,
+        remove,
     }
 };
 

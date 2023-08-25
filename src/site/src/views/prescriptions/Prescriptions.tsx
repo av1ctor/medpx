@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from "react";
-import { ActionIcon, Button, Card, Center, Divider, Drawer, Group, Modal, Space, Text } from "@mantine/core";
+import { ActionIcon, Button, Card, Center, Divider, Drawer, Grid, Group, Modal, Space, Text } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
-import { IconClipboardList, IconPlus, IconRefresh } from "@tabler/icons-react";
+import { IconAlertTriangle, IconClipboardList, IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../hooks/auth";
-import { usePrescriptionsFind } from "../../hooks/prescriptions";
+import { usePrescription, usePrescriptionsFind } from "../../hooks/prescriptions";
 import { useUI } from "../../hooks/ui";
 import { userIsKind } from "../../libs/users";
 import { PrescriptionResponse } from "../../../../declarations/main/main.did";
@@ -18,12 +18,14 @@ interface Props {
 
 const Prescriptions = () => {
     const {user} = useAuth();
-    const {showSuccess} = useUI();
+    const {showSuccess, toggleLoading, showError} = useUI();
     const {isMobile, navigateTo} = useBrowser()
     const [createOpened, { open: createOpen, close: createClose }] = useDisclosure(false);
     const [viewOpened, { open: viewOpen, close: viewClose }] = useDisclosure(false);
+    const [deleteOpened, { open: deleteOpen, close: deleteClose }] = useDisclosure(false);
     const [item, setItem] = useState<PrescriptionResponse|undefined>();
     const query = usePrescriptionsFind(user, 10);
+    const {remove} = usePrescription();
     
     const handleCreated = useCallback((msg: string) => {
         showSuccess(msg);
@@ -38,6 +40,29 @@ const Prescriptions = () => {
     const handleShare = useCallback((item: PrescriptionResponse) => {
         navigateTo(`/p/${item.id}/auth`)
     }, [item?.id]);
+
+    const handleConfirmDeletion = useCallback((item: PrescriptionResponse) => {
+        setItem(item);
+        deleteOpen()
+    }, [setItem, deleteOpen]);
+
+    const handleDelete = useCallback(async () => {
+        try {
+            toggleLoading(true);
+            if(item) {
+                await remove(item.id);
+            }
+            deleteClose()
+            showSuccess("Prescription removed!");
+        }
+        catch(e) {
+            showError(e);
+        }
+        finally {
+            toggleLoading(false);
+        }
+        
+    }, [remove, item]);
 
     const isDoctor = userIsKind(user, 'Doctor');
 
@@ -77,6 +102,7 @@ const Prescriptions = () => {
                                 item={item} 
                                 onView={handleView}
                                 onShare={handleShare}
+                                onDelete={handleConfirmDeletion}
                             />
                         )
                     )
@@ -117,6 +143,41 @@ const Prescriptions = () => {
                         isEncrypted
                     />
                 }
+            </Modal>
+
+            <Modal 
+                opened={deleteOpened} 
+                title={<b><IconAlertTriangle size="1rem" /> Remove prescription</b>}
+                centered
+                size="xl"
+                onClose={deleteClose} 
+            >
+                <Text size="sm" mb="xs" weight={500}>
+                    Do you really want to delete this prescription? <b>This operation can't be reversed!</b>
+                </Text>
+
+                <Space h="xl" />
+
+                <Grid>
+                    <Grid.Col span={6}>
+                        <Button 
+                            color="red"
+                            fullWidth
+                            onClick={handleDelete}
+                        >
+                            Confirm
+                        </Button>
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                        <Button 
+                            color="gray"
+                            fullWidth
+                            onClick={deleteClose}
+                        >
+                            Cancel
+                        </Button>
+                    </Grid.Col>
+                </Grid>
             </Modal>
         </>
     );

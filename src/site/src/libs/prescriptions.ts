@@ -11,6 +11,17 @@ export const prescriptionCreate = async (
     return res.Ok; 
 };
 
+export const prescriptionDelete = async (
+    main: Main,
+    id: string
+): Promise<void> => {
+    const res = await main.prescription_delete(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return; 
+};
+
 export const prescriptionFindById = async (
     main: Main,
     id: string

@@ -52,7 +52,7 @@ impl PrescriptionsService {
             Some(e) => e
         };
 
-        if *caller != prescription.created_by {
+        if *caller != prescription.patient {
             return Err("Forbidden".to_string());
         }
         

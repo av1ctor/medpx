@@ -5,13 +5,14 @@ import { useAuth } from "../../hooks/auth";
 import { userIsKind } from "../../libs/users";
 import { useDoctorFindById } from "../../hooks/doctors";
 import { usePatientFindById } from "../../hooks/patients";
-import { IconClockHour4, IconShare, IconStethoscope, IconVaccine } from "@tabler/icons-react";
+import { IconClockHour4, IconShare, IconStethoscope, IconTrash, IconVaccine } from "@tabler/icons-react";
 import TimeFromNow from "../../components/TimeFromNow";
 
 interface Props {
     item: PrescriptionResponse
     onView: (item: PrescriptionResponse) => void;
     onShare: (item: PrescriptionResponse) => void;
+    onDelete: (item: PrescriptionResponse) => void;
 }
 
 const Patient = (props: {data: PatientResponse|undefined}) => 
@@ -44,6 +45,10 @@ const Item = (props: Props) => {
     const handleShare = useCallback(() => {
         props.onShare(props.item);
     }, [props.item]);
+
+    const handleDelete = useCallback(async () => {
+        props.onDelete(props.item);
+    }, [props.item]);
     
     const {item} = props;
     const isDoctor = userIsKind(user, 'Doctor');
@@ -70,14 +75,24 @@ const Item = (props: Props) => {
                 </Text>
             </div>
             {isPatient &&
-                <ActionIcon
-                    variant="filled"
-                    color="red"
-                    title="Share"
-                    onClick={handleShare}
-                >
-                    <IconShare size="1rem" />
-                </ActionIcon>
+                <>
+                    <ActionIcon
+                        variant="filled"
+                        color="blue"
+                        title="Share"
+                        onClick={handleShare}
+                    >
+                        <IconShare size="1rem" />
+                    </ActionIcon>
+                    <ActionIcon
+                        variant="filled"
+                        color="red"
+                        title="Delete"
+                        onClick={handleDelete}
+                    >
+                        <IconTrash size="1rem" />
+                    </ActionIcon>
+                </>
             }
         </Group>
     )

@@ -80,15 +80,17 @@ impl DoctorsService {
 
         let ids = match db.doctor_prescriptions_rel.borrow().find_by_id(id) {
             None => vec![],
-            Some(list) => 
-                list.iter()
-                    .rev()
+            Some(set) =>  {
+                let mut arr: Vec<String> = set.iter().cloned().collect();
+                arr.sort_by(|a, b| b.cmp(a));
+                arr.iter()
                     .skip(pag.offset as usize)
                     .take(pag.limit as usize)
                     .cloned()
                     .collect()
+            }
         };
-        
+
         Ok(ids.iter().map(|id| 
             db.prescriptions.borrow().get(id).clone()
         ).collect())

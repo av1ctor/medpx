@@ -61,8 +61,10 @@ pub trait Crud<TN, K, V>
         &mut self,
         k: &K
     ) -> Result<(), String> {
-        _ = self.get_data_mut().0.remove(k);
-        Ok(())
+        match self.get_data_mut().0.remove(k) {
+            None => Err("Not found".to_string()),
+            _ => Ok(())
+        }
     }
 }
 
@@ -137,8 +139,11 @@ pub trait CrudSubscribable<TN, K, V>
                 pkey: Self::get_pkey(k),
                 keys: Self::get_keys(&v)
             });
+            Ok(())
         }
-        Ok(())
+        else {
+            Err("Not found".to_string())
+        }
     }
 }
 

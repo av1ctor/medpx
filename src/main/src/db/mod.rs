@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use ic_cdk::api::stable::{StableWriter, StableReader};
 use self::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
+use self::tables::groups::GroupsTable;
 use self::tables::key_principal_rel::KeyPrincipalRelTable;
 use self::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
 use self::tables::prescription_auths::PrescriptionAuthsTable;
@@ -39,6 +40,7 @@ pub enum TableName {
     PrescriptionAuthsRel,
     PrincipalKeysRel,
     KeyPrincipalRel,
+    Groups,
 }
 
 pub struct DB {
@@ -57,6 +59,7 @@ pub struct DB {
     pub prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
     pub principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
     pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
+    pub groups: Rc<RefCell<GroupsTable>>,
 }
 
 impl DB {
@@ -76,6 +79,7 @@ impl DB {
         prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
         principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
         key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
+        groups: Rc<RefCell<GroupsTable>>,
     ) -> Self {
 
         //
@@ -109,6 +113,7 @@ impl DB {
             prescription_auths_rel,
             principal_keys_rel,
             key_principal_rel,
+            groups,
         }
     }
 
@@ -131,6 +136,7 @@ impl DB {
         self.prescription_auths_rel.borrow().serialize(writer)?;
         self.principal_keys_rel.borrow().serialize(writer)?;
         self.key_principal_rel.borrow().serialize(writer)?;
+        self.groups.borrow().serialize(writer)?;
         Ok(())
     }
 
@@ -153,6 +159,7 @@ impl DB {
         self.prescription_auths_rel.borrow_mut().deserialize(reader)?;
         self.principal_keys_rel.borrow_mut().deserialize(reader)?;
         self.key_principal_rel.borrow_mut().deserialize(reader)?;
+        self.groups.borrow_mut().deserialize(reader)?;
         Ok(())
     }
 }

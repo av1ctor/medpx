@@ -252,6 +252,7 @@ service : {
     key_find_all_by_user: (principal, Pagination) -> (FindKeysResult) query;
 
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
+    prescription_delete: (text) -> (DefaultResponseResult);
     prescription_find_by_id: (text) -> (PrescriptionResponseResult) query;
     
     prescription_auth_create: (PrescriptionAuthRequest) -> (PrescriptionAuthResponseResult);
