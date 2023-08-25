@@ -21,7 +21,7 @@ use self::tables::staff::StaffTable;
 use self::tables::thirdparties::ThirdPartiesTable;
 use self::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
 use self::tables::users::UsersTable;
-use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable};
+use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable, Table};
 
 #[derive(Clone, Debug)]
 pub enum TableName {
@@ -64,23 +64,23 @@ pub struct DB {
 
 impl DB {
     pub fn new(
-        doctors: Rc<RefCell<DoctorsTable>>,
-        patients: Rc<RefCell<PatientsTable>>,
-        staff: Rc<RefCell<StaffTable>>,
-        thirdparties: Rc<RefCell<ThirdPartiesTable>>,
-        users: Rc<RefCell<UsersTable>>,
-        prescriptions: Rc<RefCell<PrescriptionsTable>>,
-        keys: Rc<RefCell<KeysTable>>,
-        prescription_auths: Rc<RefCell<PrescriptionAuthsTable>>,
-        prescription_templates: Rc<RefCell<PrescriptionTemplatesTable>>,
-        doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
-        patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
-        thirdparty_prescriptions_rel: Rc<RefCell<ThirdPartyPrescriptionsRelTable>>,
-        prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
-        principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
-        key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
-        groups: Rc<RefCell<GroupsTable>>,
     ) -> Self {
+        let doctors = Rc::new(RefCell::new(DoctorsTable::new()));
+        let patients = Rc::new(RefCell::new(PatientsTable::new()));
+        let staff = Rc::new(RefCell::new(StaffTable::new()));
+        let thirdparties = Rc::new(RefCell::new(ThirdPartiesTable::new()));
+        let users = Rc::new(RefCell::new(UsersTable::new()));
+        let prescriptions = Rc::new(RefCell::new(PrescriptionsTable::new()));
+        let keys = Rc::new(RefCell::new(KeysTable::new()));
+        let prescription_auths = Rc::new(RefCell::new(PrescriptionAuthsTable::new()));
+        let prescription_templates = Rc::new(RefCell::new(PrescriptionTemplatesTable::new()));
+        let doctor_prescriptions_rel = Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new()));
+        let patient_prescriptions_rel = Rc::new(RefCell::new(PatientPrescriptionsRelTable::new()));
+        let thirdparty_prescriptions_rel = Rc::new(RefCell::new(ThirdPartyPrescriptionsRelTable::new()));
+        let prescription_auths_rel = Rc::new(RefCell::new(PrescriptionAuthsRelTable::new()));
+        let principal_keys_rel = Rc::new(RefCell::new(PrincipalKeysRelTable::new()));
+        let key_principal_rel = Rc::new(RefCell::new(KeyPrincipalRelTable::new()));
+        let groups = Rc::new(RefCell::new(GroupsTable::new()));
 
         //
         prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());

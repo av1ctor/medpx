@@ -4,9 +4,8 @@ pub mod utils;
 pub mod services;
 
 use std::cell::RefCell;
-use std::rc::Rc;
 use candid::{Principal, CandidType};
-use db::traits::{table::Table, crud::Pagination};
+use db::traits::crud::Pagination;
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use models::group::{GroupRequest, GroupResponse, Group, GroupId};
@@ -25,22 +24,6 @@ use services::groups::GroupsService;
 use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
     thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
-use crate::db::tables::doctors::DoctorsTable;
-use crate::db::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
-use crate::db::tables::groups::GroupsTable;
-use crate::db::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
-use crate::db::tables::users::UsersTable;
-use crate::db::tables::keys::KeysTable;
-use crate::db::tables::key_principal_rel::KeyPrincipalRelTable;
-use crate::db::tables::patients::PatientsTable;
-use crate::db::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
-use crate::db::tables::prescription_auths_rel::PrescriptionAuthsRelTable;
-use crate::db::tables::prescriptions::PrescriptionsTable;
-use crate::db::tables::principal_keys_rel::PrincipalKeysRelTable;
-use crate::db::tables::prescription_auths::PrescriptionAuthsTable;
-use crate::db::tables::prescription_templates::PrescriptionTemplatesTable;
-use crate::db::tables::staff::StaffTable;
-use crate::db::tables::thirdparties::ThirdPartiesTable;
 
 const STATE_VERSION: f32 = 0.1;
 const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
@@ -54,24 +37,7 @@ struct State {
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
-    static DB: RefCell<DB> = RefCell::new(DB::new(
-        Rc::new(RefCell::new(DoctorsTable::new())), 
-        Rc::new(RefCell::new(PatientsTable::new())), 
-        Rc::new(RefCell::new(StaffTable::new())), 
-        Rc::new(RefCell::new(ThirdPartiesTable::new())), 
-        Rc::new(RefCell::new(UsersTable::new())), 
-        Rc::new(RefCell::new(PrescriptionsTable::new())), 
-        Rc::new(RefCell::new(KeysTable::new())), 
-        Rc::new(RefCell::new(PrescriptionAuthsTable::new())), 
-        Rc::new(RefCell::new(PrescriptionTemplatesTable::new())),
-        Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new())),
-        Rc::new(RefCell::new(PatientPrescriptionsRelTable::new())),
-        Rc::new(RefCell::new(ThirdPartyPrescriptionsRelTable::new())),
-        Rc::new(RefCell::new(PrescriptionAuthsRelTable::new())),
-        Rc::new(RefCell::new(PrincipalKeysRelTable::new())),
-        Rc::new(RefCell::new(KeyPrincipalRelTable::new())),
-        Rc::new(RefCell::new(GroupsTable::new())),
-    ));    
+    static DB: RefCell<DB> = RefCell::new(DB::new());    
 }
 
 fn _gen_id(
