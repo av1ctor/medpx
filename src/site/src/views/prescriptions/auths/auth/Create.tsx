@@ -15,10 +15,7 @@ const schema = yup.object().shape({
     prescription_id: yup.string().required(),
     kind: yup.string().required(),
     value: yup.string().min(3).max(64),
-    expires: yup.boolean(),
-    expires_at: yup.date().when(['expires'], (_values, schema) => {
-        return schema.required();
-    }),
+    expires_at: yup.date().optional(),
 });
 
 interface Props {
@@ -37,7 +34,7 @@ const PrescriptionAuthCreate = (props: Props) => {
             prescription_id: props.prescriptionId,
             kind: '',
             expires: false,
-            expires_at: new Date(Date.now() + 60*60*24*1000),
+            expires_at: undefined,
         },
     
         validate: yupResolver(schema),
@@ -47,7 +44,7 @@ const PrescriptionAuthCreate = (props: Props) => {
         try {
             toggleLoading(true);
 
-            if(values.expires) {
+            if(values.expires_at) {
                 values.expires_at.setHours(23);
                 values.expires_at.setMinutes(59);
                 values.expires_at.setSeconds(59);
@@ -57,7 +54,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                 ...values,
                 kind: {[values.kind]: null},
                 to: userGetPrincipal(thirdParty),
-                expires_at: values.expires?
+                expires_at: values.expires_at?
                     [BigInt(values.expires_at.valueOf()) * 1000000n]:
                     [],
             });
@@ -99,26 +96,13 @@ const PrescriptionAuthCreate = (props: Props) => {
                     required
                     {...form.getInputProps('kind')}
                 />
-                <Grid>
-                    <Grid.Col xs={6}>
-                        <Container pt="xl" pl="0">
-                        <Switch 
-                            label="Expires"
-                            {...form.getInputProps('expires')}
-                        />
-                        </Container>
-                    </Grid.Col>
-                    <Grid.Col xs={6}>
-                        <DateInput
-                            label="Expiration date"
-                            placeholder="Expirates at"
-                            valueFormat="YYYY-MM-DD"
-                            preserveTime={false}
-                            disabled={!form.values.expires}
-                            {...form.getInputProps('expires_at')}
-                        />
-                    </Grid.Col>
-                </Grid>
+                <DateInput
+                    label="Expiration date"
+                    placeholder="Expirates at"
+                    valueFormat="YYYY-MM-DD"
+                    preserveTime={false}
+                    {...form.getInputProps('expires_at')}
+                />
                 <Space h="lg"/>
                 <Button
                     color="red"
