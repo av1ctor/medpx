@@ -1,7 +1,8 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::{CrudSubscribable, Crud};
+use crate::db::traits::crud::{CrudSubscribable, Crud, Pagination};
 use crate::models::group::{Group, GroupId};
+use crate::models::user::UserId;
 
 pub struct GroupsService {}
 
@@ -58,5 +59,33 @@ impl GroupsService {
             None => return Err("Not found".to_string()),
             Some(e) => Ok(e.clone())
         }
+    }
+
+    pub fn find_all_by_user(
+        id: &UserId,
+        pag: Pagination,
+        db: &DB,
+        caller: &Principal
+    ) -> Result<Vec<Group>, String> {
+        let groups_rel = db.principal_groups_rel.borrow();
+
+        let group_ids = match groups_rel.find_by_id(id) {
+            None => return Ok(vec![]),
+            Some(e) => e
+        };
+
+        let groups = db.groups.borrow();
+        let list: Vec<Group> = group_ids.iter()
+            .map(|e| groups.find_by_id(e).unwrap())
+            .skip(pag.offset as usize)
+            .take(pag.limit as usize)
+            .cloned()
+            .collect();
+
+        if list.len() > 0 && list[0].created_by != *caller {
+            return Err("Forbidden".to_string());
+        }
+
+        Ok(list)
     }
 }

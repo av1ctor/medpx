@@ -14,3 +14,4 @@ pub mod key_principal_rel;
 pub mod prescription_auths_rel;
 pub mod users;
 pub mod groups;
+pub mod principal_groups_rel;

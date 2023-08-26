@@ -730,3 +730,18 @@ fn group_find_by_id(
         }
     })
 }
+
+#[ic_cdk::query]
+fn group_find_all_by_user(
+    id: UserId,
+    pag: Pagination
+) -> Result<Vec<GroupResponse>, String> {
+    let caller = &caller();
+
+    DB.with(|db| {
+        match GroupsService::find_all_by_user(&id, pag, &db.borrow(), &caller) {
+            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
+            Err(msg) => Err(msg)
+        }
+    })
+}

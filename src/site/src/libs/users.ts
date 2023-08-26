@@ -58,6 +58,27 @@ export const userGetPrincipal = (
     return Principal.anonymous();
 };
 
+export const userGetName = (
+    user: UserResponse | undefined
+): string => {
+    if (user !== undefined) {
+        if('Doctor' in user.kind) {
+            return user.kind.Doctor.name;
+        }
+        else if('Patient' in user.kind) {
+            return user.kind.Patient.name;
+        }
+        else if('ThirdParty' in user.kind) {
+            return user.kind.ThirdParty.name;
+        }
+        else if('Staff' in user.kind) {
+            return user.kind.Staff.name;
+        }
+    }
+
+    return 'Unknown';
+};
+
 export const userFindMe = async (
     main: Main
 ): Promise<UserResponse> => {

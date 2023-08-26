@@ -12,6 +12,7 @@ import Profile from "../users/user/Profile";
 import Keys from "../keys/Keys";
 import Prescriptions from "../prescriptions/Prescriptions";
 import PrescriptionAuths from "../prescriptions/auths/Auths";
+import Groups from "../groups/Groups";
 
 interface Props {
 }
@@ -42,6 +43,7 @@ const Home = (props: Props) => {
                         <Route path="/user/signup" element={<Signup />} />
                         <Route path="/user/profile" element={<Profile />} />
                         <Route path="/keys" element={<Keys />} />
+                        <Route path="/groups" element={<Groups />} />
                         <Route path="/prescriptions" element={<Prescriptions />} />
                         <Route path="/p/:id/auth" element={<PrescriptionAuths />} />
                         <Route path="/p/:id" element={<PrescriptionViewWrapper />} />

@@ -16,6 +16,7 @@ use self::tables::doctors::DoctorsTable;
 use self::tables::keys::KeysTable;
 use self::tables::patients::PatientsTable;
 use self::tables::prescriptions::PrescriptionsTable;
+use self::tables::principal_groups_rel::PrincipalGroupsRelTable;
 use self::tables::principal_keys_rel::PrincipalKeysRelTable;
 use self::tables::staff::StaffTable;
 use self::tables::thirdparties::ThirdPartiesTable;
@@ -41,6 +42,7 @@ pub enum TableName {
     PrincipalKeysRel,
     KeyPrincipalRel,
     Groups,
+    PrincipalGroupsRel,
 }
 
 pub struct DB {
@@ -60,6 +62,7 @@ pub struct DB {
     pub principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
     pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
     pub groups: Rc<RefCell<GroupsTable>>,
+    pub principal_groups_rel: Rc<RefCell<PrincipalGroupsRelTable>>,
 }
 
 impl DB {
@@ -81,6 +84,7 @@ impl DB {
         let principal_keys_rel = Rc::new(RefCell::new(PrincipalKeysRelTable::new()));
         let key_principal_rel = Rc::new(RefCell::new(KeyPrincipalRelTable::new()));
         let groups = Rc::new(RefCell::new(GroupsTable::new()));
+        let principal_groups_rel = Rc::new(RefCell::new(PrincipalGroupsRelTable::new()));
 
         //
         prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());
@@ -98,6 +102,8 @@ impl DB {
         patients.borrow_mut().subscribe(users.clone());
         staff.borrow_mut().subscribe(users.clone());
         thirdparties.borrow_mut().subscribe(users.clone());
+        //
+        groups.borrow_mut().subscribe(principal_groups_rel.clone());
         
         Self {
             doctors,
@@ -116,6 +122,7 @@ impl DB {
             principal_keys_rel,
             key_principal_rel,
             groups,
+            principal_groups_rel,
         }
     }
 
@@ -139,6 +146,7 @@ impl DB {
         self.principal_keys_rel.borrow().serialize(writer)?;
         self.key_principal_rel.borrow().serialize(writer)?;
         self.groups.borrow().serialize(writer)?;
+        self.principal_groups_rel.borrow().serialize(writer)?;
         Ok(())
     }
 
@@ -162,6 +170,7 @@ impl DB {
         self.principal_keys_rel.borrow_mut().deserialize(reader, true)?;
         self.key_principal_rel.borrow_mut().deserialize(reader, true)?;
         self.groups.borrow_mut().deserialize(reader, true)?;
+        self.principal_groups_rel.borrow_mut().deserialize(reader, true)?;
         Ok(())
     }
 }

@@ -14,6 +14,13 @@ export const buildAgentJsOptions = (
     };
 };
 
+export const principalToString = (
+    principal: Principal
+): string => {
+    const s = principal.toString();
+    return `${s.substr(0, 5)}...${s.substr(60, 3)}`
+};
+
 export const toHexString = (
     byteArray: Uint8Array
 ): string => {

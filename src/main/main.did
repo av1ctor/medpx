@@ -137,6 +137,21 @@ type KeyResponseResult = variant {
     Ok: KeyResponse;
 };
 
+type GroupRequest = record {
+    members: vec principal;
+};
+
+type GroupResponse = record {
+    id: text;
+    members: vec principal;
+    created_at: nat64;
+};
+
+type GroupResponseResult = variant {
+    Err: text;
+    Ok: GroupResponse;
+};
+
 type PrescriptionRequest = record {
     patient: principal;
     contents: vec nat8;
@@ -205,6 +220,11 @@ type FindKeysResult = variant {
     Ok: vec KeyResponse;
 };
 
+type FindGroupsResult = variant {
+    Err: text;
+    Ok: vec GroupResponse;
+};
+
 type FindPrescriptionAuthsResult = variant {
     Err: text;
     Ok: vec PrescriptionAuthResponse;
@@ -250,6 +270,11 @@ service : {
     key_find_by_id: (text) -> (KeyResponseResult) query;
     key_find_by_value: (KeyKind, opt text, text) -> (KeyResponseResult) query;
     key_find_all_by_user: (principal, Pagination) -> (FindKeysResult) query;
+
+    group_create: (GroupRequest) -> (GroupResponseResult);
+    group_delete: (text) -> (DefaultResponseResult);
+    group_find_by_id: (text) -> (GroupResponseResult) query;
+    group_find_all_by_user: (principal, Pagination) -> (FindGroupsResult) query;
 
     prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
     prescription_delete: (text) -> (DefaultResponseResult);

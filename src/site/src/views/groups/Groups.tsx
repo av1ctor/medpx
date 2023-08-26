@@ -2,32 +2,32 @@ import React, { useCallback, useState } from "react";
 import { ActionIcon, Button, Card, Center, Divider, Drawer, Grid, Group, Modal, Space, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { FormattedMessage } from "react-intl";
-import { IconAlertTriangle, IconKey, IconPlus, IconRefresh } from "@tabler/icons-react";
+import { IconAlertTriangle, IconPlus, IconRefresh, IconUsers } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
-import { useKey, useKeyFindByUser } from "../../hooks/keys";
+import { useGroup, useGroupFindByUser } from "../../hooks/groups";
 import { useUI } from "../../hooks/ui";
-import { KeyResponse } from "../../../../declarations/main/main.did";
+import { GroupResponse } from "../../../../declarations/main/main.did";
 import Item from "./Item";
-import KeyCreate from "./key/Create";
+import GroupCreate from "./group/Create";
 
 interface Props {
 }
 
-const Keys = (props: Props) => {
+const Groups = (props: Props) => {
     const {user} = useAuth();
     const {showSuccess, toggleLoading, showError} = useUI();
     const [createOpened, { open: createOpen, close: createClose }] = useDisclosure(false);
     const [deleteOpened, { open: deleteOpen, close: deleteClose }] = useDisclosure(false);
-    const [item, setItem] = useState<KeyResponse|undefined>();
-    const {remove} = useKey();
-    const query = useKeyFindByUser(user, 10);
+    const [item, setItem] = useState<GroupResponse|undefined>();
+    const {remove} = useGroup();
+    const query = useGroupFindByUser(user, 10);
 
     const handleCreated = useCallback((msg: string) => {
         showSuccess(msg);
         createClose();
     }, [createClose, showSuccess]);
 
-    const handleConfirmDeletion = useCallback((item: KeyResponse) => {
+    const handleConfirmDeletion = useCallback((item: GroupResponse) => {
         setItem(item);
         deleteOpen()
     }, [setItem, deleteOpen]);
@@ -39,7 +39,7 @@ const Keys = (props: Props) => {
                 await remove(item.id);
             }
             deleteClose()
-            showSuccess("Key removed!");
+            showSuccess("Group removed!");
         }
         catch(e) {
             showError(e);
@@ -56,10 +56,10 @@ const Keys = (props: Props) => {
                 <Group position="apart" noWrap spacing="xl">
                     <div>
                         <Text fz="lg" className="card-title" fw={500}>
-                            <IconKey size="1rem" /> Keys
+                            <IconUsers size="1rem" /> Groups
                         </Text>
                         <Text fz="xs" c="dimmed" mt={3} mb="xl">
-                            View your keys
+                            View your groups
                         </Text>
                     </div>
                     <div>
@@ -102,24 +102,24 @@ const Keys = (props: Props) => {
             
             <Drawer 
                 opened={createOpened} 
-                title={<b><IconKey size="1.25rem" /> New key</b>}
+                title={<b><IconUsers size="1.25rem" /> New group</b>}
                 position="right"
                 size="xl"
                 onClose={createClose} 
             >
-                <KeyCreate onSuccess={handleCreated} />
+                <GroupCreate onSuccess={handleCreated} />
             </Drawer>
 
 
             <Modal 
                 opened={deleteOpened} 
-                title={<b><IconAlertTriangle size="1rem" /> Remove Key</b>}
+                title={<b><IconAlertTriangle size="1rem" /> Remove Group</b>}
                 centered
                 size="xl"
                 onClose={deleteClose} 
             >
                 <Text size="sm" mb="xs" weight={500}>
-                    Do you really want to delete this key? <b>This operation can't be reversed!</b>
+                    Do you really want to delete this group? <b>This operation can't be reversed!</b>
                 </Text>
 
                 <Space h="xl" />
@@ -149,4 +149,4 @@ const Keys = (props: Props) => {
     );
 };
 
-export default Keys;
+export default Groups;
