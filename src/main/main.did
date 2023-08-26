@@ -150,10 +150,15 @@ type PrescriptionAuthKind = variant {
     All;
 };
 
+type PrescriptionAuthTarget = variant {
+    User: principal;
+    Group: text;
+};
+
 type PrescriptionAuthRequest = record {
     prescription_id: text;
     kind: PrescriptionAuthKind;
-    to: principal;
+    to: PrescriptionAuthTarget;
     expires_at: opt nat64;
 };
 
@@ -162,7 +167,7 @@ type PrescriptionAuthResponse = record {
     prescription_id: text;
     kind: PrescriptionAuthKind;
     from: principal;
-    to: principal;
+    to: PrescriptionAuthTarget;
     expires_at: opt nat64;
     created_at: nat64;
     updated_at: opt nat64;

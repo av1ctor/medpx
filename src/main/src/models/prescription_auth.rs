@@ -3,6 +3,8 @@ use serde::Deserialize;
 
 use crate::models::prescription::PrescriptionId;
 
+use super::{user::UserId, group::GroupId};
+
 pub type PrescriptionAuthId = String;
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
@@ -13,13 +15,19 @@ pub enum PrescriptionAuthKind {
     All,
 }
 
+#[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
+pub enum PrescriptionAuthTarget {
+    User(UserId),
+    Group(GroupId),
+}
+
 #[derive(CandidType, Clone, Deserialize)]
 pub struct PrescriptionAuth {
     pub id: PrescriptionAuthId,
     pub prescription_id: PrescriptionId,
     pub kind: PrescriptionAuthKind,
     pub from: Principal,
-    pub to: Principal,
+    pub to: PrescriptionAuthTarget,
     pub expires_at: Option<u64>,
     pub created_at: u64,
     pub created_by: Principal,
@@ -33,7 +41,7 @@ pub struct PrescriptionAuth {
 pub struct PrescriptionAuthRequest {
     pub prescription_id: PrescriptionId,
     pub kind: PrescriptionAuthKind,
-    pub to: Principal,
+    pub to: PrescriptionAuthTarget,
     pub expires_at: Option<u64>,
 }
 
@@ -43,7 +51,7 @@ pub struct PrescriptionAuthResponse {
     prescription_id: PrescriptionId,
     kind: PrescriptionAuthKind,
     from: Principal,
-    to: Principal,
+    to: PrescriptionAuthTarget,
     expires_at: Option<u64>,
     created_at: u64,
     updated_at: Option<u64>,
@@ -88,7 +96,7 @@ impl Ord for PrescriptionAuth {
             core::cmp::Ordering::Equal => {}
             ord => return ord,
         }
-        self.to.cmp(&other.to)
+        self.to.partial_cmp(&other.to).unwrap()
     }
 }
 

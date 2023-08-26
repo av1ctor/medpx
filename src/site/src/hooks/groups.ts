@@ -1,7 +1,7 @@
-import { UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQueryClient } from "react-query";
+import { UseInfiniteQueryResult, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "react-query";
 import { GroupRequest, GroupResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { groupCreate, groupDelete, groupFindByUser } from "../libs/groups";
+import { groupCreate, groupDelete, groupFindById, groupFindByUser } from "../libs/groups";
 import { userGetPrincipal } from "../libs/users";
 
 interface GroupMethods {
@@ -53,6 +53,17 @@ export const useGroup = (
         remove,
     }
 };
+
+export const useGroupFindById = (
+    id: string
+): UseQueryResult<GroupResponse, Error> => {
+    const {main} = useActors();
+    
+    return useQuery<GroupResponse, Error>(
+        ['groups', id],
+        () => groupFindById(main, id)
+    );
+}; 
 
 export const useGroupFindByUser = (
     user: UserResponse | undefined, 

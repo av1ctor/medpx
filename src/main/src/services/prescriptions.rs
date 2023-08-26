@@ -2,6 +2,7 @@ use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId};
+use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
 
 pub struct PrescriptionsService {}
@@ -106,7 +107,28 @@ impl PrescriptionsService {
             Some(ids) => {
                 if !ids.iter().map(|id| 
                     db.prescription_auths.borrow().get(id).clone()
-                    ).any(|e| e.to == *user && (e.expires_at.is_none() || now <= e.expires_at.unwrap())) {
+                    ).any(|e| {
+                        if let Some(expiration) = e.expires_at {
+                            if now > expiration {
+                                return false;
+                            }
+                        }
+                        
+                        match e.to {
+                            PrescriptionAuthTarget::User(to) => 
+                                if to != *user {
+                                    return false;
+                                },
+                            PrescriptionAuthTarget::Group(to) => {
+                                match db.groups.borrow().find_by_id(&to) {
+                                    None => return false,
+                                    Some(group) => return group.members.contains(user)
+                                }
+                            },
+                        }
+
+                        true
+                    }) {
                         return false;
                 }
             }

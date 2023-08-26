@@ -23,6 +23,17 @@ export const groupDelete = async (
     return; 
 };
 
+export const groupFindById = async (
+    main: Main,
+    id: string
+): Promise<GroupResponse> => {
+    const res = await main.group_find_by_id(id);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};
+
 export const groupFindByUser = async (
     main: Main,
     principal: Principal,

@@ -1,15 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Flex, Select, Space, Stepper } from "@mantine/core";
+import { Box, Button, Center, Container, Flex, SegmentedControl, Select, Space, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
+import { DateInput } from "@mantine/dates";
+import { IconUser, IconUsersGroup } from "@tabler/icons-react";
 import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
-import { kinds } from "../../../../libs/prescription_auths";
+import { AuthTarget, kinds, prescriptionAuthStringToTarget } from "../../../../libs/prescription_auths";
 import { usePrescriptionAuth } from "../../../../hooks/prescription_auths";
 import { UserLookup } from "../../../users/user/Lookup";
-import { UserResponse } from "../../../../../../declarations/main/main.did";
-import { userGetPrincipal } from "../../../../libs/users";
-import { DateInput } from "@mantine/dates";
+import { GroupResponse, UserResponse } from "../../../../../../declarations/main/main.did";
+import { useBrowser } from "../../../../hooks/browser";
 
 const schema = yup.object().shape({
     prescription_id: yup.string().required(),
@@ -26,8 +27,11 @@ interface Props {
 const PrescriptionAuthCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
+    const {isMobile} = useBrowser();
     const {create} = usePrescriptionAuth();
+    const [target, setTarget] = useState(AuthTarget.User);
     const [user, setUser] = useState<UserResponse|undefined>()
+    const [group, setGroup] = useState<GroupResponse|undefined>()
     const [active, setActive] = useState(0);
     
     const form = useForm({
@@ -40,6 +44,12 @@ const PrescriptionAuthCreate = (props: Props) => {
     
         validate: yupResolver(schema),
     });
+
+    const handleChangeTarget = useCallback((value: string) => {
+        setUser(undefined);
+        setGroup(undefined);
+        setTarget(prescriptionAuthStringToTarget(value));
+    }, [setTarget]);
 
     const handleCreate = useCallback(async (values: any) => {
         try {
@@ -54,7 +64,10 @@ const PrescriptionAuthCreate = (props: Props) => {
             await create({
                 ...values,
                 kind: {[values.kind]: null},
-                to: userGetPrincipal(user),
+                to: target === AuthTarget.User? 
+                    user?.id
+                :
+                    group?.id,
                 expires_at: values.expires_at?
                     [BigInt(values.expires_at.valueOf()) * 1000000n]:
                     [],
@@ -68,11 +81,37 @@ const PrescriptionAuthCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main, user]);
+    }, [main, user, group, target]);
 
     useEffect(() => {
-        setActive(user? 1: 0);
-    }, [user]);
+        if(target === AuthTarget.User)
+            setActive(user? 1: 0);
+        else
+            setActive(group? 1: 0);
+    }, [user, group, target]);
+
+    const targets = useMemo(() => {
+        return [
+            {
+                value: AuthTarget[AuthTarget.User],
+                label: (
+                    <Center>
+                        <IconUser />
+                        <Box ml={10}>User</Box>
+                    </Center>
+                ),
+            },
+            {
+                value: AuthTarget[AuthTarget.Group],
+                label: (
+                    <Center>
+                        <IconUsersGroup />
+                        <Box ml={10}>Group</Box>
+                    </Center>
+                ),
+            },
+        ];
+    }, []);
 
     return (
         <Container>
@@ -82,12 +121,28 @@ const PrescriptionAuthCreate = (props: Props) => {
                 breakpoint="sm"
             >
                 <Stepper.Step 
-                    label="Third party" 
-                    description="Lookup third party"
+                    label="Target" 
+                    description="Lookup target"
                 >
-                    <UserLookup 
-                        setUser={setUser}
-                    />                    
+                    <Container>
+                        <SegmentedControl
+                            size="md"
+                            orientation={isMobile? "vertical": "horizontal"}
+                            fullWidth
+                            color="blue"
+                            value={AuthTarget[target]}
+                            data={targets}
+                            onChange={handleChangeTarget}
+                        />
+
+                        <Space h="md"/>
+
+                        {target === AuthTarget.User &&
+                            <UserLookup 
+                                setUser={setUser}
+                            />
+                        }
+                    </Container>
                 </Stepper.Step>
                 <Stepper.Step 
                     label="Options" 

@@ -4,7 +4,7 @@ use std::rc::Rc;
 use crate::db::TableName;
 use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned, TableSubscriber, TableEvent, TableEventKind};
 use crate::db::traits::crud::{CrudSubscribable, Crud};
-use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth};
+use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth, PrescriptionAuthTarget};
 use super::prescription_auths_rel::PrescriptionAuthsRelTable;
 
 pub struct PrescriptionAuthsTable {
@@ -97,7 +97,10 @@ impl TableSubscribable<TableName, PrescriptionAuthId, PrescriptionAuth> for Pres
     ) -> Vec<TableEventKey> {
         vec![
             TableEventKey::Text(v.prescription_id.clone()),
-            TableEventKey::Principal(v.to),
+            match &v.to {
+                PrescriptionAuthTarget::User(to) => TableEventKey::Principal(to.clone()),
+                PrescriptionAuthTarget::Group(to) => TableEventKey::Text(to.clone()),
+            },
         ]
     }
 }

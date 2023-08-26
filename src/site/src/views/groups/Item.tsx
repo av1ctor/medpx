@@ -23,6 +23,7 @@ const Item = (props: Props) => {
     return (
         <Group position="apart" className="list-item" noWrap spacing="xl">
             <div>
+                <Text>{item.id}</Text>
                 <Text>
                     Members: {item.members.map(m => 
                         <Badge key={m.toString()}>{principalToString(m)}</Badge>)
