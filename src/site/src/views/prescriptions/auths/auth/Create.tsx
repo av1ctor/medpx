@@ -65,9 +65,9 @@ const PrescriptionAuthCreate = (props: Props) => {
                 ...values,
                 kind: {[values.kind]: null},
                 to: target === AuthTarget.User? 
-                    user?.id
+                    {User: user?.id}
                 :
-                    group?.id,
+                    {Group: group?.id},
                 expires_at: values.expires_at?
                     [BigInt(values.expires_at.valueOf()) * 1000000n]:
                     [],
