@@ -5,39 +5,27 @@ pub mod migrations;
 use std::cell::RefCell;
 use std::rc::Rc;
 use ic_cdk::api::stable::{StableWriter, StableReader};
-use self::tables::doctor_prescriptions_rel::DoctorPrescriptionsRelTable;
+use self::tables::user_prescriptions_rel::UserPrescriptionsRelTable;
 use self::tables::groups::GroupsTable;
 use self::tables::key_principal_rel::KeyPrincipalRelTable;
-use self::tables::patient_prescriptions_rel::PatientPrescriptionsRelTable;
 use self::tables::prescription_auths::PrescriptionAuthsTable;
 use self::tables::prescription_auths_rel::PrescriptionAuthsRelTable;
 use self::tables::prescription_templates::PrescriptionTemplatesTable;
-use self::tables::doctors::DoctorsTable;
 use self::tables::keys::KeysTable;
-use self::tables::patients::PatientsTable;
 use self::tables::prescriptions::PrescriptionsTable;
 use self::tables::principal_groups_rel::PrincipalGroupsRelTable;
 use self::tables::principal_keys_rel::PrincipalKeysRelTable;
-use self::tables::staff::StaffTable;
-use self::tables::thirdparties::ThirdPartiesTable;
-use self::tables::thirdparty_prescriptions_rel::ThirdPartyPrescriptionsRelTable;
 use self::tables::users::UsersTable;
 use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable, Table};
 
 #[derive(Clone, Debug)]
 pub enum TableName {
-    Doctors,
-    Patients,
-    Staff,
-    ThirdParties,
     Users,
     Prescriptions,
     Keys,
     PrescriptionAuths,
     PrescriptionTemplates,
-    DoctorPrescriptionsRel,
-    PatientPrescriptionsRel,
-    ThirdPartyPrescriptionsRel,
+    UserPrescriptionsRel,
     PrescriptionAuthsRel,
     PrincipalKeysRel,
     KeyPrincipalRel,
@@ -46,18 +34,12 @@ pub enum TableName {
 }
 
 pub struct DB {
-    pub doctors: Rc<RefCell<DoctorsTable>>,
-    pub patients: Rc<RefCell<PatientsTable>>,
-    pub staff: Rc<RefCell<StaffTable>>,
-    pub thirdparties: Rc<RefCell<ThirdPartiesTable>>,
     pub users: Rc<RefCell<UsersTable>>,
     pub prescriptions: Rc<RefCell<PrescriptionsTable>>,
     pub prescription_auths: Rc<RefCell<PrescriptionAuthsTable>>,
     pub prescription_templates: Rc<RefCell<PrescriptionTemplatesTable>>,
     pub keys: Rc<RefCell<KeysTable>>,
-    pub doctor_prescriptions_rel: Rc<RefCell<DoctorPrescriptionsRelTable>>,
-    pub patient_prescriptions_rel: Rc<RefCell<PatientPrescriptionsRelTable>>,
-    pub thirdparty_prescriptions_rel: Rc<RefCell<ThirdPartyPrescriptionsRelTable>>,
+    pub user_prescriptions_rel: Rc<RefCell<UserPrescriptionsRelTable>>,
     pub prescription_auths_rel: Rc<RefCell<PrescriptionAuthsRelTable>>,
     pub principal_keys_rel: Rc<RefCell<PrincipalKeysRelTable>>,
     pub key_principal_rel: Rc<RefCell<KeyPrincipalRelTable>>,
@@ -68,18 +50,12 @@ pub struct DB {
 impl DB {
     pub fn new(
     ) -> Self {
-        let doctors = Rc::new(RefCell::new(DoctorsTable::new()));
-        let patients = Rc::new(RefCell::new(PatientsTable::new()));
-        let staff = Rc::new(RefCell::new(StaffTable::new()));
-        let thirdparties = Rc::new(RefCell::new(ThirdPartiesTable::new()));
         let users = Rc::new(RefCell::new(UsersTable::new()));
         let prescriptions = Rc::new(RefCell::new(PrescriptionsTable::new()));
         let keys = Rc::new(RefCell::new(KeysTable::new()));
         let prescription_auths = Rc::new(RefCell::new(PrescriptionAuthsTable::new()));
         let prescription_templates = Rc::new(RefCell::new(PrescriptionTemplatesTable::new()));
-        let doctor_prescriptions_rel = Rc::new(RefCell::new(DoctorPrescriptionsRelTable::new()));
-        let patient_prescriptions_rel = Rc::new(RefCell::new(PatientPrescriptionsRelTable::new()));
-        let thirdparty_prescriptions_rel = Rc::new(RefCell::new(ThirdPartyPrescriptionsRelTable::new()));
+        let user_prescriptions_rel = Rc::new(RefCell::new(UserPrescriptionsRelTable::new()));
         let prescription_auths_rel = Rc::new(RefCell::new(PrescriptionAuthsRelTable::new()));
         let principal_keys_rel = Rc::new(RefCell::new(PrincipalKeysRelTable::new()));
         let key_principal_rel = Rc::new(RefCell::new(KeyPrincipalRelTable::new()));
@@ -87,8 +63,7 @@ impl DB {
         let principal_groups_rel = Rc::new(RefCell::new(PrincipalGroupsRelTable::new()));
 
         //
-        prescriptions.borrow_mut().subscribe(doctor_prescriptions_rel.clone());
-        prescriptions.borrow_mut().subscribe(patient_prescriptions_rel.clone());
+        prescriptions.borrow_mut().subscribe(user_prescriptions_rel.clone());
         prescriptions.borrow_mut().subscribe(prescription_auths.clone());
         //
         keys.borrow_mut().subscribe(principal_keys_rel.clone());
@@ -96,28 +71,17 @@ impl DB {
         //
         prescription_auths.borrow_mut().set_aux(prescription_auths_rel.clone());
         prescription_auths.borrow_mut().subscribe(prescription_auths_rel.clone());
-        prescription_auths.borrow_mut().subscribe(thirdparty_prescriptions_rel.clone());
-        //
-        doctors.borrow_mut().subscribe(users.clone());
-        patients.borrow_mut().subscribe(users.clone());
-        staff.borrow_mut().subscribe(users.clone());
-        thirdparties.borrow_mut().subscribe(users.clone());
+        prescription_auths.borrow_mut().subscribe(user_prescriptions_rel.clone());
         //
         groups.borrow_mut().subscribe(principal_groups_rel.clone());
         
         Self {
-            doctors,
-            patients,
-            staff,
-            thirdparties,
             users,
             prescriptions,
             keys,
             prescription_auths,
             prescription_templates,
-            doctor_prescriptions_rel,
-            patient_prescriptions_rel,
-            thirdparty_prescriptions_rel,
+            user_prescriptions_rel,
             prescription_auths_rel,
             principal_keys_rel,
             key_principal_rel,
@@ -130,18 +94,12 @@ impl DB {
         &self,
         writer: &mut StableWriter
     ) -> Result<(), String> {
-        self.doctors.borrow().serialize(writer)?;
-        self.patients.borrow().serialize(writer)?;
-        self.staff.borrow().serialize(writer)?;
-        self.thirdparties.borrow().serialize(writer)?;
         self.users.borrow().serialize(writer)?;
         self.keys.borrow().serialize(writer)?;
         self.prescriptions.borrow().serialize(writer)?;
         self.prescription_auths.borrow().serialize(writer)?;
         self.prescription_templates.borrow().serialize(writer)?;
-        self.doctor_prescriptions_rel.borrow().serialize(writer)?;
-        self.patient_prescriptions_rel.borrow().serialize(writer)?;
-        self.thirdparty_prescriptions_rel.borrow().serialize(writer)?;
+        self.user_prescriptions_rel.borrow().serialize(writer)?;
         self.prescription_auths_rel.borrow().serialize(writer)?;
         self.principal_keys_rel.borrow().serialize(writer)?;
         self.key_principal_rel.borrow().serialize(writer)?;
@@ -154,18 +112,12 @@ impl DB {
         &mut self,
         reader: &mut StableReader
     ) -> Result<(), String> {
-        self.doctors.borrow_mut().deserialize(reader, true)?;
-        self.patients.borrow_mut().deserialize(reader, true)?;
-        self.staff.borrow_mut().deserialize(reader, true)?;
-        self.thirdparties.borrow_mut().deserialize(reader, true)?;
         self.users.borrow_mut().deserialize(reader, true)?;
         self.keys.borrow_mut().deserialize(reader, true)?;
         self.prescriptions.borrow_mut().deserialize(reader, true)?;
         self.prescription_auths.borrow_mut().deserialize(reader, true)?;
         self.prescription_templates.borrow_mut().deserialize(reader, true)?;
-        self.doctor_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
-        self.patient_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
-        self.thirdparty_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
+        self.user_prescriptions_rel.borrow_mut().deserialize(reader, true)?;
         self.prescription_auths_rel.borrow_mut().deserialize(reader, true)?;
         self.principal_keys_rel.borrow_mut().deserialize(reader, true)?;
         self.key_principal_rel.borrow_mut().deserialize(reader, true)?;

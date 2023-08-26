@@ -1,12 +1,80 @@
-import { UseQueryResult, useQuery } from "react-query";
+import { UseQueryResult, useMutation, useQuery, useQueryClient } from "react-query";
 import { Principal } from "@dfinity/principal";
-import { KeyKind, UserResponse } from "../../../declarations/main/main.did";
+import { KeyKind, UserRequest, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { userFindById, userFindByKey, userFindMe } from "../libs/users";
-import { useAuth } from "./auth";
-import { useCallback, useEffect, useState } from "react";
+import { userCreate, userDelete, userFindById, userFindByKey, userFindMe, userUpdate } from "../libs/users";
 
-export const useFindMe = (
+interface UserMethods {
+    create: (req: UserRequest) => Promise<UserResponse>;
+    update: (id: Principal, req: UserRequest) => Promise<UserResponse>;
+    remove: (id: Principal) => Promise<void>;
+}
+
+export const useUser = (
+): UserMethods => {
+    const queryClient = useQueryClient();
+    const {main} = useActors();
+
+    const createMut = useMutation(
+        async (options: {req: UserRequest}) => {
+            return userCreate(main, options.req);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['users']);
+            }   
+        }
+    );
+
+    const create = (
+        req: UserRequest
+    ): Promise<UserResponse> => {
+        return createMut.mutateAsync({req});
+    };
+
+    const updateMut = useMutation(
+        async (options: {id: Principal, req: UserRequest}) => {
+            return userUpdate(main, options.id, options.req);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['users']);
+            }   
+        }
+    );
+
+    const update = (
+        id: Principal,
+        req: UserRequest
+    ): Promise<UserResponse> => {
+        return updateMut.mutateAsync({id, req});
+    };
+
+    const deleteMut = useMutation(
+        async (options: {id: Principal}) => {
+            return userDelete(main, options.id);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['users']);
+            }   
+        }
+    );
+
+    const remove = (
+        id: Principal
+    ): Promise<void> => {
+        return deleteMut.mutateAsync({id});
+    };
+    
+    return {
+        create,
+        update,
+        remove,
+    }
+};
+
+export const useUserFindMe = (
 ): UseQueryResult<UserResponse, Error> => {
     const {main} = useActors();
     
@@ -16,7 +84,7 @@ export const useFindMe = (
     );
 }; 
 
-export const useFindById = (
+export const useUserFindById = (
     id: Principal
 ): UseQueryResult<UserResponse, Error> => {
     const {main} = useActors();
@@ -27,7 +95,7 @@ export const useFindById = (
     );
 }; 
 
-export const useFindByKey = (
+export const useUserFindByKey = (
     kind: KeyKind,
     country: [string] | [],
     key: string
@@ -39,53 +107,3 @@ export const useFindByKey = (
         () => userFindByKey(main, kind, country, key)
     );
 };
-
-export interface DecryptResult {
-    Ok: string|undefined;
-    Err: string|undefined;
-}
-
-export const useDecrypt = (
-    message: Uint8Array,
-    principal: Principal,
-    isEncrypted: number
-): DecryptResult => {
-    const {aes_gcm} = useAuth();
-    const [text, setText] = useState<string|undefined>();
-    const [err, setErr] = useState<string|undefined>();
-    
-    const decrypt = useCallback(async (        
-    ): Promise<void> => {
-        if(!isEncrypted) {
-            setText(new TextDecoder().decode(message));
-            return;
-        }
-
-        if(!aes_gcm) {
-            return;
-        }
-
-        const rawKey = await aes_gcm.genRawKey('prescriptions', principal);
-        if('Err' in rawKey || !rawKey.Ok) {
-            setErr('Raw key generation failed');
-            return;
-        }
-        
-        try {
-            setText(await aes_gcm.decrypt(message, rawKey.Ok));
-        }
-        catch(e: any) {
-            setErr(e.message || "Call to AES GCM decrypt failed");
-        }
-
-    }, [aes_gcm, message, principal, isEncrypted]);
-    
-    useEffect(() => {
-        decrypt();
-    }, [decrypt])
-
-    return {
-        Ok: text,
-        Err: err,
-    };
-}

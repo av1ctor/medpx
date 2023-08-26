@@ -2,6 +2,7 @@ use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId};
+use crate::models::user::UserKind;
 
 pub struct PrescriptionsService {}
 
@@ -16,15 +17,28 @@ impl PrescriptionsService {
         }
 
         // validations
-        if db.doctors.borrow().find_by_id(&caller).is_none() {
+        if let Some(doctor) = db.users.borrow().find_by_id(&caller) {
+            match doctor.kind {
+                UserKind::Doctor(_) => (),
+                _ => return Err("User not a doctor".to_string())
+            }
+        }
+        else {
             return Err("Doctor not found".to_string());
         }
     
-        if db.patients.borrow().find_by_id(&prescription.patient).is_none() {
+        if let Some(patient) = db.users.borrow().find_by_id(&prescription.patient) {
+            match patient.kind {
+                UserKind::Patient(_) => (),
+                _ => return Err("User not a patient".to_string())
+            }
+        }
+        else {
             return Err("Patient not found".to_string());
         }
         
-        db.prescriptions.borrow_mut().insert_and_notify(prescription.id.clone(), prescription.clone())
+        db.prescriptions.borrow_mut()
+            .insert_and_notify(prescription.id.clone(), prescription.clone())
     }
 
     pub fn update(
@@ -37,7 +51,8 @@ impl PrescriptionsService {
             return Err("Forbidden".to_string());
         }
 
-        db.prescriptions.borrow_mut().update_and_notify(id.to_owned(), prescription.clone())
+        db.prescriptions.borrow_mut()
+            .update_and_notify(id.to_owned(), prescription.clone())
     }
 
     pub fn delete(

@@ -1,12 +1,9 @@
 import { UseInfiniteQueryResult, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "react-query";
 import { PrescriptionRequest, PrescriptionResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { patientFindPrescriptions } from "../libs/patients";
-import { userGetPrincipal, userIsKind } from "../libs/users";
-import { doctorFindPrescriptions } from "../libs/doctors";
+import { userFindPrescriptions, userGetPrincipal, userIsKind } from "../libs/users";
 import { prescriptionCreate, prescriptionDelete, prescriptionFindById } from "../libs/prescriptions";
 import { useAuth } from "./auth";
-import { thirdPartyFindPrescriptions } from "../libs/thirdparties";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
@@ -66,17 +63,9 @@ export const usePrescriptionsFind = (
 
     const principal = userGetPrincipal(user);
 
-    const fn = userIsKind(user, 'Doctor')? 
-        doctorFindPrescriptions
-    : 
-        userIsKind(user, 'ThirdParty')?
-            thirdPartyFindPrescriptions
-        :
-            patientFindPrescriptions;
-
     return useInfiniteQuery<PrescriptionResponse[], Error>(
         ['prescriptions', principal, limit], 
-        ({pageParam = 0}) => fn(main, principal, {offset: pageParam, limit}),
+        ({pageParam = 0}) => userFindPrescriptions(main, principal, {offset: pageParam, limit}),
         {
             getNextPageParam: (lastPage, pages) => 
                 lastPage.length < limit?

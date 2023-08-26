@@ -1,11 +1,10 @@
 import React, { useCallback } from "react";
 import { ActionIcon, Group, Skeleton, Text } from "@mantine/core";
-import { DoctorResponse, PatientResponse, PrescriptionResponse } from "../../../../declarations/main/main.did";
+import { IconClockHour4, IconShare, IconStethoscope, IconTrash, IconVaccine } from "@tabler/icons-react";
+import { PrescriptionResponse, UserResponse } from "../../../../declarations/main/main.did";
 import { useAuth } from "../../hooks/auth";
 import { userIsKind } from "../../libs/users";
-import { useDoctorFindById } from "../../hooks/doctors";
-import { usePatientFindById } from "../../hooks/patients";
-import { IconClockHour4, IconShare, IconStethoscope, IconTrash, IconVaccine } from "@tabler/icons-react";
+import { useUserFindById } from "../../hooks/users";
 import TimeFromNow from "../../components/TimeFromNow";
 
 interface Props {
@@ -15,28 +14,28 @@ interface Props {
     onDelete: (item: PrescriptionResponse) => void;
 }
 
-const Patient = (props: {data: PatientResponse|undefined}) => 
+const Patient = (props: {user: UserResponse|undefined}) => 
     <span>
-        {!props.data? 
+        {!props.user? 
             <Skeleton h="1rem" w="10rem"></Skeleton>
         :
-            <span><IconVaccine size="0.75rem"/> Patient: {props.data?.name}</span>
+            <span><IconVaccine size="0.75rem"/> Patient: {props.user.name}</span>
         }
     </span>;
 
-const Doctor = (props: {data: DoctorResponse|undefined}) => 
+const Doctor = (props: {user: UserResponse|undefined}) => 
     <span>
-        {!props.data? 
+        {!props.user? 
             <Skeleton h="1rem" w="10rem"></Skeleton>
         :
-            <span><IconStethoscope size="0.75rem"/> Doctor: {props.data.name}</span>
+            <span><IconStethoscope size="0.75rem"/> Doctor: {props.user.name}</span>
         }
     </span>;
 
 const Item = (props: Props) => {
     const {user} = useAuth();
-    const doctor = useDoctorFindById(props.item.doctor);
-    const patient = usePatientFindById(props.item.patient);
+    const doctorq = useUserFindById(props.item.doctor);
+    const patientq = useUserFindById(props.item.patient);
 
     const handleView = useCallback(() => {
         props.onView(props.item);
@@ -63,14 +62,14 @@ const Item = (props: Props) => {
                 <Text size="xs" color="dimmed">
                     {isThirdParty?
                         <>
-                            <Doctor data={doctor.data} /><br/>
-                            <Patient data={patient.data} />
+                            <Doctor user={doctorq.data} /><br/>
+                            <Patient user={patientq.data} />
                         </>
                         :
                         isDoctor?
-                            <Patient data={patient.data} />
+                            <Patient user={patientq.data} />
                         :
-                            <Doctor data={doctor.data} />
+                            <Doctor user={doctorq.data} />
                     }
                 </Text>
             </div>

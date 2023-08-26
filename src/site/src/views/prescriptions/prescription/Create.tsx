@@ -90,10 +90,6 @@ const PrescriptionCreate = (props: Props) => {
         setActive(patient? 1: 0);
     }, [patient]);
 
-    const data = patient && 'Patient' in patient.kind?
-        patient.kind.Patient:
-        null;
-
     return (
         <>
             <Container>
@@ -116,8 +112,8 @@ const PrescriptionCreate = (props: Props) => {
                         allowStepSelect={!!patient}
                     >
                         <Flex direction="column">
-                            <div><b>Name:</b> {data?.name}</div>
-                            <div><b>Id:</b> {data?.id.toString()}</div>
+                            <div><b>Name:</b> {patient?.name}</div>
+                            <div><b>Id:</b> {patient?.id.toString()}</div>
                         </Flex>
 
                         <Space h="1rem" />

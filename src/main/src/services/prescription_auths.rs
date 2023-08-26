@@ -12,11 +12,11 @@ impl PrescriptionAuthsService {
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
-        if db.patients.borrow().find_by_id(caller).is_none() {
+        if db.users.borrow().find_by_id(caller).is_none() {
             return Err("User not found".to_string());
         }
 
-        if db.thirdparties.borrow().find_by_id(&auth.to).is_none() {
+        if db.users.borrow().find_by_id(&auth.to).is_none() {
             return Err("Third-party user not found".to_string());
         }
 

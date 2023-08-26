@@ -1,48 +1,19 @@
-type UserResponseResult = variant {
-    Err: text;
-    Ok: UserResponse;
-};
-
 type DoctorRequest = record {
     license_num: text;
-    name: text;
-    email: text;
     prescription_template: opt text;
 };
 
 type DoctorResponse = record {
-    id: principal;
     license_num: text;
-    name: text;
-    email: text;
     prescription_template: opt text;
-    created_at: nat64;
-    updated_at: opt nat64;
-};
-
-type DoctorResponseResult = variant {
-    Err: text;
-    Ok: DoctorResponse;
 };
 
 type PatientRequest = record {
-    name: text;
-    email: text;
     birth_date: nat64;
 };
 
 type PatientResponse = record {
-    id: principal;
-    name: text;
-    email: text;
     birth_date: nat64;
-    created_at: nat64;
-    updated_at: opt nat64;
-};
-
-type PatientResponseResult = variant {
-    Err: text;
-    Ok: PatientResponse;
 };
 
 type StaffRole = variant {
@@ -52,21 +23,11 @@ type StaffRole = variant {
 };
 
 type StaffRequest = record {
-    name: text;
     role: StaffRole;
 };
 
 type StaffResponse = record {
-    id: principal;
-    name: text;
     role: StaffRole;
-    created_at: nat64;
-    updated_at: opt nat64;
-};
-
-type StaffResponseResult = variant {
-    Err: text;
-    Ok: StaffResponse;
 };
 
 type ThirdPartyKind = variant {
@@ -77,22 +38,23 @@ type ThirdPartyKind = variant {
 
 type ThirdPartyRequest = record {
     kind: ThirdPartyKind;
-    name: text;
-    email: text;
 };
 
 type ThirdPartyResponse = record {
-    id: principal;
     kind: ThirdPartyKind;
-    name: text;
-    email: text;
-    created_at: nat64;
-    updated_at: opt nat64;
 };
 
-type ThirdPartyResponseResult = variant {
-    Err: text;
-    Ok: ThirdPartyResponse;
+type UserKindRequest = variant {
+    Doctor: DoctorRequest;
+    Patient: PatientRequest;
+    ThirdParty: ThirdPartyRequest;
+    Staff: StaffRequest;    
+};
+
+type UserRequest = record {
+    name: text;
+    email: text;
+    kind: UserKindRequest;
 };
 
 type UserKindResponse = variant {
@@ -103,9 +65,19 @@ type UserKindResponse = variant {
 };
 
 type UserResponse = record {
-    kind: UserKindResponse;
+    id: principal;
+    name: text;
+    email: text;
     active: bool;
     banned: bool;
+    kind: UserKindResponse;
+    created_at: nat64;
+    updated_at: opt nat64;
+};
+
+type UserResponseResult = variant {
+    Err: text;
+    Ok: UserResponse;
 };
 
 type KeyKind = variant {
@@ -236,34 +208,15 @@ type UserKeyResult = variant {
 };
 
 service : {
+    user_create: (UserRequest) -> (UserResponseResult);
+    user_update: (principal, UserRequest) -> (UserResponseResult);
+    user_delete: (principal) -> (DefaultResponseResult);
     user_find_me: () -> (UserResponseResult) query;
     user_find_by_id: (principal) -> (UserResponseResult) query;
     user_find_by_key: (KeyKind, opt text, text) -> (UserResponseResult) query;
     user_get_public_key: (vec nat8) -> (UserKeyResult);
     user_get_encrypted_symmetric_key: (vec nat8, vec nat8, vec nat8) -> (UserKeyResult);
-    
-    doctor_create: (DoctorRequest) -> (DoctorResponseResult);
-    doctor_update: (principal, DoctorRequest) -> (DoctorResponseResult);
-    doctor_delete: (principal) -> (DefaultResponseResult);
-    doctor_find_by_id: (principal) -> (DoctorResponseResult) query;
-    doctor_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
-
-    patient_create: (PatientRequest) -> (PatientResponseResult);
-    patient_update: (principal, PatientRequest) -> (PatientResponseResult);
-    patient_delete: (principal) -> (DefaultResponseResult);
-    patient_find_by_id: (principal) -> (PatientResponseResult) query;
-    patient_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
-
-    staff_create: (StaffRequest) -> (StaffResponseResult);
-    staff_update: (principal, StaffRequest) -> (StaffResponseResult);
-    staff_delete: (principal) -> (DefaultResponseResult);
-    staff_find_by_id: (principal) -> (StaffResponseResult) query;
-
-    thirdparty_create: (ThirdPartyRequest) -> (ThirdPartyResponseResult);
-    thirdparty_update: (principal, ThirdPartyRequest) -> (ThirdPartyResponseResult);
-    thirdparty_delete: (principal) -> (DefaultResponseResult);
-    thirdparty_find_by_id: (principal) -> (ThirdPartyResponseResult) query;
-    thirdparty_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
+    user_find_prescriptions: (principal, Pagination) -> (FindPrescriptionsResult) query;
 
     key_create: (KeyRequest) -> (KeyResponseResult);
     key_delete: (text) -> (DefaultResponseResult);

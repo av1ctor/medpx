@@ -13,16 +13,11 @@ use serde::Deserialize;
 use db::DB;
 use models::prescription_auth::{PrescriptionAuthRequest, PrescriptionAuthResponse, 
     PrescriptionAuth, PrescriptionAuthId};
-use models::doctor::{Doctor, DoctorRequest, DoctorResponse, DoctorId};
 use models::key::{KeyRequest, KeyResponse, Key, KeyId, KeyKind};
-use models::patient::{Patient, PatientRequest, PatientResponse, PatientId};
 use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
-use models::staff::{StaffRequest, Staff, StaffResponse, StaffId};
-use models::thirdparty::{ThirdPartyRequest, ThirdPartyResponse, ThirdParty, ThirdPartyId};
-use models::user::{UserResponse, UserId};
+use models::user::{UserResponse, UserId, UserRequest, User};
 use services::groups::GroupsService;
-use services::{doctors::DoctorsService, users::UsersService, patients::PatientsService, 
-    thirdparties::ThirdPartiesService, staff::StaffService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
+use services::{users::UsersService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 
 const STATE_VERSION: f32 = 0.1;
@@ -115,40 +110,70 @@ fn post_upgrade() {
 /*
  * users facade
  */
-#[ic_cdk::query]
+#[ic_cdk::update]
+fn user_create(
+    req: UserRequest
+) -> Result<UserResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let user = User::new(&req, &caller);
+        match UsersService::create(&user, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(user.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn user_update(
+    id: UserId,
+    req: UserRequest
+) -> Result<UserResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let user = User::new(&req, &caller);
+        match UsersService::update(&id, &user, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(user.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
+fn user_delete(
+    id: UserId
+) -> Result<(), String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        UsersService::delete(&id, &mut db.borrow_mut(), &caller)
+    })
+}
+
+ #[ic_cdk::query]
 fn user_find_me(
 ) -> Result<UserResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
         match UsersService::find_by_id(&caller, &db.borrow(), &caller) {
-            Ok(user) => {
-                Ok(UserResponse {
-                    kind: UsersService::find_by_kind(&caller, user.kind, &db.borrow()),
-                    active: user.active, 
-                    banned: user.banned, 
-                })
-            },
+            Ok(user) => Ok(user.into()),
             Err(msg) => Err(msg)
         }
     })
 }
 
 #[ic_cdk::query]
-fn user_find_id(
+fn user_find_by_id(
     id: UserId
 ) -> Result<UserResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
         match UsersService::find_by_id(&id, &db.borrow(), &caller) {
-            Ok(user) => {
-                Ok(UserResponse {
-                    kind: UsersService::find_by_kind(&id, user.kind, &db.borrow()),
-                    active: user.active, 
-                    banned: user.banned, 
-                })
-            },
+            Ok(user) => Ok(user.into()),
             Err(msg) => Err(msg)
         }
     })
@@ -166,13 +191,7 @@ fn user_find_by_key(
         match KeysService::find_by_value(&kind, &country, &key, &db.borrow(), &caller) {
             Ok(key) => {
                 match UsersService::find_by_id(&key.created_by, &db.borrow(), &caller) {
-                    Ok(user) => {
-                        Ok(UserResponse {
-                            kind: UsersService::find_by_kind(&key.created_by, user.kind, &db.borrow()),
-                            active: user.active, 
-                            banned: user.banned, 
-                        })
-                    },
+                    Ok(user) => Ok(user.into()),
                     Err(msg) => Err(msg)
                 }
             },    
@@ -227,273 +246,15 @@ async fn user_get_encrypted_symmetric_key(
     }).await
 }
 
-/*
- * doctors facade
- */
-#[ic_cdk::update]
-fn doctor_create(
-    req: DoctorRequest
-) -> Result<DoctorResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let doctor = Doctor::new(&req, &caller);
-        match DoctorsService::create(&doctor, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(doctor.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn doctor_update(
-    id: DoctorId,
-    req: DoctorRequest
-) -> Result<DoctorResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let doctor = Doctor::new(&req, &caller);
-        match DoctorsService::update(&id, &doctor, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(doctor.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn doctor_delete(
-    id: DoctorId
-) -> Result<(), String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        DoctorsService::delete(&id, &mut db.borrow_mut(), &caller)
-    })
-}
-
 #[ic_cdk::query]
-fn doctor_find_by_id(
-    id: DoctorId
-) -> Result<DoctorResponse, String> {
-    DB.with(|db| {
-        match DoctorsService::find_by_id(&id, &db.borrow()) {
-            Ok(e) => Ok(e.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::query]
-fn doctor_find_prescriptions(
-    id: DoctorId,
+fn user_find_prescriptions(
+    id: UserId,
     pag: Pagination
 ) -> Result<Vec<PrescriptionResponse>, String> {
     let caller = caller();
 
     DB.with(|db| {
-        match DoctorsService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
-            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-/*
- * patients facade
- */
-#[ic_cdk::update]
-fn patient_create(
-    req: PatientRequest
-) -> Result<PatientResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let patient = Patient::new(&req, &caller);
-        match PatientsService::create(&patient, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(patient.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn patient_update(
-    id: PatientId,
-    req: PatientRequest
-) -> Result<PatientResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let patient = Patient::new(&req, &caller);
-        match PatientsService::update(&id, &patient, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(patient.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn patient_delete(
-    id: PatientId
-) -> Result<(), String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        PatientsService::delete(&id, &mut db.borrow_mut(), &caller)
-    })
-}
-
-#[ic_cdk::query]
-fn patient_find_by_id(
-    id: PatientId
-) -> Result<PatientResponse, String> {
-    DB.with(|db| {
-        match PatientsService::find_by_id(&id, &db.borrow()) {
-            Ok(e) => Ok(e.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::query]
-fn patient_find_prescriptions(
-    id: PatientId,
-    pag: Pagination
-) -> Result<Vec<PrescriptionResponse>, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        match PatientsService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
-            Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-/*
- * staff facade
- */
-#[ic_cdk::update]
-fn staff_create(
-    req: StaffRequest
-) -> Result<StaffResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let staff = Staff::new(&req, &caller);
-        match StaffService::create(&staff, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(staff.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn staff_update(
-    id: StaffId,
-    req: StaffRequest
-) -> Result<StaffResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let staff = Staff::new(&req, &caller);
-        match StaffService::update(&id, &staff, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(staff.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn staff_delete(
-    id: StaffId
-) -> Result<(), String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        StaffService::delete(&id, &mut db.borrow_mut(), &caller)
-    })
-}
-
-#[ic_cdk::query]
-fn staff_find_by_id(
-    id: StaffId
-) -> Result<StaffResponse, String> {
-    DB.with(|db| {
-        match StaffService::find_by_id(&id, &db.borrow()) {
-            Ok(e) => Ok(e.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-/*
- * thirdparty facade
- */
-#[ic_cdk::update]
-fn thirdparty_create(
-    req: ThirdPartyRequest
-) -> Result<ThirdPartyResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let thirdparty = ThirdParty::new(&req, &caller);
-        match ThirdPartiesService::create(&thirdparty, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(thirdparty.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn thirdparty_update(
-    id: ThirdPartyId,
-    req: ThirdPartyRequest
-) -> Result<ThirdPartyResponse, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        let thirdparty = ThirdParty::new(&req, &caller);
-        match ThirdPartiesService::update(&id, &thirdparty, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(thirdparty.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::update]
-fn thirdparty_delete(
-    id: ThirdPartyId
-) -> Result<(), String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        ThirdPartiesService::delete(&id, &mut db.borrow_mut(), &caller)
-    })
-}
-
-#[ic_cdk::query]
-fn thirdparty_find_by_id(
-    id: ThirdPartyId
-) -> Result<ThirdPartyResponse, String> {
-    DB.with(|db| {
-        match ThirdPartiesService::find_by_id(&id, &db.borrow()) {
-            Ok(e) => Ok(e.into()),
-            Err(msg) => Err(msg)
-        }
-    })
-}
-
-#[ic_cdk::query]
-fn thirdparty_find_prescriptions(
-    id: ThirdPartyId,
-    pag: Pagination
-) -> Result<Vec<PrescriptionResponse>, String> {
-    let caller = caller();
-
-    DB.with(|db| {
-        match ThirdPartiesService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
+        match UsersService::find_prescriptions(&id, pag, &db.borrow(), &caller) {
             Ok(list) => Ok(list.iter().map(|e| e.clone().into()).collect()),
             Err(msg) => Err(msg)
         }

@@ -1,15 +1,15 @@
 use candid::{Principal, CandidType};
 use serde::Deserialize;
 
-use crate::models::{doctor::DoctorId, patient::PatientId};
+use super::user::UserId;
 
 pub type PrescriptionId = String;
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Prescription {
     pub id: PrescriptionId,
-    pub doctor: DoctorId,
-    pub patient: PatientId,
+    pub doctor: UserId,
+    pub patient: UserId,
     pub contents: Vec<u8>,
     pub created_at: u64,
     pub created_by: Principal,
@@ -19,15 +19,15 @@ pub struct Prescription {
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct PrescriptionRequest {
-    pub patient: PatientId,
+    pub patient: UserId,
     pub contents: Vec<u8>,
 }
 
 #[derive(CandidType, Clone)]
 pub struct PrescriptionResponse {
     id: PrescriptionId,
-    doctor: DoctorId,
-    patient: PatientId,
+    doctor: UserId,
+    patient: UserId,
     contents: Vec<u8>,
     created_at: u64,
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Flex, Grid, Select, Space, Stepper, Switch } from "@mantine/core";
+import { Button, Container, Flex, Select, Space, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
@@ -27,7 +27,7 @@ const PrescriptionAuthCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {create} = usePrescriptionAuth();
-    const [thirdParty, setThirdParty] = useState<UserResponse|undefined>()
+    const [user, setUser] = useState<UserResponse|undefined>()
     const [active, setActive] = useState(0);
     
     const form = useForm({
@@ -54,7 +54,7 @@ const PrescriptionAuthCreate = (props: Props) => {
             await create({
                 ...values,
                 kind: {[values.kind]: null},
-                to: userGetPrincipal(thirdParty),
+                to: userGetPrincipal(user),
                 expires_at: values.expires_at?
                     [BigInt(values.expires_at.valueOf()) * 1000000n]:
                     [],
@@ -68,15 +68,11 @@ const PrescriptionAuthCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main, thirdParty]);
+    }, [main, user]);
 
     useEffect(() => {
-        setActive(thirdParty? 1: 0);
-    }, [thirdParty]);
-
-    const data = thirdParty && 'ThirdParty' in thirdParty.kind?
-        thirdParty.kind.ThirdParty:
-        null;
+        setActive(user? 1: 0);
+    }, [user]);
 
     return (
         <Container>
@@ -90,17 +86,17 @@ const PrescriptionAuthCreate = (props: Props) => {
                     description="Lookup third party"
                 >
                     <UserLookup 
-                        setUser={setThirdParty}
+                        setUser={setUser}
                     />                    
                 </Stepper.Step>
                 <Stepper.Step 
                     label="Options" 
                     description="Authorization options"
-                    allowStepSelect={!!thirdParty}
+                    allowStepSelect={!!user}
                 >
                     <Flex direction="column">
-                        <div><b>Name:</b> {data?.name}</div>
-                        <div><b>Id:</b> {data?.id.toString()}</div>
+                        <div><b>Name:</b> {user?.name}</div>
+                        <div><b>Id:</b> {user?.id.toString()}</div>
                     </Flex>
 
                     <Space h="1rem" />
@@ -125,7 +121,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                             color="red"
                             fullWidth
                             type="submit"
-                            disabled={!thirdParty}
+                            disabled={!user}
                         >
                             Submit
                         </Button>

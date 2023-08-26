@@ -1,16 +1,57 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::Crud;
-use crate::models::user::{User, UserId, UserKind, UserKindResponse};
+use crate::db::traits::crud::{Crud, Pagination, CrudSubscribable};
+use crate::models::prescription::Prescription;
+use crate::models::user::{User, UserId};
 use crate::utils::vetkd::VetKdUtil;
-use super::doctors::DoctorsService;
-use super::patients::PatientsService;
-use super::staff::StaffService;
-use super::thirdparties::ThirdPartiesService;
 
 pub struct UsersService {}
 
 impl UsersService {
+    pub fn create(
+        user: &User,
+        db: &mut DB,
+        caller: &Principal
+    ) -> Result<(), String> {
+        if *caller == Principal::anonymous() {
+            return Err("Anonymous not allowed".to_string());
+        }
+        
+        db.users.borrow_mut().insert_and_notify(caller.to_owned(), user.clone())
+    }
+
+    pub fn update(
+        id: &UserId,
+        user: &User,
+        db: &mut DB,
+        caller: &Principal
+    ) -> Result<(), String> {
+        if *id != user.created_by || *caller != user.created_by {
+            return Err("Forbidden".to_string());
+        }
+
+        db.users.borrow_mut().update_and_notify(id.to_owned(), user.clone())
+    }
+
+    pub fn delete(
+        id: &UserId,
+        db: &mut DB,
+        caller: &Principal
+    ) -> Result<(), String> {
+        let mut users = db.users.borrow_mut();
+
+        let user = match users.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
+        if *id != user.created_by || *caller != user.created_by {
+            return Err("Forbidden".to_string());
+        }
+        
+        users.delete_and_notify(id)
+    }
+
     pub fn find_by_id(
         id: &UserId,
         db: &DB,
@@ -30,21 +71,39 @@ impl UsersService {
         Ok((*user).clone())
     }
 
-    pub fn find_by_kind(
+    pub fn find_prescriptions(
         id: &UserId,
-        kind: UserKind,
+        pag: Pagination,
         db: &DB,
-    ) -> UserKindResponse {
-        match kind {
-            UserKind::Doctor(_) => 
-                UserKindResponse::Doctor(DoctorsService::find_by_id(id, db).unwrap().into()),
-            UserKind::Patient(_) =>     
-                UserKindResponse::Patient(PatientsService::find_by_id(id, db).unwrap().into()),
-            UserKind::ThirdParty(_) => 
-                UserKindResponse::ThirdParty(ThirdPartiesService::find_by_id(id, db).unwrap().into()),
-            UserKind::Staff(_) => 
-                UserKindResponse::Staff(StaffService::find_by_id(id, db).unwrap().into()),
+        caller: &Principal
+    ) -> Result<Vec<Prescription>, String> {
+        let users = db.users.borrow();
+
+        let user = match users.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
+        if *id != user.created_by || *caller != user.created_by {
+            return Err("Forbidden".to_string());
         }
+
+        let ids = match db.user_prescriptions_rel.borrow().find_by_id(id) {
+            None => vec![],
+            Some(set) =>  {
+                let mut arr: Vec<String> = set.iter().cloned().collect();
+                arr.sort_by(|a, b| b.cmp(a));
+                arr.iter()
+                    .skip(pag.offset as usize)
+                    .take(pag.limit as usize)
+                    .cloned()
+                    .collect()
+            }
+        };
+
+        Ok(ids.iter().map(|id| 
+            db.prescriptions.borrow().get(id).clone()
+        ).collect())
     }
 
     pub async fn get_public_key(
