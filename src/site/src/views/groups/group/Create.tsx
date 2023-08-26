@@ -80,10 +80,15 @@ const GroupCreate = (props: Props) => {
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
                 <Box>
+                    <label className="mantine-TextInput-label"><b>Members</b></label>
                     {fields.length > 0?
                         fields
                     :
-                        <Text color="dimmed" align="center"></Text>
+                        <Text color="dimmed" align="center">None</Text>
+                    }
+
+                    {form.errors.members &&
+                        <Text color="red">{form.errors.members}</Text>
                     }
 
                     {opened &&

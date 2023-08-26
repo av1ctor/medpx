@@ -22,7 +22,7 @@ const Item = (props: Props) => {
             <div>
                 <Text>
                     Members: {item.members.map(m => 
-                        <Badge>{principalToString(m)}</Badge>)
+                        <Badge key={m.toString()}>{principalToString(m)}</Badge>)
                     }
                 </Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
