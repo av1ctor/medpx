@@ -97,8 +97,8 @@ export const UserLookup = (props: Props) => {
                 </Grid>
                 {user && 
                     <Box>
-                        <Text>Principal: {userGetPrincipal(user).toString()}</Text>
-                        <Text>Name: {userGetName(user)}</Text>
+                        <Text><b>Name</b>: {userGetName(user)}</Text>
+                        <Text><b>Id</b>: {userGetPrincipal(user).toString()}</Text>
                     </Box>
                 }
                 <Button

@@ -79,8 +79,8 @@ const GroupCreate = (props: Props) => {
     return (
         <Container>
             <form onSubmit={form.onSubmit(handleCreate)}>
-                <Box>
-                    <label className="mantine-TextInput-label"><b>Members</b></label>
+                <div className="card">
+                    <Text size="sm"><b>Members</b></Text>
                     {fields.length > 0?
                         fields
                     :
@@ -88,7 +88,7 @@ const GroupCreate = (props: Props) => {
                     }
 
                     {form.errors.members &&
-                        <Text color="red">{form.errors.members}</Text>
+                        <Text color="red" size="sm">{form.errors.members}</Text>
                     }
 
                     {opened &&
@@ -129,7 +129,7 @@ const GroupCreate = (props: Props) => {
                     </Box>
 
                     
-                </Box>
+                </div>
 
                 <Space h="lg"/>
 
