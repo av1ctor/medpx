@@ -103,7 +103,7 @@ const PrescriptionCreate = (props: Props) => {
                         description="Lookup patient"
                     >
                         <UserLookup 
-                            setUser={setPatient}
+                            onChange={setPatient}
                         />
                     </Stepper.Step>
                     <Stepper.Step 

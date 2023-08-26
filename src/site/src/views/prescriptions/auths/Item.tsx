@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { IconClockHour4, IconTrash } from "@tabler/icons-react";
+import { IconClockHour4, IconTrash, IconUser, IconUsersGroup } from "@tabler/icons-react";
 import { ActionIcon, Group, Skeleton, Text } from "@mantine/core";
 import { Principal } from "@dfinity/principal";
 import { PrescriptionAuthResponse } from "../../../../../declarations/main/main.did";
@@ -19,7 +19,7 @@ const UserTarget = (
     const user = useUserFindById(props.to);
     return (
         user.data?
-            <Text>{user.data.name}</Text>
+            <Text><IconUser size="1rem" /> {user.data.name}</Text>
         :
             <Skeleton h="1rem" w="10rem"></Skeleton>
     );
@@ -31,7 +31,7 @@ const GroupTarget = (
     const group = useGroupFindById(props.to);
     return (
         group.data?
-            <Text>{group.data.id}</Text>
+            <Text><IconUsersGroup size="1rem" /> {group.data.id}</Text>
         :
             <Skeleton h="1rem" w="10rem"></Skeleton>
     );

@@ -11,6 +11,8 @@ import { usePrescriptionAuth } from "../../../../hooks/prescription_auths";
 import { UserLookup } from "../../../users/user/Lookup";
 import { GroupResponse, UserResponse } from "../../../../../../declarations/main/main.did";
 import { useBrowser } from "../../../../hooks/browser";
+import { GroupMembers } from "../../../groups/Item";
+import ChooseGroup from "../../../groups/group/Choose";
 
 const schema = yup.object().shape({
     prescription_id: yup.string().required(),
@@ -139,7 +141,12 @@ const PrescriptionAuthCreate = (props: Props) => {
 
                         {target === AuthTarget.User &&
                             <UserLookup 
-                                setUser={setUser}
+                                onChange={setUser}
+                            />
+                        }
+                        {target === AuthTarget.Group &&
+                            <ChooseGroup
+                                onChange={setGroup}
                             />
                         }
                     </Container>
@@ -149,10 +156,20 @@ const PrescriptionAuthCreate = (props: Props) => {
                     description="Authorization options"
                     allowStepSelect={!!user}
                 >
-                    <Flex direction="column">
-                        <div><b>Name:</b> {user?.name}</div>
-                        <div><b>Id:</b> {user?.id.toString()}</div>
-                    </Flex>
+                    {target === AuthTarget.User &&
+                        <Flex direction="column">
+                            <div><b>Name:</b> {user?.name}</div>
+                            <div><b>Id:</b> {user?.id.toString()}</div>
+                        </Flex>
+                    }
+                    {target === AuthTarget.Group && 
+                        <Flex direction="column">
+                            <div>
+                                Members: <GroupMembers members={group?.members} />
+                            </div>
+                            <div><b>Id:</b> {group?.id.toString()}</div>
+                        </Flex>
+                    }
 
                     <Space h="1rem" />
 
@@ -176,7 +193,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                             color="red"
                             fullWidth
                             type="submit"
-                            disabled={!user}
+                            disabled={!user && !group}
                         >
                             Submit
                         </Button>

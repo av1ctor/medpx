@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Button, Grid, Select, Stack, TextInput, Text, Container, Box } from "@mantine/core";
+import { Button, Grid, Select, Stack, TextInput, Text, Box } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { userFindByKey, userGetName, userGetPrincipal } from "../../../libs/users";
 import { keyGetKindIndex, keyGetKindUniqueness, keyStringTokind, kinds } from "../../../libs/keys";
@@ -10,7 +10,7 @@ import { UserResponse } from "../../../../../declarations/main/main.did";
 import countries from "../../../libs/countries";
 
 interface Props {
-    setUser: (user: UserResponse|undefined) => void;
+    onChange: (user: UserResponse|undefined) => void;
 }
 
 export const UserLookup = (props: Props) => {
@@ -46,27 +46,24 @@ export const UserLookup = (props: Props) => {
                 form.values.key
             );
             setUser(user);
-            props.setUser(user);
+            props.onChange(user);
         }
         catch(e) {
             setUser(undefined);
-            props.setUser(undefined);
+            props.onChange(undefined);
             showError(e);
         }
         finally {
             setIsVerifing(false);
         }
-    }, [main, form.values, props.setUser, setIsVerifing]);
+    }, [main, form.values, props.onChange, setIsVerifing]);
 
     const _countries = useMemo(() => {
         return countries.map(c => ({label: c.name, value: c.code}))
     }, []);
     
     return (
-        <div className="card">
-            <Text weight={500}>
-                User
-            </Text>
+        <div>
             <Stack>
                 <Grid>
                     <Grid.Col md={3} xs={12}>

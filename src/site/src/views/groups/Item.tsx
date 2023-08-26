@@ -5,10 +5,18 @@ import { GroupResponse } from "../../../../declarations/main/main.did";
 import TimeFromNow from "../../components/TimeFromNow";
 import { principalToString } from "../../libs/icp";
 import { useAuth } from "../../hooks/auth";
+import { Principal } from "@dfinity/principal";
 
 interface Props {
     item: GroupResponse;
     onDelete: (item: GroupResponse) => void;
+}
+
+export const GroupMembers = (props: {members: Principal[]|undefined}) => {
+    return (
+        props.members?.map(m => 
+            <Badge key={m.toString()}>{principalToString(m)}</Badge>)
+    );
 }
 
 const Item = (props: Props) => {
@@ -25,9 +33,7 @@ const Item = (props: Props) => {
             <div>
                 <Text>{item.id}</Text>
                 <Text>
-                    Members: {item.members.map(m => 
-                        <Badge key={m.toString()}>{principalToString(m)}</Badge>)
-                    }
+                    Members: <GroupMembers members={item.members} />
                 </Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
             </div>
