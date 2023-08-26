@@ -4,6 +4,7 @@ import { ActionIcon, Badge, Group, Text } from "@mantine/core";
 import { GroupResponse } from "../../../../declarations/main/main.did";
 import TimeFromNow from "../../components/TimeFromNow";
 import { principalToString } from "../../libs/icp";
+import { useAuth } from "../../hooks/auth";
 
 interface Props {
     item: GroupResponse;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const Item = (props: Props) => {
+    const {user} = useAuth();
+    
     const handleDelete = useCallback(async () => {
         props.onDelete(props.item);
     }, [props.item]);
@@ -27,14 +30,16 @@ const Item = (props: Props) => {
                 </Text>
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
             </div>
-            <ActionIcon
-                variant="filled"
-                color="red"
-                title="Delete"
-                onClick={handleDelete}
-            >
-                <IconTrash size="1rem" />
-            </ActionIcon>
+            {item.created_by === user?.id &&
+                <ActionIcon
+                    variant="filled"
+                    color="red"
+                    title="Delete"
+                    onClick={handleDelete}
+                >
+                    <IconTrash size="1rem" />
+                </ActionIcon>
+            }
         </Group>
     )
 };

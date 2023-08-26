@@ -81,6 +81,12 @@ impl TableSubscribable<TableName, GroupId, Group> for GroupsTable {
     fn get_keys(
         v: &Group
     ) -> Vec<TableEventKey> {
-        v.members.iter().map(|m| TableEventKey::Principal(m.clone())).collect()
+        // group creator must be included
+        let mut res = vec![
+            TableEventKey::Principal(v.created_by.clone())
+        ];
+        res.append(&mut v.members.iter().map(|m| TableEventKey::Principal(m.clone())).collect());
+
+        res
     }
 }

@@ -9,7 +9,7 @@ pub struct Group {
     pub id: GroupId,
     pub members: Vec<UserId>,
     pub created_at: u64,
-    pub created_by: Principal,
+    pub created_by: UserId,
     pub updated_at: Option<u64>,
     pub updated_by: Option<Principal>,
 }
@@ -23,6 +23,7 @@ pub struct GroupRequest {
 pub struct GroupResponse {
     id: GroupId,
     members: Vec<UserId>,
+    created_by: UserId,
     created_at: u64,
 }
 
@@ -50,6 +51,7 @@ impl From<Group> for GroupResponse {
         Self { 
             id: e.id,
             members: e.members, 
+            created_by: e.created_by,
             created_at: e.created_at,
         }
     }

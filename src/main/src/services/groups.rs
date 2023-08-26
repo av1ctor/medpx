@@ -15,6 +15,14 @@ impl GroupsService {
         if *caller == Principal::anonymous() {
             return Err("Anonymous not allowed".to_string());
         }
+
+        if group.members.len() == 0 || group.members.len() > 16 {
+            return Err("Members field length must be between 1 and 16".to_string());
+        }
+
+        if group.members.iter().any(|id| db.users.borrow().find_by_id(id).is_none()) {
+            return Err("Members field contains an invalid member id".to_string());
+        }
         
         db.groups.borrow_mut().insert_and_notify(group.id.to_owned(), group.clone())
     }
@@ -67,24 +75,26 @@ impl GroupsService {
         db: &DB,
         caller: &Principal
     ) -> Result<Vec<Group>, String> {
-        let groups_rel = db.principal_groups_rel.borrow();
-
-        let group_ids = match groups_rel.find_by_id(id) {
-            None => return Ok(vec![]),
-            Some(e) => e
-        };
-
-        let groups = db.groups.borrow();
-        let list: Vec<Group> = group_ids.iter()
-            .map(|e| groups.find_by_id(e).unwrap())
-            .skip(pag.offset as usize)
-            .take(pag.limit as usize)
-            .cloned()
-            .collect();
-
-        if list.len() > 0 && list[0].created_by != *caller {
+        if *id != *caller {
             return Err("Forbidden".to_string());
         }
+
+        let groups_rel = db.principal_groups_rel.borrow();
+
+        let list = match groups_rel.find_by_id(id) {
+            None => return Ok(vec![]),
+            Some(ids) => {
+                let groups = db.groups.borrow();
+                let mut arr: Vec<String> = ids.iter().cloned().collect();
+                arr.sort_by(|a, b| b.cmp(a));
+                arr.iter()
+                    .map(|e| groups.find_by_id(e).unwrap())
+                    .skip(pag.offset as usize)
+                    .take(pag.limit as usize)
+                    .cloned()
+                    .collect()
+            }
+        };
 
         Ok(list)
     }

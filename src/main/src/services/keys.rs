@@ -93,18 +93,20 @@ impl KeysService {
     ) -> Result<Vec<Key>, String> {
         let keys_rel = db.principal_keys_rel.borrow();
 
-        let key_ids = match keys_rel.find_by_id(id) {
+        let list: Vec<_> = match keys_rel.find_by_id(id) {
             None => return Ok(vec![]),
-            Some(e) => e
+            Some(ids) => {
+                let keys = db.keys.borrow();
+                let mut arr: Vec<String> = ids.iter().cloned().collect();
+                arr.sort_by(|a, b| b.cmp(a));
+                arr.iter()
+                    .map(|e| keys.find_by_id(e).unwrap())
+                    .skip(pag.offset as usize)
+                    .take(pag.limit as usize)
+                    .cloned()
+                    .collect()
+            }
         };
-
-        let keys = db.keys.borrow();
-        let list: Vec<Key> = key_ids.iter()
-            .map(|e| keys.find_by_id(e).unwrap())
-            .skip(pag.offset as usize)
-            .take(pag.limit as usize)
-            .cloned()
-            .collect();
 
         if list.len() > 0 && list[0].created_by != *caller {
             return Err("Forbidden".to_string());

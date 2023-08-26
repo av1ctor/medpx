@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import * as yup from 'yup';
 import { ActionIcon, Box, Button, Container, Group, Space, TextInput, Text, Center } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
@@ -57,11 +57,10 @@ const GroupCreate = (props: Props) => {
 
     const handleAddMember = useCallback(() => {
         close();
-        console.log(user)
         form.insertListItem('members', {key: randomId(), value: userGetPrincipal(user)})
     }, [form, user, close]);
 
-    const fields = form.values.members.map((item, index) => (
+    const fields = useMemo(() => form.values.members.map((item, index) => (
         <Group key={item.key} mt="xs">
             <TextInput
                 placeholder="User principal"
@@ -74,7 +73,7 @@ const GroupCreate = (props: Props) => {
                 <IconTrash size="1rem" />
             </ActionIcon>
         </Group>
-      ));
+    )), [form]);
 
     return (
         <Container>
