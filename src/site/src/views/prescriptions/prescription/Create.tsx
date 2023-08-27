@@ -12,6 +12,7 @@ import { useBrowser } from "../../../hooks/browser";
 import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../../hooks/auth";
 import { UserLookup } from "../../users/user/Lookup";
+import { UserAvatar } from "../../../components/UserAvatar";
 
 const schema = yup.object().shape({
     contents: yup.string().min(16).max(4096),
@@ -100,7 +101,7 @@ const PrescriptionCreate = (props: Props) => {
                 >
                     <Stepper.Step 
                         label="Patient" 
-                        description="Lookup patient"
+                        description="Choose a patient"
                     >
                         <UserLookup 
                             onChange={setPatient}
@@ -108,13 +109,10 @@ const PrescriptionCreate = (props: Props) => {
                     </Stepper.Step>
                     <Stepper.Step 
                         label="Contents" 
-                        description="Prescription contents"
+                        description="Write the prescription"
                         allowStepSelect={!!patient}
                     >
-                        <Flex direction="column">
-                            <div><b>Name:</b> {patient?.name}</div>
-                            <div><b>Id:</b> {patient?.id.toString()}</div>
-                        </Flex>
+                        <UserAvatar user={patient} />
 
                         <Space h="1rem" />
 

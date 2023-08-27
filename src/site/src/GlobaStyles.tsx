@@ -41,6 +41,9 @@ export const GlobalStyles = () => {
                 '.prescription-contents': {
                     minHeight: '30rem',
                 },
+                'a': {
+                    textDecoration: 'none',
+                }
             })}
         />
     );

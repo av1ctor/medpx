@@ -8,6 +8,7 @@ import { useActors } from "../../../hooks/actors";
 import { useUI } from "../../../hooks/ui";
 import { UserResponse } from "../../../../../declarations/main/main.did";
 import countries from "../../../libs/countries";
+import { UserAvatar } from "../../../components/UserAvatar";
 
 interface Props {
     onChange: (user: UserResponse|undefined) => void;
@@ -92,12 +93,7 @@ export const UserLookup = (props: Props) => {
                         />
                     </Grid.Col>
                 </Grid>
-                {user && 
-                    <Box>
-                        <Text><b>Name</b>: {userGetName(user)}</Text>
-                        <Text><b>Id</b>: {userGetPrincipal(user).toString()}</Text>
-                    </Box>
-                }
+                <UserAvatar user={user} />
                 <Button
                     variant="filled" 
                     color="green"

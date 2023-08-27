@@ -15,8 +15,11 @@ export const buildAgentJsOptions = (
 };
 
 export const principalToString = (
-    principal: Principal
+    principal: Principal|undefined
 ): string => {
+    if(!principal) {
+        return '';
+    }
     const s = principal.toString();
     return `${s.substr(0, 5)}...${s.substr(60, 3)}`
 };

@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useMemo } from "react";
-import { Anchor, Center, Container, Divider, Flex, Grid, Skeleton, Space, Text } from "@mantine/core";
+import { Anchor, Badge, Center, Container, Divider, Grid, Skeleton, Space, Text } from "@mantine/core";
 import QRCode from "react-qr-code";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 import { useUserFindById } from "../../../hooks/users";
@@ -7,6 +7,9 @@ import { config } from "../../../config";
 import { useDecrypt } from "../../../hooks/crypto";
 import { useUI } from "../../../hooks/ui";
 import { userGetDoctor } from "../../../libs/users";
+import { UserAvatar } from "../../../components/UserAvatar";
+import { principalToString } from "../../../libs/icp";
+import { Link } from "react-router-dom";
 
 interface Props {
     item: PrescriptionResponse;
@@ -59,30 +62,36 @@ const PrescriptionView = (props: Props) => {
             </Center>
             <Center>
                 <Text size=".75rem" color="blue" >
-                    Id: {doctorq.data?.id.toString()}
+                    Id:&nbsp;
+                    <Badge size="sm">
+                        <Link target="blank" to={`/user/${doctorq.data?.id}`}>
+                            {principalToString(doctorq.data?.id)}
+                        </Link>
+                    </Badge>
                 </Text>
             </Center>
 
             <Divider mt="1rem" />
 
             <Container p="1rem">
-                <Flex direction="column">
-                    <div><b>Name:</b> {patientq.data?.name}</div>
-                    <div><b>Id:</b> {patientq.data?.id.toString()}</div>
-                </Flex>
+                <div>
+                    <Text><u>Patient</u></Text>
+                    <UserAvatar user={patientq.data} />
+                </div>
 
                 <Space h="2rem" />
 
                 <div className="prescription-contents">
+                    <Text><u>Prescription</u></Text>
                     {dec.Ok?
-                        <>
+                        <div>
                             {dec.Ok}
-                        </>
+                        </div>
                     :
-                        <>
+                        <div>
                             {rowsSkeleton}
                             <Skeleton h="1rem" w="100%" />
-                        </>
+                        </div>
                     }
                 </div>
 
