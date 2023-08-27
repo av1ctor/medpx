@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { ActionIcon, Button, Card, Center, Divider, Drawer, Grid, Group, Modal, Space, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { FormattedMessage } from "react-intl";
-import { IconAlertTriangle, IconPlus, IconRefresh, IconUsers } from "@tabler/icons-react";
+import { IconAlertTriangle, IconPlus, IconRefresh, IconUsersGroup } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/auth";
 import { useGroup, useGroupFindByUser } from "../../hooks/groups";
 import { useUI } from "../../hooks/ui";
@@ -56,7 +56,7 @@ const Groups = (props: Props) => {
                 <Group position="apart" noWrap spacing="xl">
                     <div>
                         <Text fz="lg" className="card-title" fw={500}>
-                            <IconUsers size="1rem" /> Groups
+                            <IconUsersGroup size="1rem" /> Groups
                         </Text>
                         <Text fz="xs" c="dimmed" mt={3} mb="xl">
                             View your groups
@@ -102,7 +102,7 @@ const Groups = (props: Props) => {
             
             <Drawer 
                 opened={createOpened} 
-                title={<b><IconUsers size="1.25rem" /> New group</b>}
+                title={<b><IconUsersGroup size="1.25rem" /> New group</b>}
                 position="right"
                 size="xl"
                 onClose={createClose} 
