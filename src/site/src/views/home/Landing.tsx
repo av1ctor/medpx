@@ -87,8 +87,7 @@ const Landing = () => {
                         Your <span className={classes.highlight}>health data</span> safe, under your control
                     </Title>
                     <Text color="dimmed" mt="md" className={classes.subtitle}>
-                        Medpx keeps your medical prescriptions on the blockchain using
-                        cryptography to ensure nobody can access them – unless you allow it!
+                        Medpx keeps your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it!
                     </Text>
 
                     <List

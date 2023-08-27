@@ -4,7 +4,7 @@ Your health data safe, under your control
 ![image](https://github.com/av1ctor/medpx/assets/35101441/41d2c91b-1dc8-45c6-9ff3-366d0c2010f7)
 
 ## Introduction
-Medpx keeps your medical prescriptions on the blockchain using cryptography to ensure nobody can access them – unless you allow it.
+Medpx keeps your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
 
 - Cryptography – leveraging the VetKeys technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
 - Shareable – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are part of them to access your data
@@ -17,6 +17,7 @@ Medpx keeps your medical prescriptions on the blockchain using cryptography to e
 
 ### Prerequisites
 - dfx 0.14+
+- Rust plus wasm32-unknown-unknown
 
 ```bash
 $ git clone [https://github.com/av1ctor/medpx.git](https://github.com/av1ctor/medpx.git)
@@ -33,6 +34,10 @@ $ dfx deploy
 - [x] A shared prescription can have a time limit
 - [x] Users can create keys (like e-mail, phone number, id number, etc) to be found by other users more easily
 - [x] A qr-code should be generated to allow patients to share their prescriptions with third-parties (if they are authorized)
+- [ ] A doctor, to create an account, should have a valid digital-certificate containing his/her doctor license number
+- [ ] A list of drugs should be available, so doctors could select them when creating a new prescription
+- [ ] Doctors should be allowed to use and customize prescription templates
+- [ ] When a prescription is created, the patient should receive a e-mail and/or SMS with a link to access it
 - [ ] A prescription to be created should consume credits (our own ICRC-1 token)
 - [ ] Doctors should be able to buy credits using ICP
 - [ ] Multiple languages should be allowed
