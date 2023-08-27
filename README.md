@@ -41,7 +41,7 @@ $ dfx deploy
 - [ ] Controlled prescriptions (black-box drugs) should be used only-once, so the drug store must be allowed to mark them as used
 
 ## License
-This project is licensed under the MIT license, see LICENSE.md for details. 
+This project is licensed under the MIT license, see LICENSE file for details. 
 
 ## References
 - [VetKey primer](https://internetcomputer.org/blog/features/vetkey-primer)
