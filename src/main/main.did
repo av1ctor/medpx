@@ -213,7 +213,12 @@ type UserKeyResult = variant {
     Ok: text;
 };
 
-service : {
+type InitArgs = record {
+    vetkd_canister_id: text;
+    key_name: text;
+};
+
+service : (InitArgs) -> {
     user_create: (UserRequest) -> (UserResponseResult);
     user_update: (principal, UserRequest) -> (UserResponseResult);
     user_delete: (principal) -> (DefaultResponseResult);

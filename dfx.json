@@ -31,12 +31,7 @@
     "vetkd_system_api": {
       "candid": "vetkd-dev/vetkd_system_api/vetkd_system_api.did",
       "package": "vetkd_system_api",
-      "type": "rust",
-      "remote": {
-        "id": {
-          "ic": "s55qq-oqaaa-aaaaa-aaakq-cai"
-        }
-      }
+      "type": "rust"
     }
   },
   "defaults": {

@@ -66,7 +66,7 @@ class InternetIdentityProvider implements ICProvider {
             this.client?.login({
                 identityProvider: config.II_URL,
                 derivationOrigin: config.isProduction?
-                     `https://${siteCanisterId}.ic0.app`: 
+                     `https://${siteCanisterId}.icp0.io`: 
                      undefined,
                 maxTimeToLive: BigInt(7 * 24) * BigInt(3_600_000_000_000), // 1 week
                 windowOpenerFeatures: `toolbar=0,location=0,menubar=0,width=${width},height=${height},top=${top},left=${left}`,

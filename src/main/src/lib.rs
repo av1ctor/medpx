@@ -21,7 +21,6 @@ use services::{users::UsersService, prescriptions::PrescriptionsService, keys::K
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 
 const STATE_VERSION: f32 = 0.1;
-const VETKD_SYSTEM_API_CANISTER_ID: &str = "s55qq-oqaaa-aaaaa-aaakq-cai";
 
 #[derive(Default, CandidType, Deserialize)]
 struct State {
@@ -46,15 +45,22 @@ fn _gen_id(
     ulid::Ulid::from_parts(ic_cdk::api::time() / 1000000, counter).to_string()
 }
 
+#[derive(CandidType, Deserialize)]
+struct InitArg {
+    vetkd_canister_id: String,
+    key_name: String
+}
+
 #[ic_cdk::init]
 fn init(
+    arg: InitArg
 ) {
     ic_cdk::setup();
 
     STATE.with(|rc| {
         let mut state = rc.borrow_mut();
         state.owner = Some(caller());
-        state.vetkd = VetKdUtil::new(VETKD_SYSTEM_API_CANISTER_ID.to_string(), "test_key_1".to_string());
+        state.vetkd = VetKdUtil::new(arg.vetkd_canister_id, arg.key_name);
     });
 }
 
