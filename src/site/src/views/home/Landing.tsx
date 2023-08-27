@@ -111,6 +111,9 @@ const Landing = () => {
                             <b>Time-locked</b> – When sharing your prescriptions, you can define a date limit to cut the access to your data
                         </List.Item>
                         <List.Item className={classes.item}>
+                            <b>Easy to find</b> – You can create keys, like your e-mail, your phone number, your id card number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
+                        </List.Item>
+                        <List.Item className={classes.item}>
                             <b>On-chain</b> – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
                         </List.Item>
                         <List.Item className={classes.item}>
