@@ -47,11 +47,16 @@ const useStyles = createStyles((theme) => ({
         },
     },
   
-    image: {
+    imageContainer: {
         flex: 1,
         [theme.fn.smallerThan('md')]: {
             display: 'none',
         },
+    },
+
+    image: {
+        margin: 'auto',
+        paddingTop: '5rem'
     },
   
     highlight: {
@@ -97,7 +102,7 @@ const Landing = () => {
                         }
                     >
                         <List.Item className={classes.item}>
-                            <b>Cryptography</b> – leveraging the <Link to="https://internetcomputer.org/blog/features/vetkey-primer" target="blanck">VetKD</Link> technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
+                            <b>Cryptography</b> – leveraging the <Link to="https://internetcomputer.org/blog/features/vetkey-primer" target="blank"><b>VetKey</b></Link> technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
                         </List.Item>
                         <List.Item className={classes.item}>
                             <b>Shareable</b> – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are part of them to access your data 
@@ -133,8 +138,8 @@ const Landing = () => {
                         </Button>
                     </Group>
                 </div>
-                <div className={classes.image}>
-                    <Image src="medpx-logo.svg" />
+                <div className={classes.imageContainer}>
+                    <Image src="logo.svg" className={classes.image} />
                 </div>
             </div>
         </Container>
