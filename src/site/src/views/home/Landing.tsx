@@ -64,10 +64,10 @@ const useStyles = createStyles((theme) => ({
 
 const Landing = () => {
     const { classes } = useStyles();
-    const {redirectToSignup, navigateTo} = useBrowser();
+    const {redirectToSignup} = useBrowser();
 
     const handleViewSourceCode = useCallback(() => {
-        navigateTo("https://github.com/av1ctor/medpx");
+        window.open("https://github.com/av1ctor/medpx", "blank");
     }, []);
 
     const handleSignup = useCallback(() => {
