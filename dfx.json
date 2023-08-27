@@ -29,7 +29,7 @@
       }
     },
     "vetkd_system_api": {
-      "candid": "src/vetkd_system_api/vetkd_system_api.did",
+      "candid": "vetkd-dev/vetkd_system_api/vetkd_system_api.did",
       "package": "vetkd_system_api",
       "type": "rust",
       "remote": {
