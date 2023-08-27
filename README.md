@@ -1,7 +1,7 @@
 # Medpx
 Your health data safe, under your control
 
-![image](https://github.com/av1ctor/medpx/assets/35101441/41d2c91b-1dc8-45c6-9ff3-366d0c2010f7)
+https://66ksk-6iaaa-aaaan-qd7qa-cai.icp0.io/
 
 ## Introduction
 Medpx keeps your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
