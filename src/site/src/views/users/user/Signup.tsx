@@ -167,10 +167,12 @@ const Signup = (props: Props) => {
             active={active} 
             breakpoint="sm"
             color="green"
+            onStepClick={setActive}
         >
             <Stepper.Step 
                 label="Authentication" 
                 description="Authenticate with your provider"
+                
             >
                 <Login 
                     authenticateOnly={true}
@@ -180,6 +182,7 @@ const Signup = (props: Props) => {
             <Stepper.Step 
                 label="Registration" 
                 description="Create a new user"
+                allowStepSelect={isAuthenticated}
             >
                 <Space h="md" />
                 <Container>
