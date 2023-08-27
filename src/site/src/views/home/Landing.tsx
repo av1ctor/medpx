@@ -117,7 +117,7 @@ const Landing = () => {
                             <b>On-chain</b> – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
                         </List.Item>
                         <List.Item className={classes.item}>
-                            <b>Open-source</b> – released under MIT license, anyone can check the source code and contribute to the app
+                            <b>Open-source</b> – released under MIT license, anyone can verify the source code and contribute to the app
                         </List.Item>
                     </List>
 

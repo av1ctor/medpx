@@ -11,7 +11,7 @@ Medpx keeps your medical prescriptions on the blockchain using cryptography to e
 - Time-locked – When sharing your prescriptions, you can define a date limit to cut the access to your data
 - Easy to find – You can create keys, like your e-mail, your phone number, your id card number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
 - On-chain – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
-- Open-source – released under MIT license, anyone can check the source code and contribute to the app
+- Open-source – released under MIT license, anyone can verify the source code and contribute to the app
 
 ## Installation
 
