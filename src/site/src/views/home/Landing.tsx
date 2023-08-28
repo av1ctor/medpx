@@ -81,10 +81,10 @@ const Landing = () => {
             <div className={classes.inner}>
                 <div className={classes.content}>
                     <Title className={classes.title}>
-                        Your <span className={classes.highlight}>health data</span> safe, under your control
+                        Keep your <span className={classes.highlight}>medical prescriptions</span> safe, under your control
                     </Title>
                     <Text color="dimmed" mt="md" className={classes.subtitle}>
-                        Medpx keeps your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it!
+                        Medpx stores your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it!
                     </Text>
 
                     <List
@@ -101,13 +101,13 @@ const Landing = () => {
                             <b>Cryptography</b> – leveraging the <Link to="https://internetcomputer.org/blog/features/vetkey-primer" target="blank"><b>VetKeys</b></Link> technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
                         </List.Item>
                         <List.Item className={classes.item}>
-                            <b>Shareable</b> – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are part of them to access your data 
+                            <b>Shareable</b> – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are members of the group to access your data 
                         </List.Item>
                         <List.Item className={classes.item}>
                             <b>Time-locked</b> – When sharing your prescriptions, you can define a date limit to cut the access to your data
                         </List.Item>
                         <List.Item className={classes.item}>
-                            <b>Easy to find</b> – You can create keys, like your e-mail, your phone number, your id card number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
+                            <b>Easy to find</b> – You can create keys, like your e-mail, your phone number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
                         </List.Item>
                         <List.Item className={classes.item}>
                             <b>On-chain</b> – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
