@@ -60,7 +60,8 @@ const useStyles = createStyles((theme) => ({
         position: 'relative',
         backgroundColor: theme.fn.variant({ variant: 'light', color: theme.primaryColor }).background,
         borderRadius: theme.radius.md,
-        padding: `${rem(4)} ${rem(12)}`,
+        padding: '0.5rem 1rem',
+        lineHeight: '4rem',
     },
 }));
 
