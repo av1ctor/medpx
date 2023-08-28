@@ -1,5 +1,5 @@
 # Medpx
-Your health data safe, under your control
+Keep your medical prescriptions safe, under your control
 
 https://66ksk-6iaaa-aaaan-qd7qa-cai.icp0.io/
 
@@ -9,9 +9,9 @@ https://66ksk-6iaaa-aaaan-qd7qa-cai.icp0.io/
 Medpx keeps your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
 
 - Cryptography – leveraging the VetKeys technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
-- Shareable – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are part of them to access your data
+- Shareable – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are members of the group to access your data
 - Time-locked – When sharing your prescriptions, you can define a date limit to cut the access to your data
-- Easy to find – You can create keys, like your e-mail, your phone number, your id card number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
+- Easy to find – You can create keys, like your e-mail, your phone number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
 - On-chain – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
 - Open-source – released under MIT license, anyone can verify the source code and contribute to the app
 
@@ -19,7 +19,6 @@ Medpx keeps your medical prescriptions in eletronic form, stored on the blockcha
 
 ### Prerequisites
 - dfx 0.14+
-- Rust plus wasm32-unknown-unknown
 
 ```bash
 $ git clone [https://github.com/av1ctor/medpx.git](https://github.com/av1ctor/medpx.git)
