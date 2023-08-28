@@ -13,6 +13,7 @@ import { GroupResponse, UserResponse } from "../../../../../../declarations/main
 import { useBrowser } from "../../../../hooks/browser";
 import { GroupMembers } from "../../../groups/Item";
 import ChooseGroup from "../../../groups/group/Choose";
+import { UserAvatar } from "../../../../components/UserAvatar";
 
 const schema = yup.object().shape({
     prescription_id: yup.string().required(),
@@ -157,10 +158,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                     allowStepSelect={!!user}
                 >
                     {target === AuthTarget.User &&
-                        <Flex direction="column">
-                            <div><b>Name:</b> {user?.name}</div>
-                            <div><b>Id:</b> {user?.id.toString()}</div>
-                        </Flex>
+                        <UserAvatar user={user} />
                     }
                     {target === AuthTarget.Group && 
                         <Flex direction="column">

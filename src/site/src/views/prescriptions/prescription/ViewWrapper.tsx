@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Button, Card, Center, Container, Space, Stack } from "@mantine/core";
 import { IconUserBolt } from "@tabler/icons-react";
 import { useParams } from "react-router-dom";
@@ -7,13 +7,28 @@ import { usePrescriptionsFindById } from "../../../hooks/prescriptions";
 import { useAuth } from "../../../hooks/auth";
 import { useBrowser } from "../../../hooks/browser";
 import { useUI } from "../../../hooks/ui";
+import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 
 const PrescriptionViewWrapper = () => {
     const {isLogged} = useAuth();
     const {showError, toggleLoading} = useUI();
-    const {redirectToLogin} = useBrowser()
+    const {redirectToLogin, isMobile} = useBrowser()
     const {id} = useParams()
     const item = usePrescriptionsFindById(id || '');
+
+    const Px = useCallback((props: {data: PrescriptionResponse|undefined}) => {
+        return props.data?
+            <PrescriptionView 
+                item={props.data} 
+                isEncrypted
+            />
+        :
+            <Center>
+                Please wait, loading...
+                <Space h="30rem" />
+            </Center>
+        ;
+    }, []);
 
     useEffect(() => {
         toggleLoading(item.status === "loading");
@@ -53,19 +68,12 @@ const PrescriptionViewWrapper = () => {
         :
             <Container>
                 {item.isLoading || item.data?
-                    <Card withBorder>
-                        {item.data?
-                            <PrescriptionView 
-                                item={item.data} 
-                                isEncrypted
-                            />
-                        :
-                            <Center>
-                                Please wait, loading...
-                                <Space h="30rem" />
-                            </Center>
-                        }
-                    </Card>
+                    !isMobile?
+                        <Card withBorder>
+                            <Px data={item.data} />
+                        </Card>
+                    :
+                        <Px data={item.data} />
                 :
                     <Center>
                         Prescription not found or access denied

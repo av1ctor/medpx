@@ -56,6 +56,7 @@ const Signup = (props: Props) => {
     }, [setKind]);
 
     const handleAuthenticated = useCallback(() => {
+        setActive(1);
     }, []);
 
     const {update} = useAuth();
