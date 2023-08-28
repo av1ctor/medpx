@@ -7,28 +7,17 @@ pub type KeyId = String;
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
 pub enum KeyKind {
-    // unique worldwide 
     EmailAddress,
-    PassportNumber,
-    Random,
-    // unique countrywide
     PhoneNumber,
-    IdCardNumber,
-    DriverLicenseNumber,
-    // FIXME: unique statewide?
-    DoctorLicenseNumber,
+    Random,
 }
 
 impl fmt::Display for KeyKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             KeyKind::EmailAddress => write!(f, "EAD"),
-            KeyKind::PassportNumber => write!(f, "PPN"),
-            KeyKind::Random => write!(f, "RND"),
             KeyKind::PhoneNumber => write!(f, "PON"),
-            KeyKind::IdCardNumber => write!(f, "ICN"),
-            KeyKind::DriverLicenseNumber => write!(f, "DLN"),
-            KeyKind::DoctorLicenseNumber => write!(f, "DOC"),
+            KeyKind::Random => write!(f, "RND"),
         }
     }
 }

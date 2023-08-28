@@ -82,12 +82,8 @@ type UserResponseResult = variant {
 
 type KeyKind = variant {
     EmailAddress;
-    PassportNumber;
-    Random;
     PhoneNumber;
-    IdCardNumber;
-    DriverLicenseNumber;
-    DoctorLicenseNumber;
+    Random;
 };
 
 type KeyRequest = record {

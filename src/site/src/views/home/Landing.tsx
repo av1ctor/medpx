@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { createStyles, Image, Container, Title, Button, Group, Text, List, ThemeIcon, rem } from '@mantine/core';
+import { createStyles, Image, Container, Title, Button, Group, Text, List, ThemeIcon, rem, Flex } from '@mantine/core';
 import { IconBrandGithub, IconCheck, IconUserPlus } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
 import { useBrowser } from "../../hooks/browser";
@@ -7,7 +7,7 @@ import { useBrowser } from "../../hooks/browser";
 const useStyles = createStyles((theme) => ({
     inner: {
         display: 'flex',
-        justifyContent: 'space-between',
+        flexWrap: 'wrap'
     },
 
     content: {
@@ -15,7 +15,6 @@ const useStyles = createStyles((theme) => ({
         marginRight: `calc(${theme.spacing.xl} * 3)`,
 
         [theme.fn.smallerThan('md')]: {
-            maxWidth: '100%',
             marginRight: 0,
         },
     },
@@ -49,14 +48,12 @@ const useStyles = createStyles((theme) => ({
   
     imageContainer: {
         flex: 1,
-        [theme.fn.smallerThan('md')]: {
-            display: 'none',
-        },
+        display: 'flex',
+        justifyContent: 'center',
     },
 
     image: {
         margin: 'auto',
-        paddingTop: '5rem'
     },
   
     highlight: {

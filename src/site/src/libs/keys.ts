@@ -9,11 +9,7 @@ export enum Uniqueness {
 
 export const kinds = [
     { value: 'EmailAddress', label: 'Email address', uniqueness: Uniqueness.Worldwide },
-    { value: 'PassportNumber', label: 'Passport number', uniqueness: Uniqueness.Countrywide },
     { value: 'PhoneNumber', label: 'Phone number', uniqueness: Uniqueness.Countrywide },
-    { value: 'IdCardNumber', label: 'Id card number', uniqueness: Uniqueness.Countrywide },
-    { value: 'DriverLicenseNumber', label: 'Driver license number', uniqueness: Uniqueness.Statewide },
-    { value: 'DoctorLicenseNumber', label: 'Doctor license number', uniqueness: Uniqueness.Statewide },
     { value: 'Random', label: 'Random key', uniqueness: Uniqueness.Worldwide },
 ];
 
