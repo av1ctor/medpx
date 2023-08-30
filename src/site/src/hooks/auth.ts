@@ -134,7 +134,7 @@ export const useAuth = (
         main: Main
     ): Promise<Result<AES_GCM, string>> => {
         const aes_gcm = new AES_GCM(main);
-        await aes_gcm.init('prescriptions');
+        await aes_gcm.init();
         return {Ok: aes_gcm};
     };
         

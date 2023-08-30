@@ -205,53 +205,6 @@ fn user_find_by_key(
         }
     })
 }
-
-#[ic_cdk::update]
-async fn user_get_public_key(
-    derivation_path: Vec<u8>
-) -> Result<String, String> {
-    let caller = &caller();
-
-    match DB.with(|db| {
-        UsersService::find_by_id(caller, &db.borrow(), caller)
-    }) {
-        Err(msg) => return Err(msg),
-        Ok(_) => {}
-    };
-    
-    STATE.with(|state| {
-        UsersService::get_public_key(
-            state.borrow().vetkd.clone(),
-            derivation_path
-        )
-    }).await
-}
-
-#[ic_cdk::update]
-async fn user_get_encrypted_symmetric_key(
-    derivation_path: Vec<u8>,
-    derivation_id: Vec<u8>,
-    encryption_public_key: Vec<u8>
-) -> Result<String, String> {
-    let caller = caller();
-
-    match DB.with(|db| {
-        UsersService::find_by_id(&caller, &db.borrow(), &caller)
-    }) {
-        Err(msg) => return Err(msg),
-        Ok(_) => {}
-    };
-
-    STATE.with(|rc| {
-        UsersService::get_encrypted_symmetric_key(
-            rc.borrow().vetkd.clone(), 
-            derivation_path,
-            derivation_id,
-            encryption_public_key
-        )
-    }).await
-}
-
 #[ic_cdk::query]
 fn user_find_prescriptions(
     id: UserId,
@@ -362,6 +315,22 @@ fn prescription_create(
 }
 
 #[ic_cdk::update]
+fn prescription_update(
+    id: PrescriptionId,
+    req: PrescriptionRequest
+) -> Result<PrescriptionResponse, String> {
+    let caller = caller();
+
+    DB.with(|db| {
+        let prescription = Prescription::new(&id, &req, &caller);
+        match PrescriptionsService::update(&id, &prescription, &mut db.borrow_mut(), &caller) {
+            Ok(()) => Ok(prescription.into()),
+            Err(msg) => Err(msg)
+        }
+    })
+}
+
+#[ic_cdk::update]
 fn prescription_delete(
     id: PrescriptionId
 ) -> Result<(), String> {
@@ -384,6 +353,64 @@ fn prescription_find_by_id(
             Err(msg) => Err(msg)
         }
     })
+}
+
+#[ic_cdk::update]
+async fn prescription_get_public_key(
+) -> Result<String, String> {
+    let caller = caller();
+
+    match DB.with(|db| {
+        UsersService::find_by_id(&caller, &db.borrow(), &caller)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(_) => ()
+    };
+
+    STATE.with(|state| {
+        PrescriptionsService::get_public_key(
+            state.borrow().vetkd.clone()
+        )
+    }).await
+}
+
+#[ic_cdk::update]
+async fn prescription_get_encrypted_symmetric_key(
+    id: String,
+    encryption_public_key: Vec<u8>
+) -> Result<String, String> {
+    let caller = &caller();
+
+    let prescription = match DB.with(|db| {
+        let db = &db.borrow();
+        if let Err(err) = UsersService::find_by_id(caller, db, caller) {
+            return Err(err);
+        }
+
+        let prescription = match PrescriptionsService::find_by_id(&id, db, caller) {
+            Ok(p) => p,
+            Err(err) => return Err(err),
+        };
+        
+        if prescription.doctor != *caller && prescription.patient != *caller {
+            if !PrescriptionsService::has_access(db, &id, caller) {
+                return Err("Forbidden".to_string());
+            }
+        }
+
+        Ok(prescription)
+    }) {
+        Err(msg) => return Err(msg),
+        Ok(pres) => pres
+    };
+
+    STATE.with(move |state| {
+        PrescriptionsService::get_encrypted_symmetric_key(
+            prescription.hash.clone(),
+            encryption_public_key,
+            state.borrow().vetkd.clone()
+        )
+    }).await
 }
 
 /*

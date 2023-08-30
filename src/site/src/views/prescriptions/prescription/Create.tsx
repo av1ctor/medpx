@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Grid, Space, Textarea, Flex, Modal, Stepper } from "@mantine/core";
+import { Button, Container, Grid, Space, Textarea, Modal, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -26,7 +26,7 @@ const PrescriptionCreate = (props: Props) => {
     const {principal, aes_gcm} = useAuth();
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
-    const {create} = usePrescription();
+    const {create, update} = usePrescription();
     const {isMobile} = useBrowser()
     const [opened, { open, close }] = useDisclosure(false);
     const [previewItem, setPreviewItem] = useState<PrescriptionResponse|undefined>();
@@ -51,17 +51,29 @@ const PrescriptionCreate = (props: Props) => {
 
             const principal = userGetPrincipal(patient);
             
-            const rawKey = await aes_gcm.genRawKey('prescriptions', principal);
+            const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new ArrayBuffer(values.contents)));
+            
+            const prescription = await create({
+                patient: principal,
+                contents: [],
+                hash: hash,
+            });
+            
+            const rawKey = await aes_gcm.genRawKey(prescription);
             if('Err' in rawKey || !rawKey.Ok) {
-                throw new Error('Raw key generation failed');
+                throw new Error(`Raw key generation failed: ${rawKey.Err}`);
             }
             
             const contents = await aes_gcm.encrypt(values.contents, rawKey.Ok);
 
-            await create({
-                patient: principal,
-                contents,
-            });
+            await update(
+                prescription.id,
+                {
+                    patient: principal,
+                    contents: [contents],
+                    hash: hash
+                }
+            );
 
             props.onSuccess('Prescription created!');
         }
@@ -82,6 +94,7 @@ const PrescriptionCreate = (props: Props) => {
             created_at: BigInt(Date.now()) * 1000000n,
             doctor: principal,
             patient: userGetPrincipal(patient),
+            hash: [],
             contents: new TextEncoder().encode(form.values.contents),
         })
         open()

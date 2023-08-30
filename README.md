@@ -6,7 +6,7 @@ https://66ksk-6iaaa-aaaan-qd7qa-cai.icp0.io/
 ![logo](https://github.com/av1ctor/medpx/assets/35101441/8ef21ee1-563e-4c17-8d5c-26009b20812d)
 
 ## Introduction
-Medpx stores your medical prescriptions in eletronic form, stored on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
+Medpx stores your medical prescriptions in eletronic form, on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
 
 - Cryptography – leveraging the VetKeys technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
 - Shareable – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are members of the group to access your data

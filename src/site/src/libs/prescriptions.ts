@@ -11,6 +11,18 @@ export const prescriptionCreate = async (
     return res.Ok; 
 };
 
+export const prescriptionUpdate = async (
+    main: Main,
+    id: string,
+    req: PrescriptionRequest
+): Promise<PrescriptionResponse> => {
+    const res = await main.prescription_update(id, req);
+    if('Err' in res) {
+        throw new Error(res.Err);
+    }
+    return res.Ok; 
+};
+
 export const prescriptionDelete = async (
     main: Main,
     id: string

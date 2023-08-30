@@ -1,12 +1,13 @@
 import { UseInfiniteQueryResult, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "react-query";
 import { PrescriptionRequest, PrescriptionResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
-import { userFindPrescriptions, userGetPrincipal, userIsKind } from "../libs/users";
-import { prescriptionCreate, prescriptionDelete, prescriptionFindById } from "../libs/prescriptions";
+import { userFindPrescriptions, userGetPrincipal } from "../libs/users";
+import { prescriptionCreate, prescriptionDelete, prescriptionFindById, prescriptionUpdate } from "../libs/prescriptions";
 import { useAuth } from "./auth";
 
 interface PrescriptionMethods {
     create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
+    update: (id: string, req: PrescriptionRequest) => Promise<PrescriptionResponse>;
     remove: (id: string) => Promise<void>;
 }
 
@@ -32,6 +33,24 @@ export const usePrescription = (
         return createMut.mutateAsync({req});
     };
 
+    const updateMut = useMutation(
+        async (options: {id: string, req: PrescriptionRequest}) => {
+            return prescriptionUpdate(main, options.id, options.req);
+        },
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['prescriptions']);
+            }   
+        }
+    );
+
+    const update = (
+        id: string,
+        req: PrescriptionRequest
+    ): Promise<PrescriptionResponse> => {
+        return updateMut.mutateAsync({id, req});
+    };
+
     const deleteMut = useMutation(
         async (options: {id: string}) => {
             return prescriptionDelete(main, options.id);
@@ -51,6 +70,7 @@ export const usePrescription = (
 
     return {
         create,
+        update,
         remove,
     }
 };

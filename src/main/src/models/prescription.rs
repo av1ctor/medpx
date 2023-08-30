@@ -10,7 +10,8 @@ pub struct Prescription {
     pub id: PrescriptionId,
     pub doctor: UserId,
     pub patient: UserId,
-    pub contents: Vec<u8>,
+    pub hash: Vec<u8>,
+    pub contents: Option<Vec<u8>>,
     pub created_at: u64,
     pub created_by: Principal,
     pub deleted_at: Option<u64>,
@@ -20,7 +21,8 @@ pub struct Prescription {
 #[derive(CandidType, Clone, Deserialize)]
 pub struct PrescriptionRequest {
     pub patient: UserId,
-    pub contents: Vec<u8>,
+    pub hash: Vec<u8>,
+    pub contents: Option<Vec<u8>>,
 }
 
 #[derive(CandidType, Clone)]
@@ -28,6 +30,7 @@ pub struct PrescriptionResponse {
     id: PrescriptionId,
     doctor: UserId,
     patient: UserId,
+    hash: Vec<u8>,
     contents: Vec<u8>,
     created_at: u64,
 }
@@ -42,6 +45,7 @@ impl Prescription {
             id: id.clone(),
             doctor: caller.clone(), 
             patient: e.patient, 
+            hash: e.hash.clone(),
             contents: e.contents.clone(), 
             created_at: ic_cdk::api::time(), 
             created_by: caller.clone(),
@@ -59,7 +63,8 @@ impl From<Prescription> for PrescriptionResponse {
             id: e.id,
             doctor: e.doctor, 
             patient: e.patient, 
-            contents: e.contents, 
+            hash: e.hash,
+            contents: e.contents.unwrap_or_default(), 
             created_at: e.created_at,
         }
     }

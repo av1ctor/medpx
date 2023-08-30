@@ -1,6 +1,6 @@
 import * as vetkd from "ic-vetkd-utils";
 import { Principal } from "@dfinity/principal";
-import { _SERVICE as Main } from "../../../declarations/main/main.did";
+import { _SERVICE as Main, PrescriptionResponse } from "../../../declarations/main/main.did";
 import { Result } from "../interfaces/result";
 
 export class AES_GCM {
@@ -12,11 +12,10 @@ export class AES_GCM {
     }
 
     async init(
-        derivationPath: string
     ): Promise<Result<null, string>> {
         await vetkd.default();
         
-        const res = await this.main.user_get_public_key(new TextEncoder().encode(derivationPath));
+        const res = await this.main.prescription_get_public_key();
         if('Err' in res) {
             return res;
         }
@@ -27,15 +26,13 @@ export class AES_GCM {
     }
 
     async genRawKey(
-        derivationPath: string,
-        derivationId: Principal
+        prescription: PrescriptionResponse
     ): Promise<Result<Uint8Array, string>> {
         
         const seed = window.crypto.getRandomValues(new Uint8Array(32));
         const tsk = new vetkd.TransportSecretKey(seed);
-        const res = await this.main.user_get_encrypted_symmetric_key(
-            new TextEncoder().encode(derivationPath), 
-            derivationId.toUint8Array(),
+        const res = await this.main.prescription_get_encrypted_symmetric_key(
+            prescription.id,
             tsk.public_key()
         );
         if('Err' in res) {
@@ -48,7 +45,7 @@ export class AES_GCM {
             const rawKey = tsk.decrypt_and_hash(
                 ek_bytes,
                 this.pk_bytes,
-                derivationId.toUint8Array(),
+                prescription.hash as Uint8Array,
                 32,
                 new TextEncoder().encode("aes-256-gcm")
             );

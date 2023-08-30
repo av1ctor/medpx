@@ -1,15 +1,14 @@
-import React, { ReactElement, useEffect, useMemo } from "react";
+import React, { ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import { Anchor, Badge, Center, Container, Divider, Grid, Skeleton, Space, Text } from "@mantine/core";
 import QRCode from "react-qr-code";
+import { Link } from "react-router-dom";
 import { PrescriptionResponse } from "../../../../../declarations/main/main.did";
 import { useUserFindById } from "../../../hooks/users";
 import { config } from "../../../config";
-import { useDecrypt } from "../../../hooks/crypto";
-import { useUI } from "../../../hooks/ui";
 import { userGetDoctor } from "../../../libs/users";
 import { UserAvatar } from "../../../components/UserAvatar";
 import { principalToString } from "../../../libs/icp";
-import { Link } from "react-router-dom";
+import { useAuth } from "../../../hooks/auth";
 
 interface Props {
     item: PrescriptionResponse;
@@ -17,22 +16,42 @@ interface Props {
 }
 
 const PrescriptionView = (props: Props) => {
-    const {showError} = useUI()
+    const {aes_gcm} = useAuth();
     const doctorq = useUserFindById(props.item.doctor);
     const patientq = useUserFindById(props.item.patient);
-    
-    const dec = useDecrypt(
-        (props.item?.contents as Uint8Array) || new Uint8Array(), 
-        props.item.patient, 
-        Number(props.isEncrypted)
-    );
+    const [text, setText] = useState<string|undefined>();
+    const [err, setErr] = useState<string|undefined>();
+        
+    const decrypt = useCallback(async () => {
+        const contents = props.item.contents as Uint8Array;
 
-    useEffect(() => {
-        if(dec.Err) {
-            showError(dec.Err);
+        if(!props.isEncrypted) {
+            setText(new TextDecoder().decode(contents));
+            return;
         }
-    }, [dec.Err]);
+
+        if(!aes_gcm) {
+            return;
+        }
     
+        const rawKey = await aes_gcm.genRawKey(props.item);
+        if('Err' in rawKey || !rawKey.Ok) {
+            setErr('Raw key generation failed');
+            return;
+        }
+        
+        try {
+            setText(await aes_gcm.decrypt(contents, rawKey.Ok));
+        }
+        catch(e: any) {
+            setErr(e.message || "Call to AES GCM decrypt failed");
+        }
+    }, [aes_gcm]);
+    
+    useEffect(() => {
+        decrypt();
+    }, [props.item]);
+
     const {item} = props;
 
     const url = `${config.APP_URL}/#/p/${item.id}`;
@@ -83,15 +102,21 @@ const PrescriptionView = (props: Props) => {
 
                 <div className="prescription-contents">
                     <Text><u>Prescription</u></Text>
-                    {dec.Ok?
+                    
+                    {err?
                         <div>
-                            {dec.Ok}
+                            Error: {err}
                         </div>
-                    :
-                        <div>
-                            {rowsSkeleton}
-                            <Skeleton h="1rem" w="100%" />
-                        </div>
+                    :   
+                        text?
+                            <div>
+                                {text}
+                            </div>
+                        :
+                            <div>
+                                {rowsSkeleton}
+                                <Skeleton h="1rem" w="100%" />
+                            </div>
                     }
                 </div>
 
@@ -110,7 +135,7 @@ const PrescriptionView = (props: Props) => {
                         <Grid.Col md={9} sm={12}>
                             <Text size="sm">
                                 This prescription can be verified at <Anchor href={url} target="_blank">{url}</Anchor><br/>
-                                Digitally created and signed by <b>{doctorq.data?.name}</b>, license <b>{doctor?.license_num}</b>, at {new Date(Number(item.created_at / 1000000n)).toISOString()}<br/>
+                                Digitally created and signed by <b>{doctorq.data?.name}</b>, license <b>{doctor?.license_num}</b>, at <b>{new Date(Number(item.created_at / 1000000n)).toISOString()}</b>, with hash <small><b>{Buffer.from(item.hash).toString('hex')}</b></small><br/>
                                 <img src="/medpx-logo.svg" />
                             </Text>
                         </Grid.Col>

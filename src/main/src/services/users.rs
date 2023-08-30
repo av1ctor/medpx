@@ -3,7 +3,6 @@ use crate::db::DB;
 use crate::db::traits::crud::{Crud, Pagination, CrudSubscribable};
 use crate::models::prescription::Prescription;
 use crate::models::user::{User, UserId};
-use crate::utils::vetkd::VetKdUtil;
 
 pub struct UsersService {}
 
@@ -104,26 +103,5 @@ impl UsersService {
         Ok(ids.iter().map(|id| 
             db.prescriptions.borrow().get(id).clone()
         ).collect())
-    }
-
-    pub async fn get_public_key(
-        vetkd: VetKdUtil,
-        derivation_path: Vec<u8>
-    ) -> Result<String, String> {
-        vetkd.get_public_key(vec![derivation_path])
-            .await
-    }
-
-    pub async fn get_encrypted_symmetric_key(
-        vetkd: VetKdUtil,
-        derivation_path: Vec<u8>,
-        derivation_id: Vec<u8>,
-        encryption_public_key: Vec<u8>
-    ) -> Result<String, String> {
-        vetkd.get_encrypted_symmetric_key(
-            vec![derivation_path], 
-            derivation_id,
-            encryption_public_key
-        ).await
     }
 }

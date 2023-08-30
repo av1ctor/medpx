@@ -4,6 +4,7 @@ use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
+use crate::utils::vetkd::VetKdUtil;
 
 pub struct PrescriptionsService {}
 
@@ -94,6 +95,27 @@ impl PrescriptionsService {
         }
 
         Ok(prescription.clone())
+    }
+
+    const DERIVATION_PATH: &[u8; 13] = b"prescriptions";
+
+    pub async fn get_public_key(
+        vetkd: VetKdUtil
+    ) -> Result<String, String> {
+        vetkd.get_public_key(vec![Self::DERIVATION_PATH.to_vec()])
+            .await
+    }
+
+    pub async fn get_encrypted_symmetric_key(
+        hash: Vec<u8>,
+        encryption_public_key: Vec<u8>,
+        vetkd: VetKdUtil
+    ) -> Result<String, String> {
+        vetkd.get_encrypted_symmetric_key(
+            vec![Self::DERIVATION_PATH.to_vec()], 
+            hash,
+            encryption_public_key
+        ).await
     }
 
     pub fn has_access(
