@@ -99,7 +99,7 @@ const Landing = () => {
                         }
                     >
                         <List.Item className={classes.item}>
-                            <b>Cryptography</b> – leveraging the <Link to="https://internetcomputer.org/blog/features/vetkey-primer" target="blank"><b>VetKeys</b></Link> technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
+                            <b>Encrypted</b> – leveraging the <Link to="https://internetcomputer.org/blog/features/vetkey-primer" target="blank"><b>VetKeys</b></Link> technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
                         </List.Item>
                         <List.Item className={classes.item}>
                             <b>Shareable</b> – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are members of the group to access your data 
