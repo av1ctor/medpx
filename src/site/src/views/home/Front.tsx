@@ -13,9 +13,7 @@ export const Front = () => {
 
     return (
         <Card withBorder radius="md" p="xl" className="main-card card">
-            <SimpleGrid cols={2} spacing={0}>
-                <UserMenu />
-            </SimpleGrid>
+            <UserMenu />
         </Card>
     );
 }

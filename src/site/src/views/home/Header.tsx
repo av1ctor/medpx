@@ -77,9 +77,7 @@ const AppHeader = (props: Props) => {
                                 </HoverCard.Target>
 
                                 <HoverCard.Dropdown sx={{ overflow: 'hidden' }}>
-                                    <SimpleGrid cols={2} spacing={0}>
-                                        <UserMenu />
-                                    </SimpleGrid>
+                                    <UserMenu />
                                 </HoverCard.Dropdown>
                             </HoverCard>
                         }

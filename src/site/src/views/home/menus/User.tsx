@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, UnstyledButton, createStyles, rem, Text, ThemeIcon } from '@mantine/core';
+import { Group, UnstyledButton, createStyles, rem, Text, ThemeIcon, Grid } from '@mantine/core';
 import { IconUser, IconKey, IconClipboardList, IconUsersGroup } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
@@ -56,26 +56,31 @@ interface Props {
 export const UserMenu = (props: Props) => {
     const { classes, theme } = useStyles();
 
-    return data.map((item) => (
-        <UnstyledButton 
-            className={classes.subLink} 
-            key={item.title}
-        >
-            <Link to={item.to} className={classes.url} onClick={props.onClick}>
-                <Group noWrap align="flex-start">
-                    <ThemeIcon size={34} variant="default" radius="md">
-                        <item.icon size={rem(22)} color={theme.fn.primaryColor()} />
-                    </ThemeIcon>
-                    <div>
-                        <Text size="sm" fw={500}>
-                            {item.title}
-                        </Text>
-                        <Text size="xs" color="dimmed">
-                            {item.description}
-                        </Text>
-                    </div>
-                </Group>
-            </Link>
-        </UnstyledButton>
-    ));
+    return (
+        <Grid>
+            {data.map((item) => 
+                <Grid.Col md={6} key={item.title}>
+                    <UnstyledButton 
+                        className={classes.subLink} 
+                    >
+                        <Link to={item.to} className={classes.url} onClick={props.onClick}>
+                            <Group noWrap align="flex-start">
+                                <ThemeIcon size={34} variant="default" radius="md">
+                                    <item.icon size={rem(22)} color={theme.fn.primaryColor()} />
+                                </ThemeIcon>
+                                <div>
+                                    <Text size="sm" fw={500}>
+                                        {item.title}
+                                    </Text>
+                                    <Text size="xs" color="dimmed">
+                                        {item.description}
+                                    </Text>
+                                </div>
+                            </Group>
+                        </Link>
+                    </UnstyledButton>
+                </Grid.Col>
+            )}
+        </Grid>
+    );
 };

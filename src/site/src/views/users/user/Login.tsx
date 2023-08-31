@@ -1,10 +1,29 @@
 import React, { useCallback, useEffect } from "react";
-import { Button, Center, Stack, Title } from "@mantine/core";
+import { Text, Center, Group, Stack, ThemeIcon, Title, UnstyledButton, rem, createStyles, Container, Grid } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
 import { useAuth } from "../../../../../site/src/hooks/auth";
 import { useUI } from "../../../../../site/src/hooks/ui";
 import { ICProviderType } from "../../../../../site/src/interfaces/icprovider";
 import { useBrowser } from "../../../hooks/browser";
+
+const useStyles = createStyles((theme) => ({
+    subLink: {
+        width: '100%',
+        padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+        borderRadius: theme.radius.md,
+    
+        ...theme.fn.hover({
+            backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0],
+        }),
+    
+        '&:active': theme.activeStyles,
+    },
+
+    url: {
+        color: 'inherit',
+        textDecoration: 'none',
+    },
+}));
 
 interface Props {
     authenticateOnly: boolean;
@@ -15,6 +34,7 @@ const Login = (props: Props) => {
     const {login, isLogged} = useAuth();
     const {showError, showSuccess, toggleLoading} = useUI();
     const {returnToLastPage} = useBrowser();
+    const { classes, theme } = useStyles();
 
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
@@ -57,6 +77,27 @@ const Login = (props: Props) => {
         }
     }, [isLogged]);
 
+    const data = [
+        {
+            logo: 'ii.svg',
+            w: 64,
+            h: undefined,
+            color: 'yellow',
+            title: 'Internet Identity',
+            description: 'Authenticate with Internet Identity',
+            onClick: handleAuthenticateII
+        },
+        {
+            logo: 'plug.svg',
+            w: undefined,
+            h: 64,
+            color: 'blue',
+            title: 'Plug Wallet',
+            description: 'Authenticate with Plug Wallet',
+            onClick: handleAuthenticatePlug
+        },
+    ];
+
     return (
         <Stack>
             <Center>
@@ -64,33 +105,30 @@ const Login = (props: Props) => {
                     <FormattedMessage defaultMessage="Please choose a provider"/>
                 </Title>
             </Center>
-            <Center>
-                <Button 
-                    color="blue"
-                    leftIcon={<img src="providers/ii.svg" height="24" />}
-                    onClick={handleAuthenticateII}
-                >
-                    Internet Identity
-                </Button>
-            </Center>
-            <Center>
-                <Button 
-                    color="pink"
-                    leftIcon={<img src="providers/plug.svg" />}
-                    onClick={handleAuthenticatePlug}
-                >
-                    Plug Wallet
-                </Button>
-            </Center>
-            {/*<Center>
-                <Button 
-                    color="cyan"
-                    leftIcon={<img src="providers/stoic.png" height="24" />}
-                    onClick={handleAuthenticateStoic}
-                >
-                    Stoic Wallet
-                </Button>
-            </Center>*/}
+            <Grid>
+                {data.map((item) => 
+                    <Grid.Col md={6} key={item.title}>
+                        <UnstyledButton 
+                            className={classes.subLink} 
+                            onClick={item.onClick}
+                        >
+                            <Group noWrap align="flex-start">
+                                <ThemeIcon size={64} variant="filled" color={item.color}  radius="md">
+                                    <img src={`/providers/${item.logo}`} height={item.h} width={item.w} />
+                                </ThemeIcon>
+                                <div>
+                                    <Text size="sm" fw={500}>
+                                        {item.title}
+                                    </Text>
+                                    <Text size="xs" color="dimmed">
+                                        {item.description}
+                                    </Text>
+                                </div>
+                            </Group>
+                        </UnstyledButton>
+                    </Grid.Col>
+                )}                
+            </Grid>
         </Stack>
     );
 };
