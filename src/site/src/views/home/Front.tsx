@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuth } from "../../hooks/auth";
 import { UserMenu } from "./menus/User";
-import { Card, SimpleGrid } from "@mantine/core";
+import { Card } from "@mantine/core";
 import Landing from "./Landing";
 
 export const Front = () => {

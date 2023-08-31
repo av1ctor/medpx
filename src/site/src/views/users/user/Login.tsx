@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { Text, Center, Group, Stack, ThemeIcon, Title, UnstyledButton, rem, createStyles, Container, Grid } from "@mantine/core";
+import { Text, Center, Group, Stack, ThemeIcon, Title, UnstyledButton, createStyles, Grid } from "@mantine/core";
 import { FormattedMessage } from "react-intl";
 import { useAuth } from "../../../../../site/src/hooks/auth";
 import { useUI } from "../../../../../site/src/hooks/ui";
@@ -17,11 +17,6 @@ const useStyles = createStyles((theme) => ({
         }),
     
         '&:active': theme.activeStyles,
-    },
-
-    url: {
-        color: 'inherit',
-        textDecoration: 'none',
     },
 }));
 

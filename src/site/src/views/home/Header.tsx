@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, SimpleGrid, UnstyledButton, createStyles, rem } from '@mantine/core';
+import { Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronDown, IconHome2, IconUser } from '@tabler/icons-react';
 import { AuthMenu } from './menus/Auth';
