@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem } from '@mantine/core';
+import { ActionIcon, Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem, useMantineColorScheme } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconHome2, IconUser } from '@tabler/icons-react';
+import { IconChevronDown, IconHome2, IconMoonStars, IconSun, IconUser } from '@tabler/icons-react';
 import { AuthMenu } from './menus/Auth';
 import { UserMenu } from './menus/User';
 import { useAuth } from '../../hooks/auth';
@@ -51,6 +51,8 @@ const AppHeader = (props: Props) => {
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
     const { classes, theme } = useStyles();
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+    const dark = colorScheme === 'dark';
 
     return (
         <Box pb={120}>
@@ -84,6 +86,14 @@ const AppHeader = (props: Props) => {
                     </Group>
 
                     <Group className={classes.hiddenMobile}>
+                        <ActionIcon
+                            variant="outline"
+                            color={dark ? 'yellow' : 'blue'}
+                            onClick={() => toggleColorScheme()}
+                            title="Toggle color scheme"
+                            >
+                            {dark ? <IconSun size="1.1rem" /> : <IconMoonStars size="1.1rem" />}
+                        </ActionIcon>
                         <AuthMenu />
                     </Group>
                     

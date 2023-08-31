@@ -124,7 +124,7 @@ const PrescriptionView = (props: Props) => {
 
                 <Divider />
 
-                <div style={{ background: 'white', padding: '16px' }}>
+                <div style={{ padding: '16px' }}>
                     <Grid>
                         <Grid.Col md={3} sm={12}>
                             <QRCode 
@@ -135,7 +135,8 @@ const PrescriptionView = (props: Props) => {
                         <Grid.Col md={9} sm={12}>
                             <Text size="sm">
                                 This prescription can be verified at <Anchor href={url} target="_blank">{url}</Anchor><br/>
-                                Digitally created and signed by <b>{doctorq.data?.name}</b>, license <b>{doctor?.license_num}</b>, at <b>{new Date(Number(item.created_at / 1000000n)).toISOString()}</b>, with hash <small><b>{Buffer.from(item.hash).toString('hex')}</b></small><br/>
+                                Digitally created and signed by <b>{doctorq.data?.name}</b>, license <b>{doctor?.license_num}</b>, at <b>{new Date(Number(item.created_at / 1000000n)).toISOString()}</b>,<br/>
+                                Hash: <small><b>{Buffer.from(item.hash).toString('hex')}</b></small><br/>
                                 <img src="/medpx-logo.svg" />
                             </Text>
                         </Grid.Col>
