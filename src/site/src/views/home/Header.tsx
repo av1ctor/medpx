@@ -46,13 +46,27 @@ const useStyles = createStyles((theme) => ({
 interface Props {
 }
 
+const ToggleThemeButton = () => {
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+    const dark = colorScheme === 'dark';
+
+    return (
+        <ActionIcon
+            variant="outline"
+            color={dark ? 'yellow' : 'blue'}
+            onClick={() => toggleColorScheme()}
+            title="Toggle color scheme"
+            >
+            {dark ? <IconSun size="1.1rem" /> : <IconMoonStars size="1.1rem" />}
+        </ActionIcon>
+    );
+};
+
 const AppHeader = (props: Props) => {
     const {isLogged} = useAuth();
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
     const { classes, theme } = useStyles();
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-    const dark = colorScheme === 'dark';
 
     return (
         <Box pb={120}>
@@ -86,14 +100,7 @@ const AppHeader = (props: Props) => {
                     </Group>
 
                     <Group className={classes.hiddenMobile}>
-                        <ActionIcon
-                            variant="outline"
-                            color={dark ? 'yellow' : 'blue'}
-                            onClick={() => toggleColorScheme()}
-                            title="Toggle color scheme"
-                            >
-                            {dark ? <IconSun size="1.1rem" /> : <IconMoonStars size="1.1rem" />}
-                        </ActionIcon>
+                        <ToggleThemeButton />
                         <AuthMenu />
                     </Group>
                     
@@ -136,6 +143,9 @@ const AppHeader = (props: Props) => {
                     <Divider my="sm" color={theme.colorScheme === 'dark' ? 'dark.5' : 'gray.1'} />
         
                     <Group className={classes.hiddenDesktop} position="center" grow pb="xl" px="md">
+                        <div>
+                            <ToggleThemeButton />
+                        </div>
                         <AuthMenu onClick={closeDrawer} />
                     </Group>
                 </ScrollArea>
