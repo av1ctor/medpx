@@ -173,6 +173,7 @@ const Signup = (props: Props) => {
             <Stepper.Step 
                 label="Authentication" 
                 description="Authenticate with your provider"
+                allowStepSelect={false}
             >
                 <Login 
                     authenticateOnly={true}
@@ -182,6 +183,7 @@ const Signup = (props: Props) => {
             <Stepper.Step 
                 label="Registration" 
                 description="Create a new account"
+                allowStepSelect={false}
             >
                 <Space h="md" />
                 <Container>
