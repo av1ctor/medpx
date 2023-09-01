@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionIcon, Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem, useMantineColorScheme } from '@mantine/core';
+import { ActionIcon, Avatar, Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem, useMantineColorScheme, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronDown, IconHome2, IconMoonStars, IconSun, IconUser } from '@tabler/icons-react';
 import { AuthMenu } from './menus/Auth';
@@ -63,7 +63,7 @@ const ToggleThemeButton = () => {
 };
 
 const AppHeader = (props: Props) => {
-    const {isLogged} = useAuth();
+    const {isLogged, user} = useAuth();
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
     const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
     const { classes, theme } = useStyles();
@@ -79,14 +79,15 @@ const AppHeader = (props: Props) => {
                             <IconHome2 size="1rem" />&nbsp;Home
                         </a>
                         
-                        {isLogged && 
+                        {user && 
                             <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
                                 <HoverCard.Target>
                                     <a href="#" className={classes.link}>
                                         <Center inline>
-                                            <Box component="span" mr={5}>
-                                                <IconUser size="1rem" />&nbsp;User
-                                            </Box>
+                                            <Avatar color="cyan" radius="xl" size="sm">
+                                                {user.name.substr(0, 1).toUpperCase()}
+                                            </Avatar>
+                                            &nbsp;<Text fw={500} size="xs">{user.name}</Text>&nbsp;
                                             <IconChevronDown size={16} color={theme.fn.primaryColor()} />
                                         </Center>
                                     </a>
@@ -124,13 +125,14 @@ const AppHeader = (props: Props) => {
                         <IconHome2 size="1rem" />&nbsp;Home
                     </a>
                     
-                    {isLogged && 
+                    {user && 
                         <>
                             <UnstyledButton className={classes.link} onClick={toggleLinks}>
                                 <Center inline>
-                                    <Box component="span" mr={5}>
-                                        <IconUser size="1rem" />&nbsp;User
-                                    </Box>
+                                    <Avatar color="cyan" radius="xl" size="sm">
+                                        {user.name.substr(0, 1).toUpperCase()}
+                                    </Avatar>
+                                    &nbsp;<Text fw={500} size="xs">{user.name}</Text>&nbsp;
                                     <IconChevronDown size={16} color={theme.fn.primaryColor()} />
                                 </Center>
                             </UnstyledButton>

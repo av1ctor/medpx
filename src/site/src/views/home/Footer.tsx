@@ -1,5 +1,5 @@
 import React from 'react';
-import { Anchor, Center, Container, Divider, Grid, Space, Stack } from '@mantine/core';
+import { Anchor, Center, Container, Divider, Grid, Space, Stack, Text } from '@mantine/core';
 import { IconBrandGithubFilled, IconBrandTwitterFilled } from '@tabler/icons-react';
 import { FormattedMessage } from 'react-intl';
 
@@ -67,6 +67,9 @@ const AppFooter = (props: Props) => {
             <Space />
             <Center>
                 © 2023-{year} medpx
+            </Center>
+            <Center>
+                <Text color='pink' size="xs">Notice: this is a demo site and shouldn't not be used to store real/private data</Text>
             </Center>
         </Container>
     );

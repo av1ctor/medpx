@@ -29,7 +29,7 @@ const Login = (props: Props) => {
     const {login, isLogged} = useAuth();
     const {showError, showSuccess, toggleLoading} = useUI();
     const {returnToLastPage} = useBrowser();
-    const { classes, theme } = useStyles();
+    const { classes } = useStyles();
 
     const handleLogin = useCallback(async (providerType: ICProviderType) => {
         try {
@@ -94,7 +94,7 @@ const Login = (props: Props) => {
     ];
 
     return (
-        <Stack>
+        <Stack mih="20rem">
             <Center>
                 <Title order={4}>
                     <FormattedMessage defaultMessage="Please choose a provider"/>
