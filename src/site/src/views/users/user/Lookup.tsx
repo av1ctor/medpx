@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Button, Grid, Select, Stack, TextInput, Text, Box } from "@mantine/core";
+import { Button, Grid, Select, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { userFindByKey, userGetName, userGetPrincipal } from "../../../libs/users";
+import { userFindByKey } from "../../../libs/users";
 import { keyGetKindIndex, keyGetKindUniqueness, keyStringTokind, kinds } from "../../../libs/keys";
 import { Uniqueness } from "../../../libs/keys";
 import { useActors } from "../../../hooks/actors";
@@ -93,7 +93,9 @@ export const UserLookup = (props: Props) => {
                         />
                     </Grid.Col>
                 </Grid>
-                <UserAvatar user={user} />
+                {user && 
+                    <UserAvatar user={user} />
+                }
                 <Button
                     variant="filled" 
                     color="green"

@@ -18,6 +18,7 @@ use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescripti
 use models::user::{UserResponse, UserId, UserRequest, User};
 use services::groups::GroupsService;
 use services::{users::UsersService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
+use utils::random::Xoshiro256ss;
 use utils::{serdeser::{serialize, deserialize}, vetkd::VetKdUtil};
 
 const STATE_VERSION: f32 = 0.1;
@@ -25,8 +26,8 @@ const STATE_VERSION: f32 = 0.1;
 #[derive(Default, CandidType, Deserialize)]
 struct State {
     owner: Option<Principal>,
-    counter: u128,
     vetkd: VetKdUtil,
+    rand: Xoshiro256ss,
 }
 
 thread_local! {
@@ -36,13 +37,11 @@ thread_local! {
 
 fn _gen_id(
 ) -> String {
-    let counter = STATE.with(|s| {
-        let cnt = &mut s.borrow_mut().counter;
-        *cnt += 1;
-        cnt.clone()
+    let (lsu64, msu64) = STATE.with(|rc| {
+        let mut state = rc.borrow_mut();
+        (state.rand.next(), state.rand.next())
     });
-
-    ulid::Ulid::from_parts(ic_cdk::api::time() / 1000000, counter).to_string()
+    ulid::Ulid::from_parts(ic_cdk::api::time() / 1000000, (msu64 as u128) << 64 | (lsu64 as u128)).to_string()
 }
 
 #[derive(CandidType, Deserialize)]
@@ -61,6 +60,7 @@ fn init(
         let mut state = rc.borrow_mut();
         state.owner = Some(caller());
         state.vetkd = VetKdUtil::new(arg.vetkd_canister_id, arg.key_name);
+        state.rand = Xoshiro256ss::new(ic_cdk::api::time());
     });
 }
 
