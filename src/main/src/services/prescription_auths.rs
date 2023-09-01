@@ -43,15 +43,22 @@ impl PrescriptionAuthsService {
 
     pub fn update(
         id: &PrescriptionAuthId,
-        auth: &PrescriptionAuth,
+        req: &PrescriptionAuth,
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
+        let mut auths = db.prescription_auths.borrow_mut();
+
+        let auth = match auths.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
         if *caller != auth.created_by {
             return Err("Forbidden".to_string());
         }
 
-        db.prescription_auths.borrow_mut().update_and_notify(id.to_owned(), auth.clone())
+        auths.update_and_notify(id.to_owned(), req.clone())
     }
 
     pub fn delete(

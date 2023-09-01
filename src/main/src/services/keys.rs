@@ -21,15 +21,22 @@ impl KeysService {
 
     pub fn update(
         id: &KeyId,
-        key: &Key,
+        req: &Key,
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
+        let mut keys = db.keys.borrow_mut();
+
+        let key = match keys.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
         if *caller != key.created_by {
             return Err("Forbidden".to_string());
         }
 
-        db.keys.borrow_mut().update_and_notify(id.to_owned(), key.clone())
+        keys.update_and_notify(id.to_owned(), req.clone())
     }
 
     pub fn delete(

@@ -45,16 +45,27 @@ impl PrescriptionsService {
 
     pub fn update(
         id: &PrescriptionId,
-        prescription: &Prescription,
+        req: &Prescription,
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
+        let mut prescriptions = db.prescriptions.borrow_mut();
+
+        let prescription = match prescriptions.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+        
         if *caller != prescription.created_by {
             return Err("Forbidden".to_string());
         }
 
-        db.prescriptions.borrow_mut()
-            .update_and_notify(id.to_owned(), prescription.clone())
+        if prescription.contents.is_some() {
+            return Err("A prescription can't be updated after the contents are set".to_string());
+        }
+
+        prescriptions
+            .update_and_notify(id.to_owned(), req.clone())
     }
 
     pub fn delete(

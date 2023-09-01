@@ -29,15 +29,22 @@ impl GroupsService {
 
     pub fn update(
         id: &GroupId,
-        group: &Group,
+        req: &Group,
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
+        let mut groups = db.groups.borrow_mut();
+
+        let group = match groups.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
         if *caller != group.created_by {
             return Err("Forbidden".to_string());
         }
 
-        db.groups.borrow_mut().update_and_notify(id.to_owned(), group.clone())
+        groups.update_and_notify(id.to_owned(), req.clone())
     }
 
     pub fn delete(

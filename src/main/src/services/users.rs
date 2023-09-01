@@ -21,15 +21,22 @@ impl UsersService {
 
     pub fn update(
         id: &UserId,
-        user: &User,
+        req: &User,
         db: &mut DB,
         caller: &Principal
     ) -> Result<(), String> {
+        let mut users = db.users.borrow_mut();
+
+        let user = match users.find_by_id(id) {
+            None => return Err("Not found".to_string()),
+            Some(e) => e
+        };
+
         if *id != user.created_by || *caller != user.created_by {
             return Err("Forbidden".to_string());
         }
 
-        db.users.borrow_mut().update_and_notify(id.to_owned(), user.clone())
+        users.update_and_notify(id.to_owned(), req.clone())
     }
 
     pub fn delete(
