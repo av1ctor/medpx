@@ -35,7 +35,8 @@ $ dfx deploy
 - [x] A shared prescription can have a time limit
 - [x] Users can create keys (like e-mail, phone number, id number, etc) to be found by other users more easily
 - [x] A qr-code should be generated to allow patients to share their prescriptions with third-parties (if they are authorized)
-- [ ] A doctor, to create an account, should have a valid digital-certificate containing his/her doctor license number
+- [ ] A doctor, to create an account, should have a valid digital certificate containing his/her doctor license number
+- [ ] All prescriptions should be stored in XML format, signed by the doctor's digital certificate
 - [ ] A list of drugs should be available, so doctors could select them when creating a new prescription
 - [ ] Doctors should be allowed to use and customize prescription templates
 - [ ] When a prescription is created, the patient should receive a e-mail and/or SMS with a link to access it
