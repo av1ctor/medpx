@@ -36,7 +36,7 @@ const PrescriptionView = (props: Props) => {
     
         const rawKey = await aes_gcm.genRawKey(props.item);
         if('Err' in rawKey || !rawKey.Ok) {
-            setErr('Raw key generation failed');
+            setErr(rawKey.Err || 'Raw key generation failed');
             return;
         }
         
@@ -46,11 +46,11 @@ const PrescriptionView = (props: Props) => {
         catch(e: any) {
             setErr(e.message || "Call to AES GCM decrypt failed");
         }
-    }, [aes_gcm]);
+    }, [aes_gcm, props.item, props.isEncrypted]);
     
     useEffect(() => {
         decrypt();
-    }, [props.item]);
+    }, [decrypt]);
 
     const {item} = props;
 
