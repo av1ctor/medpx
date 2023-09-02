@@ -1,3 +1,5 @@
+extern crate sdb;
+
 pub mod models;
 pub mod db;
 pub mod utils;
@@ -5,7 +7,7 @@ pub mod services;
 
 use std::cell::RefCell;
 use candid::{Principal, CandidType};
-use db::traits::crud::Pagination;
+use sdb::crud::Pagination;
 use ic_cdk::api::stable;
 use ic_cdk::{caller, trap};
 use models::group::{GroupRequest, GroupResponse, Group, GroupId};

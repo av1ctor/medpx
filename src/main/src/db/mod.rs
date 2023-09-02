@@ -1,4 +1,3 @@
-pub mod traits;
 pub mod tables;
 pub mod migrations;
 
@@ -16,7 +15,7 @@ use self::tables::prescriptions::PrescriptionsTable;
 use self::tables::principal_groups_rel::PrincipalGroupsRelTable;
 use self::tables::principal_keys_rel::PrincipalKeysRelTable;
 use self::tables::users::UsersTable;
-use self::traits::table::{TableSerializable, TableDeserializable, TableSubscribable, Table};
+use sdb::table::{TableSerializable, TableDeserializable, TableSubscribable, Table};
 
 #[derive(Clone, Debug)]
 pub enum TableName {

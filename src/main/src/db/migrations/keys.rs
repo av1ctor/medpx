@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use candid::{CandidType, Principal, decode_args};
 use serde::Deserialize;
-use crate::{models::key::{KeyId, Key, KeyKind}, db::traits::table::TableData};
+use crate::{models::key::{KeyId, Key, KeyKind}, sdb::table::TableData};
 
 #[derive(CandidType, Clone, Deserialize)]
 struct KeyV0_1 {

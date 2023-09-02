@@ -1,0 +1,13 @@
+[package]
+name = "sdb"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+candid = "0.8"
+ic-cdk = "0.7"
+ic-cdk-macros = "0.7"
+serde = "1.0"

@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 use crate::db::TableName;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned, TableSubscriber, TableEvent, TableEventKind};
-use crate::db::traits::crud::{CrudSubscribable, Crud};
+use crate::sdb::table::{TableSerializable, TableDeserializable, TableData, Table, TableSubs, TableSubscribable, TableEventKey, TableSchema, TableVersioned, TableSubscriber, TableEvent, TableEventKind};
+use crate::sdb::crud::{CrudSubscribable, Crud};
 use crate::models::prescription_auth::{PrescriptionAuthId, PrescriptionAuth, PrescriptionAuthTarget};
 use super::prescription_auths_rel::PrescriptionAuthsRelTable;
 

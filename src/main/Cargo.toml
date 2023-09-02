@@ -14,3 +14,4 @@ ic-cdk-timers = "0.1" # Feel free to remove this dependency if you don't need ti
 serde = "1.0"
 ulid = {version = "1.0.0", features = [], default-features = false}
 hex = "0.4"
+sdb = {path = "../../sdb", version = "0.1.0"}

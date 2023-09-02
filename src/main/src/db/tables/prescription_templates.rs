@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use crate::db::TableName;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned};
-use crate::db::traits::crud::Crud;
+use crate::sdb::table::{TableSerializable, TableDeserializable, TableData, Table, TableSchema, TableVersioned};
+use crate::sdb::crud::Crud;
 use crate::models::prescription_template::{PrescriptionTemplateId, PrescriptionTemplate};
 
 pub struct PrescriptionTemplatesTable {

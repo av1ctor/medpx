@@ -1,6 +1,6 @@
 use candid::Principal;
 use crate::db::DB;
-use crate::db::traits::crud::{CrudSubscribable, Crud, Pagination};
+use crate::sdb::crud::{CrudSubscribable, Crud, Pagination};
 use crate::models::group::{Group, GroupId};
 use crate::models::user::UserId;
 

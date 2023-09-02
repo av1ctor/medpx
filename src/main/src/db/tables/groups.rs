@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use crate::db::TableName;
-use crate::db::traits::table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableData, TableSubs, Table, TableSchema, TableVersioned};
-use crate::db::traits::crud::{CrudSubscribable, Crud};
+use crate::sdb::table::{TableSerializable, TableSubscribable, TableDeserializable, TableEventKey, TableData, TableSubs, Table, TableSchema, TableVersioned};
+use crate::sdb::crud::{CrudSubscribable, Crud};
 use crate::models::group::{GroupId, Group};
 
 pub struct GroupsTable {

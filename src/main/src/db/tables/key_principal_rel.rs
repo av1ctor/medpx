@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use candid::Principal;
 use crate::db::TableName;
-use crate::db::traits::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
-use crate::db::traits::crud::Crud;
+use crate::sdb::table::{TableSerializable, TableDeserializable, TableEventKind, TableEventKey, TableSubscriber, TableData, Table, TableSchema, TableVersioned, TableEvent};
+use crate::sdb::crud::Crud;
 use crate::models::key::KeyId;
 
 pub struct KeyPrincipalRelTable {
