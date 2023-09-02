@@ -387,18 +387,7 @@ async fn prescription_get_encrypted_symmetric_key(
             return Err(err);
         }
 
-        let prescription = match PrescriptionsService::find_by_id(&id, db, caller) {
-            Ok(p) => p,
-            Err(err) => return Err(err),
-        };
-        
-        if prescription.doctor != *caller && prescription.patient != *caller {
-            if !PrescriptionsService::has_access(db, &id, caller) {
-                return Err("Forbidden".to_string());
-            }
-        }
-
-        Ok(prescription)
+        PrescriptionsService::find_by_id(&id, db, caller)
     }) {
         Err(msg) => return Err(msg),
         Ok(pres) => pres
