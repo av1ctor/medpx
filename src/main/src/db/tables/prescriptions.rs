@@ -15,7 +15,7 @@ impl Table<TableName, PrescriptionId, Prescription> for PrescriptionsTable {
     ) -> Self {
         Self {
             schema: TableSchema { 
-                version: 0.1,
+                version: 0.2,
                 name: TableName::Prescriptions, 
             },
             data: TableData(BTreeMap::new()),
@@ -51,7 +51,15 @@ impl Table<TableName, PrescriptionId, Prescription> for PrescriptionsTable {
 
 impl TableSerializable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 
-impl TableVersioned<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
+impl TableVersioned<TableName, PrescriptionId, Prescription> for PrescriptionsTable {
+    fn migrate(
+        &self,
+        from_version: f32,
+        buf: &[u8]
+    ) -> Result<TableData<PrescriptionId, Prescription>, String> {
+        crate::db::migrations::prescriptions::migrate(from_version, buf)
+    }
+}
 
 impl TableDeserializable<TableName, PrescriptionId, Prescription> for PrescriptionsTable {}
 

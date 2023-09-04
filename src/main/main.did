@@ -124,6 +124,7 @@ type GroupResponseResult = variant {
 type PrescriptionRequest = record {
     patient: principal;
     hash: vec nat8;
+    signature: vec nat8;
     contents: opt vec nat8;
 };
 
@@ -132,6 +133,7 @@ type PrescriptionResponse = record {
     doctor: principal;
     patient: principal;
     hash: vec nat8;
+    signature: vec nat8;
     contents: vec nat8;
     created_at: nat64;
 };

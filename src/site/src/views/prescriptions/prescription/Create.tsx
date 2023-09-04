@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import * as yup from 'yup';
 import { Button, Container, Grid, Space, Textarea, Modal, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
@@ -13,11 +13,45 @@ import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../../hooks/auth";
 import { UserLookup } from "../../users/user/Lookup";
 import { UserAvatar } from "../../../components/UserAvatar";
-import SmartCardSigner from "../../../components/SmartCardSigner/SmartCardSigner";
+import CertSigner from "../../../components/CertSigner/CertSigner";
 
 const schema = yup.object().shape({
     contents: yup.string().min(16).max(4096),
 });
+
+interface StepsControlProps {
+    active: number;
+    disabled?: boolean;
+    onPrev: () => void;
+    onNext: () => void;
+}
+
+const StepsControl = (props: StepsControlProps) => {
+    return (
+        <Grid>
+            <Grid.Col md={6} sm={12}>
+                <Button
+                    color="green"
+                    fullWidth
+                    disabled={props.active === 0}
+                    onClick={props.onPrev}
+                >
+                    Previous
+                </Button>
+            </Grid.Col>
+            <Grid.Col md={6} sm={12}>
+                <Button
+                    color="blue"
+                    fullWidth
+                    disabled={props.disabled}
+                    onClick={props.onNext}
+                >
+                    Next
+                </Button>
+            </Grid.Col>
+        </Grid>
+    );
+};
 
 interface Props {
     onSuccess: (msg: string) => void;
@@ -33,7 +67,8 @@ const PrescriptionCreate = (props: Props) => {
     const [previewItem, setPreviewItem] = useState<PrescriptionResponse|undefined>();
     const [patient, setPatient] = useState<UserResponse|undefined>();
     const [active, setActive] = useState(0);
-    const [hash, setHash] = useState<Uint8Array|undefined>();
+    const [hash, setHash] = useState<Uint8Array>(new Uint8Array());
+    const [signature, setSignature] = useState<Uint8Array|undefined>();
     
     const form = useForm({
         initialValues: {
@@ -42,6 +77,10 @@ const PrescriptionCreate = (props: Props) => {
     
         validate: yupResolver(schema),
     });
+
+    const handleSigned = useCallback((signature: Uint8Array) => {
+        setSignature(signature);
+    }, []);
 
     const handleCreate = useCallback(async (values: any) => {
         try {
@@ -52,7 +91,11 @@ const PrescriptionCreate = (props: Props) => {
             }
 
             if(!hash) {
-                throw Error("hash undefined");
+                throw Error("Content's hash undefined");
+            }
+
+            if(!signature) {
+                throw Error("Signature undefined");
             }
 
             const principal = userGetPrincipal(patient);
@@ -60,7 +103,8 @@ const PrescriptionCreate = (props: Props) => {
             const prescription = await create({
                 patient: principal,
                 contents: [],
-                hash: hash,
+                hash,
+                signature,
             });
             
             const rawKey = await aes_gcm.genRawKey(prescription);
@@ -75,7 +119,8 @@ const PrescriptionCreate = (props: Props) => {
                 {
                     patient: principal,
                     contents: [contents],
-                    hash: hash
+                    hash,
+                    signature,
                 }
             );
 
@@ -87,7 +132,7 @@ const PrescriptionCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main, aes_gcm, patient, hash]);
+    }, [main, aes_gcm, patient, hash, signature]);
 
     const handlePreview = useCallback(() => {
         if(!principal) {
@@ -99,6 +144,7 @@ const PrescriptionCreate = (props: Props) => {
             doctor: principal,
             patient: userGetPrincipal(patient),
             hash: [],
+            signature: [],
             contents: new TextEncoder().encode(form.values.contents),
         })
         open()
@@ -107,17 +153,19 @@ const PrescriptionCreate = (props: Props) => {
     const calcHash = useCallback(async () => {
         const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(form.values.contents)));
         setHash(hash);
+        setSignature(undefined);
     }, [form.values.contents]);
 
-    useEffect(() => {
-        setActive(patient? 1: 0);
-    }, [patient]);
+    const handlePrev = useCallback(() => { 
+        setActive(active => active - 1);
+    }, []);
 
-    useEffect(() => {
-        if(active === 2) {
+    const handleNext = useCallback(() => { 
+        if(active === 1) {
             calcHash();
-       }
-    }, [active]);
+        }
+        setActive(active + 1);
+    }, [active, calcHash]);
 
     return (
         <>
@@ -134,7 +182,17 @@ const PrescriptionCreate = (props: Props) => {
                         <UserLookup 
                             onChange={setPatient}
                         />
+
+                        <Space h="xl" />
+
+                        <StepsControl
+                            active={active}
+                            disabled={!patient}
+                            onPrev={handlePrev}
+                            onNext={handleNext}
+                        />
                     </Stepper.Step>
+
                     <Stepper.Step 
                         label="Contents" 
                         description="Compose the prescription"
@@ -144,23 +202,42 @@ const PrescriptionCreate = (props: Props) => {
 
                         <Space h="1rem" />
 
-                        <form onSubmit={form.onSubmit(handleCreate)}>
-                            <Textarea
-                                label="Contents"
-                                placeholder="Contents"
-                                minRows={20}
-                                disabled={!patient}
-                                {...form.getInputProps('contents')}
+                        <Textarea
+                            label="Contents"
+                            placeholder="Contents"
+                            minRows={20}
+                            {...form.getInputProps('contents')}
+                        />
+
+                        <Space h="xl" />
+
+                        <StepsControl
+                            active={active}
+                            disabled={form.values.contents.length < 16}
+                            onPrev={handlePrev}
+                            onNext={handleNext}
+                        />
+                    </Stepper.Step>
+                    <Stepper.Step 
+                        label="Sign" 
+                        description="Sign the prescription"
+                        allowStepSelect={form.values.contents.length >= 16}
+                    >
+                        <div className="card">
+                            <CertSigner 
+                                hash={hash}
+                                onSuccess={handleSigned}
                             />
-                            
-                            <Space h="lg"/>
-                            
+                        </div>
+
+                        <Space h="lg"/>
+
+                        <form onSubmit={form.onSubmit(handleCreate)}>
                             <Grid>
                                 <Grid.Col md={6} sm={12}>
                                     <Button
                                         color="blue"
                                         fullWidth
-                                        disabled={!patient || form.values.contents.length < 3}
                                         onClick={handlePreview}
                                     >
                                         Preview
@@ -170,24 +247,14 @@ const PrescriptionCreate = (props: Props) => {
                                     <Button
                                         color="red"
                                         fullWidth
-                                        disabled={!patient || form.values.contents.length < 3}
+                                        disabled={!signature}
                                         type="submit"
                                     >
                                         Submit
                                     </Button>
                                 </Grid.Col>
                             </Grid>
-                            
                         </form>
-                    </Stepper.Step>
-                    <Stepper.Step 
-                        label="Sign" 
-                        description="Sign the prescription"
-                    >
-                        <div className="card">
-                            <SmartCardSigner 
-                            />
-                        </div>
                     </Stepper.Step>
                 </Stepper>
                 
