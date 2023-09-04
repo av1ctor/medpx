@@ -1,7 +1,6 @@
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
-use crate::models::patient;
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;

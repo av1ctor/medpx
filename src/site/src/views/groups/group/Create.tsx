@@ -94,6 +94,7 @@ const GroupCreate = (props: Props) => {
                         <>
                             <Box pt="xl" pb="xl">
                                 <UserLookup 
+                                    user={user}
                                     onChange={setUser} 
                                 />
                             </Box>

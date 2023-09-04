@@ -180,6 +180,7 @@ const PrescriptionCreate = (props: Props) => {
                         description="Choose a patient"
                     >
                         <UserLookup 
+                            user={patient}
                             onChange={setPatient}
                         />
 

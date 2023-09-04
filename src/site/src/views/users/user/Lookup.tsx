@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { Button, Grid, Select, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { userFindByKey } from "../../../libs/users";
@@ -11,6 +11,7 @@ import countries from "../../../libs/countries";
 import { UserAvatar } from "../../../components/UserAvatar";
 
 interface Props {
+    user: UserResponse|undefined;
     onChange: (user: UserResponse|undefined) => void;
 }
 
@@ -18,7 +19,7 @@ export const UserLookup = (props: Props) => {
     const {main} = useActors();
     const {showError} = useUI();
     const [isVerifing, setIsVerifing] = useState(false);
-    const [user, setUser] = useState<UserResponse|undefined>();
+    const [user, setUser] = useState<UserResponse|undefined>(props.user);
 
     const form = useForm({
         initialValues: {
@@ -62,6 +63,10 @@ export const UserLookup = (props: Props) => {
     const _countries = useMemo(() => {
         return countries.map(c => ({label: c.name, value: c.code}))
     }, []);
+
+    useEffect(() => {
+        setUser(props.user);
+    }, [props.user]);
     
     return (
         <div>

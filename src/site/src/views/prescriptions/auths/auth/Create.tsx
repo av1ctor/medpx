@@ -141,7 +141,8 @@ const PrescriptionAuthCreate = (props: Props) => {
                         <Space h="md"/>
 
                         {target === AuthTarget.User &&
-                            <UserLookup 
+                            <UserLookup
+                                user={user} 
                                 onChange={setUser}
                             />
                         }
