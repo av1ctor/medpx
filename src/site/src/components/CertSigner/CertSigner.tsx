@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { ISelectionSuccessEvent, PeculiarFortifyCertificates, PeculiarFortifyCertificatesCustomEvent } from 'fortify-webcomponents-react';
 import { sign } from "../../libs/certsigner";
+import { useUI } from "../../hooks/ui";
 
 interface Props {
     hash: ArrayBuffer;
@@ -8,18 +9,25 @@ interface Props {
 }
 
 const CertSigner = (props: Props) => {
+    const {showError} = useUI();
+    
     const handleSelectionSuccess = useCallback(async (event: PeculiarFortifyCertificatesCustomEvent<ISelectionSuccessEvent>) => {
         const provider = await event.detail.socketProvider.getCrypto(event.detail.providerId);
         const res = await sign(provider, event.detail.certificateId, event.detail.privateKeyId, props.hash);
         props.onSuccess(new Uint8Array(res));
     }, [props.hash, props.onSuccess]);
 
+    const handleSelectionCancelled = useCallback(() => {
+        showError("Cancelled 😒");
+    }, []);
+
     return (
         <PeculiarFortifyCertificates 
             language="en"
             filters={{ onlyWithPrivateKey: true, keyUsage: ['digitalSignature'] }}
+            hideFooter
             onSelectionSuccess={handleSelectionSuccess}
-            onSelectionCancel={() => alert('Very well, but cancel what?')}
+            onSelectionCancel={handleSelectionCancelled}
         />
     )
 };
