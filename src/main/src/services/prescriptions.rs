@@ -1,6 +1,7 @@
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
+use crate::models::patient;
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
@@ -38,6 +39,8 @@ impl PrescriptionsService {
         else {
             return Err("Patient not found".to_string());
         }
+
+        //WRITEME: validate the signature
         
         db.prescriptions.borrow_mut()
             .insert_and_notify(prescription.id.clone(), prescription.clone())
@@ -53,7 +56,7 @@ impl PrescriptionsService {
 
         let prescription = match prescriptions.find_by_id(id) {
             None => return Err("Not found".to_string()),
-            Some(e) => e
+            Some(e) => e.clone()
         };
         
         if *caller != prescription.created_by {
@@ -64,8 +67,13 @@ impl PrescriptionsService {
             return Err("A prescription can't be updated after the contents are set".to_string());
         }
 
-        prescriptions
-            .update_and_notify(id.to_owned(), req.clone())
+        prescriptions.update_and_notify(
+            id.to_owned(), 
+            Prescription { 
+                contents: req.contents.clone(), 
+                ..prescription
+            }
+        )
     }
 
     pub fn delete(
