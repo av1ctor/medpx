@@ -6,5 +6,6 @@
       ethereum: any;
       grecaptcha: any;
       ic: any;
+      SignerDigital: any;
     }
   

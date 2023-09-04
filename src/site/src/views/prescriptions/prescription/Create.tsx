@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as yup from 'yup';
 import { Button, Container, Grid, Space, Textarea, Modal, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
@@ -13,6 +13,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../../hooks/auth";
 import { UserLookup } from "../../users/user/Lookup";
 import { UserAvatar } from "../../../components/UserAvatar";
+import SmartCardSigner from "../../../components/SmartCardSigner/SmartCardSigner";
 
 const schema = yup.object().shape({
     contents: yup.string().min(16).max(4096),
@@ -32,6 +33,7 @@ const PrescriptionCreate = (props: Props) => {
     const [previewItem, setPreviewItem] = useState<PrescriptionResponse|undefined>();
     const [patient, setPatient] = useState<UserResponse|undefined>();
     const [active, setActive] = useState(0);
+    const [hash, setHash] = useState<Uint8Array|undefined>();
     
     const form = useForm({
         initialValues: {
@@ -49,9 +51,11 @@ const PrescriptionCreate = (props: Props) => {
                 throw Error("AES-GCM undefined");
             }
 
+            if(!hash) {
+                throw Error("hash undefined");
+            }
+
             const principal = userGetPrincipal(patient);
-            
-            const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new ArrayBuffer(values.contents)));
             
             const prescription = await create({
                 patient: principal,
@@ -83,7 +87,7 @@ const PrescriptionCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main, aes_gcm, patient]);
+    }, [main, aes_gcm, patient, hash]);
 
     const handlePreview = useCallback(() => {
         if(!principal) {
@@ -100,9 +104,20 @@ const PrescriptionCreate = (props: Props) => {
         open()
     }, [open, principal, form.values, patient]);
 
+    const calcHash = useCallback(async () => {
+        const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(form.values.contents)));
+        setHash(hash);
+    }, [form.values.contents]);
+
     useEffect(() => {
         setActive(patient? 1: 0);
     }, [patient]);
+
+    useEffect(() => {
+        if(active === 2) {
+            calcHash();
+       }
+    }, [active]);
 
     return (
         <>
@@ -122,7 +137,7 @@ const PrescriptionCreate = (props: Props) => {
                     </Stepper.Step>
                     <Stepper.Step 
                         label="Contents" 
-                        description="Write the prescription"
+                        description="Compose the prescription"
                         allowStepSelect={!!patient}
                     >
                         <UserAvatar user={patient} />
@@ -164,6 +179,15 @@ const PrescriptionCreate = (props: Props) => {
                             </Grid>
                             
                         </form>
+                    </Stepper.Step>
+                    <Stepper.Step 
+                        label="Sign" 
+                        description="Sign the prescription"
+                    >
+                        <div className="card">
+                            <SmartCardSigner 
+                            />
+                        </div>
                     </Stepper.Step>
                 </Stepper>
                 
