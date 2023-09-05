@@ -69,6 +69,7 @@ const PrescriptionCreate = (props: Props) => {
     const [active, setActive] = useState(0);
     const [hash, setHash] = useState<Uint8Array>(new Uint8Array());
     const [signature, setSignature] = useState<Uint8Array|undefined>();
+    const [cert, setCert] = useState<string|undefined>();
     
     const form = useForm({
         initialValues: {
@@ -78,7 +79,8 @@ const PrescriptionCreate = (props: Props) => {
         validate: yupResolver(schema),
     });
 
-    const handleSigned = useCallback((signature: Uint8Array) => {
+    const handleSigned = useCallback((cert: string, signature: Uint8Array) => {
+        setCert(cert);
         setSignature(signature);
     }, []);
 
@@ -94,6 +96,10 @@ const PrescriptionCreate = (props: Props) => {
                 throw Error("Content's hash undefined");
             }
 
+            if(!cert) {
+                throw Error("Certificate undefined");
+            }
+
             if(!signature) {
                 throw Error("Signature undefined");
             }
@@ -105,6 +111,7 @@ const PrescriptionCreate = (props: Props) => {
                 contents: [],
                 hash,
                 signature,
+                cert,
             });
             
             const rawKey = await aes_gcm.genRawKey(prescription);
@@ -121,6 +128,7 @@ const PrescriptionCreate = (props: Props) => {
                     contents: [contents],
                     hash,
                     signature,
+                    cert,
                 }
             );
 
@@ -145,6 +153,7 @@ const PrescriptionCreate = (props: Props) => {
             patient: userGetPrincipal(patient),
             hash: [],
             signature: [],
+            cert: '',
             contents: new TextEncoder().encode(form.values.contents),
         })
         open()

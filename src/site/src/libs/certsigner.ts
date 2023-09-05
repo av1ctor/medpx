@@ -1,5 +1,4 @@
-import {Certificate, ContentInfo, CryptoEngine, EncapsulatedContentInfo, IssuerAndSerialNumber, SignedData, SignerInfo} from 'pkijs';
-import {OctetString, fromBER} from 'asn1js';
+import {CryptoEngine} from 'pkijs';
 import { SocketCrypto } from 'fortify-webcomponents-react';
 
 export const sign = async (
@@ -7,43 +6,16 @@ export const sign = async (
     certificateId: string,
     privateKeyId: string,
     hash: BufferSource
-): Promise<ArrayBuffer> => {
+): Promise<{cert: string, signature: ArrayBuffer}> => {
     const crypto = new CryptoEngine({ crypto: provider });
 
     const cert = await provider.certStorage.getItem(certificateId);
     const privateKey = await provider.keyStorage.getItem(privateKeyId);
-    const certRawData = await provider.certStorage.exportCert('raw', cert);
+    const certPem = await provider.certStorage.exportCert('pem', cert);
+    const signature = await crypto.sign(cert.publicKey.algorithm, privateKey, hash);
 
-    const pkiCert = new Certificate({
-        schema: fromBER(certRawData).result,
-    });
-
-    const signedData = new SignedData({
-        version: 1,
-        encapContentInfo: new EncapsulatedContentInfo({
-            eContentType: "1.2.840.113549.1.7.1", // "data" OID
-            eContent: new OctetString({
-                valueHex: hash,
-            }),
-        }),
-        signerInfos: [
-            new SignerInfo({
-                version: 1,
-                sid: new IssuerAndSerialNumber({
-                    issuer: pkiCert.issuer,
-                    serialNumber: pkiCert.serialNumber,
-                }),
-            }),
-        ],
-        certificates: [pkiCert],
-    });
-
-    await signedData.sign(privateKey, 0, "sha-256", undefined, crypto);
-
-    const cms = new ContentInfo({
-        contentType: "1.2.840.113549.1.7.2", // signedData OID
-        content: signedData.toSchema(true),
-    });
-    
-    return cms.toSchema().toBER(false);
+    return {
+        cert: certPem, 
+        signature
+    };
 };

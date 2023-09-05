@@ -12,6 +12,7 @@ pub struct Prescription {
     pub patient: UserId,
     pub hash: Vec<u8>,
     pub signature: Vec<u8>,
+    pub cert: String,
     pub contents: Option<Vec<u8>>,
     pub created_at: u64,
     pub created_by: Principal,
@@ -24,6 +25,7 @@ pub struct PrescriptionRequest {
     pub patient: UserId,
     pub hash: Vec<u8>,
     pub signature: Vec<u8>,
+    pub cert: String,
     pub contents: Option<Vec<u8>>,
 }
 
@@ -33,6 +35,7 @@ pub struct PrescriptionResponse {
     doctor: UserId,
     patient: UserId,
     hash: Vec<u8>,
+    cert: String,
     signature: Vec<u8>,
     contents: Vec<u8>,
     created_at: u64,
@@ -50,6 +53,7 @@ impl Prescription {
             patient: e.patient, 
             hash: e.hash.clone(),
             signature: e.signature.clone(),
+            cert: e.cert.clone(),
             contents: e.contents.clone(), 
             created_at: ic_cdk::api::time(), 
             created_by: caller.clone(),
@@ -69,6 +73,7 @@ impl From<Prescription> for PrescriptionResponse {
             patient: e.patient, 
             hash: e.hash,
             signature: e.signature,
+            cert: e.cert,
             contents: e.contents.unwrap_or_default(), 
             created_at: e.created_at,
         }

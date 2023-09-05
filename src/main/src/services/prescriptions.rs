@@ -5,6 +5,7 @@ use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
 use crate::utils::vetkd::VetKdUtil;
+use crate::utils::x509::X509CertChain;
 
 pub struct PrescriptionsService {}
 
@@ -39,7 +40,12 @@ impl PrescriptionsService {
             return Err("Patient not found".to_string());
         }
 
-        //WRITEME: validate the signature
+        // validate the certificate
+        let chain = X509CertChain::new(prescription.cert.as_bytes().to_vec());
+        match chain.validate() {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        };
         
         db.prescriptions.borrow_mut()
             .insert_and_notify(prescription.id.clone(), prescription.clone())

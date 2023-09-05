@@ -5,7 +5,7 @@ import { useUI } from "../../hooks/ui";
 
 interface Props {
     hash: ArrayBuffer;
-    onSuccess: (signature: Uint8Array) => void;
+    onSuccess: (cert: string, signature: Uint8Array) => void;
 }
 
 const CertSigner = (props: Props) => {
@@ -14,7 +14,7 @@ const CertSigner = (props: Props) => {
     const handleSelectionSuccess = useCallback(async (event: PeculiarFortifyCertificatesCustomEvent<ISelectionSuccessEvent>) => {
         const provider = await event.detail.socketProvider.getCrypto(event.detail.providerId);
         const res = await sign(provider, event.detail.certificateId, event.detail.privateKeyId, props.hash);
-        props.onSuccess(new Uint8Array(res));
+        props.onSuccess(res.cert, new Uint8Array(res.signature));
     }, [props.hash, props.onSuccess]);
 
     const handleSelectionCancelled = useCallback(() => {
