@@ -5,7 +5,7 @@ use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
 use crate::utils::vetkd::VetKdUtil;
-use crate::utils::x509::X509CertChain;
+use super::doctors::DoctorsService;
 
 pub struct PrescriptionsService {}
 
@@ -20,15 +20,15 @@ impl PrescriptionsService {
         }
 
         // validations
-        if let Some(doctor) = db.users.borrow().find_by_id(&caller) {
-            match doctor.kind {
-                UserKind::Doctor(_) => (),
-                _ => return Err("User not a doctor".to_string())
+        let doctor = match db.users.borrow().find_by_id(&caller) {
+            None => return Err("Doctor not found".to_string()),
+            Some(doctor) => {
+                match doctor.kind.clone() {
+                    UserKind::Doctor(doctor) => doctor,
+                    _ => return Err("User not a doctor".to_string())
+                }
             }
-        }
-        else {
-            return Err("Doctor not found".to_string());
-        }
+        };
     
         if let Some(patient) = db.users.borrow().find_by_id(&prescription.patient) {
             match patient.kind {
@@ -41,11 +41,10 @@ impl PrescriptionsService {
         }
 
         // validate the certificate
-        let chain = X509CertChain::new(prescription.cert.as_bytes().to_vec());
-        match chain.validate() {
+        match DoctorsService::validate_cert(&prescription.cert.as_bytes().to_vec(), &doctor) {
             Ok(_) => (),
             Err(err) => return Err(err),
-        };
+        }
         
         db.prescriptions.borrow_mut()
             .insert_and_notify(prescription.id.clone(), prescription.clone())

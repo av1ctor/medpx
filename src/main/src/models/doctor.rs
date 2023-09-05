@@ -7,12 +7,14 @@ use crate::models::prescription_template::PrescriptionTemplateId;
 pub struct Doctor {
     pub license_num: String,
     pub prescription_template: Option<String>,
+    pub cert: String,
 }
 
 #[derive(CandidType, Deserialize, Clone)]
 pub struct DoctorRequest {
     license_num: String,
     prescription_template: Option<PrescriptionTemplateId>,
+    cert: String,
 }
 
 #[derive(CandidType)]
@@ -28,6 +30,7 @@ impl Doctor {
         Self {
             license_num: e.license_num.clone(),
             prescription_template: None,
+            cert: e.cert.clone(),
         }
     }
 
@@ -56,6 +59,7 @@ impl From<DoctorRequest> for Doctor {
         Self {
             license_num: e.license_num,
             prescription_template: e.prescription_template,
+            cert: e.cert,
         }
     }
 }

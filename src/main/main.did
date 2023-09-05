@@ -1,6 +1,7 @@
 type DoctorRequest = record {
     license_num: text;
     prescription_template: opt text;
+    cert: text;
 };
 
 type DoctorResponse = record {

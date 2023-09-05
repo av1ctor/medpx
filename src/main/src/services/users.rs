@@ -2,7 +2,9 @@ use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{Crud, Pagination, CrudSubscribable};
 use crate::models::prescription::Prescription;
-use crate::models::user::{User, UserId};
+use crate::models::user::{User, UserId, UserKind};
+
+use super::doctors::DoctorsService;
 
 pub struct UsersService {}
 
@@ -14,6 +16,15 @@ impl UsersService {
     ) -> Result<(), String> {
         if *caller == Principal::anonymous() {
             return Err("Anonymous not allowed".to_string());
+        }
+
+        match user.kind.clone() {
+            UserKind::Doctor(doctor) => {
+                if let Err(err) = DoctorsService::validate_cert(&doctor.cert.as_bytes().to_vec(), &doctor) {
+                    return Err(err);
+                }
+            },
+            _ => ()
         }
         
         db.users.borrow_mut().insert_and_notify(caller.to_owned(), user.clone())

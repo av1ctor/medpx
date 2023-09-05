@@ -11,6 +11,7 @@ import { useUser } from "../../../hooks/users";
 import { useActors } from "../../../hooks/actors";
 import { UserKind, thirdPartyKinds, userStringToKind } from "../../../libs/users";
 import Login from "./Login";
+import CertSelector from "../../../components/Certificates/CertSelector";
 
 const schema = {
     name: yup.string().min(3).max(64),
@@ -40,6 +41,8 @@ const Signup = (props: Props) => {
     const {isMobile, returnToLastPage} = useBrowser();
     const [active, setActive] = useState(0);
     const [kind, setKind] = useState(UserKind.Patient);
+    const [cert, setCert] = useState<string|undefined>();
+    const [serial, setSerial] = useState<string|undefined>();
     const [options, setOptions] = useState({
         initialValues: {
             name: '',
@@ -50,6 +53,9 @@ const Signup = (props: Props) => {
             kind: '',
         }
     });
+    const {update} = useAuth();
+    const {create} = useUser();
+    const form = useForm(options);
 
     const handleChangeKind = useCallback((value: string) => {
         setKind(userStringToKind(value));
@@ -59,14 +65,18 @@ const Signup = (props: Props) => {
         setActive(1);
     }, []);
 
-    const {update} = useAuth();
-    const {create} = useUser();
-    
-    const form = useForm(options);
+    const handleCertSelected = useCallback((cert: string, serial: string) => {
+        setCert(cert);
+        setSerial(serial);
+    }, []);
 
     const handleCreate = useCallback(async (values: any) => {
         try {
             toggleLoading(true);
+
+            if(kind === UserKind.Doctor) {
+                values.kind.Doctor.cert = cert;
+            }
 
             const user = await create(values);
             showSuccess('User registered!');
@@ -80,7 +90,7 @@ const Signup = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main]);
+    }, [main, kind, cert]);
 
     useEffect(() => {
         setOptions({
@@ -107,6 +117,7 @@ const Signup = (props: Props) => {
                             prescription_template: !!values.prescription_template? 
                                 [values.prescription_template]:
                                 [],
+                            cert: ''
                         }}
                     : kind === UserKind.Patient?
                         {Patient: {
@@ -234,6 +245,20 @@ const Signup = (props: Props) => {
                                 placeholder="Your prescription template"
                                 {...form.getInputProps('prescription_template')}
                             />
+                            {!cert? 
+                                <Box mt="xl">
+                                    <CertSelector
+                                        onSuccess={handleCertSelected}
+                                    />
+                                </Box>
+                            :
+                                <TextInput
+                                    label="Certificate serial number"
+                                    value={serial}
+                                    readOnly
+                                    disabled
+                                />
+                            }
                         </>
                     }
                     {kind === UserKind.ThirdParty && 
