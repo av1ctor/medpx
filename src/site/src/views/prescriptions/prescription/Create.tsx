@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Grid, Space, Textarea, Modal, Stepper } from "@mantine/core";
+import { Button, Container, Grid, Space, Textarea, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -8,12 +8,11 @@ import { usePrescription } from "../../../hooks/prescriptions";
 import { PrescriptionResponse, UserResponse } from "../../../../../declarations/main/main.did";
 import { userGetPrincipal } from "../../../libs/users";
 import PrescriptionView from "./View";
-import { useBrowser } from "../../../hooks/browser";
-import { useDisclosure } from "@mantine/hooks";
 import { useAuth } from "../../../hooks/auth";
 import { UserLookup } from "../../users/user/Lookup";
 import { UserAvatar } from "../../../components/UserAvatar";
-import CertSigner from "../../../components/CertSigner/CertSigner";
+import CertSigner from "../../../components/Certificates/CertSigner";
+import { Principal } from "@dfinity/principal";
 
 const schema = yup.object().shape({
     contents: yup.string().min(16).max(4096),
@@ -62,9 +61,6 @@ const PrescriptionCreate = (props: Props) => {
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
     const {create, update} = usePrescription();
-    const {isMobile} = useBrowser()
-    const [opened, { open, close }] = useDisclosure(false);
-    const [previewItem, setPreviewItem] = useState<PrescriptionResponse|undefined>();
     const [patient, setPatient] = useState<UserResponse|undefined>();
     const [active, setActive] = useState(0);
     const [hash, setHash] = useState<Uint8Array>(new Uint8Array());
@@ -78,6 +74,20 @@ const PrescriptionCreate = (props: Props) => {
     
         validate: yupResolver(schema),
     });
+
+    const mockPrescription = useMemo((
+    ): PrescriptionResponse => {
+        return  {
+            id: 'temp',
+            created_at: BigInt(Date.now()) * 1000000n,
+            doctor: principal || Principal.anonymous(),
+            patient: userGetPrincipal(patient),
+            hash: hash,
+            signature: signature || [],
+            cert: '',
+            contents: new TextEncoder().encode(form.values.contents),
+        };
+    }, [form.values.contents, principal, patient, hash, signature]);
 
     const handleSigned = useCallback((cert: string, signature: Uint8Array) => {
         setCert(cert);
@@ -141,23 +151,6 @@ const PrescriptionCreate = (props: Props) => {
             toggleLoading(false);
         }
     }, [main, aes_gcm, patient, hash, signature]);
-
-    const handlePreview = useCallback(() => {
-        if(!principal) {
-            return
-        }
-        setPreviewItem({
-            id: 'temp',
-            created_at: BigInt(Date.now()) * 1000000n,
-            doctor: principal,
-            patient: userGetPrincipal(patient),
-            hash: [],
-            signature: [],
-            cert: '',
-            contents: new TextEncoder().encode(form.values.contents),
-        })
-        open()
-    }, [open, principal, form.values, patient]);
 
     const calcHash = useCallback(async () => {
         const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(form.values.contents)));
@@ -234,56 +227,34 @@ const PrescriptionCreate = (props: Props) => {
                         allowStepSelect={form.values.contents.length >= 16}
                     >
                         <div className="card">
-                            <CertSigner 
-                                hash={hash}
-                                onSuccess={handleSigned}
-                            />
+                            {!signature?
+                                <CertSigner 
+                                    hash={hash}
+                                    onSuccess={handleSigned}
+                                />
+                            :
+                                <PrescriptionView 
+                                    item={mockPrescription}
+                                    isEncrypted={false}
+                                />
+                            }
                         </div>
 
                         <Space h="lg"/>
 
                         <form onSubmit={form.onSubmit(handleCreate)}>
-                            <Grid>
-                                <Grid.Col md={6} sm={12}>
-                                    <Button
-                                        color="blue"
-                                        fullWidth
-                                        onClick={handlePreview}
-                                    >
-                                        Preview
-                                    </Button>
-                                </Grid.Col>
-                                <Grid.Col md={6} sm={12}>
-                                    <Button
-                                        color="red"
-                                        fullWidth
-                                        disabled={!signature}
-                                        type="submit"
-                                    >
-                                        Submit
-                                    </Button>
-                                </Grid.Col>
-                            </Grid>
+                            <Button
+                                color="red"
+                                fullWidth
+                                disabled={!signature}
+                                type="submit"
+                            >
+                                Submit
+                            </Button>
                         </form>
                     </Stepper.Step>
                 </Stepper>
-                
-                
             </Container>
-
-            <Modal
-                opened={opened}
-                size="xl"
-                fullScreen={isMobile}
-                centered
-                onClose={close}
-            >
-                {previewItem && 
-                    <PrescriptionView 
-                        item={previewItem}
-                        isEncrypted={false}
-                    />}
-            </Modal>
         </>
     );
 };

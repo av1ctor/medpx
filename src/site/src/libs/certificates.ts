@@ -1,4 +1,4 @@
-import {CryptoEngine} from 'pkijs';
+import {CryptoEngine, Certificate} from 'pkijs';
 import { SocketCrypto } from 'fortify-webcomponents-react';
 
 export const sign = async (
@@ -17,5 +17,22 @@ export const sign = async (
     return {
         cert: certPem, 
         signature
+    };
+};
+
+export const retrieve = async (
+    provider: SocketCrypto,
+    certificateId: string,
+): Promise<{cert: string, serial: string}> => {
+    
+    const cert = await provider.certStorage.getItem(certificateId);
+    const certPem = await provider.certStorage.exportCert('pem', cert);
+    const certRaw = await provider.certStorage.exportCert('raw', cert);
+
+    const x509 = Certificate.fromBER(certRaw);
+
+    return {
+        cert: certPem, 
+        serial: x509.serialNumber.toString('hex'),
     };
 };
