@@ -36,7 +36,7 @@ $ dfx deploy
 - [x] Users can create keys (like e-mail, phone number, id number, etc) to be found by other users more easily
 - [x] A qr-code should be generated to allow patients to share their prescriptions with third-parties (if they are authorized)
 - [x] A doctor, to create an account, should have a valid digital certificate containing his/her doctor license number
-- [o] All prescriptions hashes should be signed by the doctor's digital certificate. The certificate + the signature should be stored as part of the prescription, and checked when storing them.
+- [x] **WIP** All prescriptions hashes should be signed by the doctor's digital certificate. The certificate + the signature should be stored as part of the prescription, and checked when storing them.
 - [ ] A list of drugs should be available, so doctors could select them when creating a new prescription
 - [ ] Doctors should be allowed to use and customize prescription templates
 - [ ] When a prescription is created, the patient should receive a e-mail and/or SMS with a link to access it
