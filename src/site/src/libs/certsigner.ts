@@ -21,7 +21,10 @@ export const sign = async (
     const signedData = new SignedData({
         version: 1,
         encapContentInfo: new EncapsulatedContentInfo({
-            eContentType: "1.2.840.113549.1.7.1", // "data" content type
+            eContentType: "1.2.840.113549.1.7.1", // "data" OID
+            eContent: new OctetString({
+                valueHex: hash,
+            }),
         }),
         signerInfos: [
             new SignerInfo({
@@ -35,18 +38,10 @@ export const sign = async (
         certificates: [pkiCert],
     });
 
-    const contentInfo = new EncapsulatedContentInfo({
-        eContent: new OctetString({
-            valueHex: hash,
-        }),
-    });
-
-    signedData.encapContentInfo.eContent = contentInfo.eContent;
-
     await signedData.sign(privateKey, 0, "sha-256", undefined, crypto);
 
     const cms = new ContentInfo({
-        contentType: "1.2.840.113549.1.7.2",
+        contentType: "1.2.840.113549.1.7.2", // signedData OID
         content: signedData.toSchema(true),
     });
     

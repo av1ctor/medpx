@@ -220,7 +220,7 @@ const PrescriptionCreate = (props: Props) => {
                         />
                     </Stepper.Step>
                     <Stepper.Step 
-                        label="Sign" 
+                        label="Signature" 
                         description="Sign the prescription"
                         allowStepSelect={form.values.contents.length >= 16}
                     >
