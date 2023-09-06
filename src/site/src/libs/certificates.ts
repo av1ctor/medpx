@@ -1,5 +1,5 @@
 import {CryptoEngine, Certificate} from 'pkijs';
-import { SocketCrypto } from 'fortify-webcomponents-react';
+import { SocketCrypto } from '@peculiar/fortify-webcomponents-react';
 
 export const sign = async (
     provider: SocketCrypto,

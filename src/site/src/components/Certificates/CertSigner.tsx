@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { ISelectionSuccessEvent, PeculiarFortifyCertificates, PeculiarFortifyCertificatesCustomEvent } from 'fortify-webcomponents-react';
+import { ISelectionSuccessEvent, PeculiarFortifyCertificates, PeculiarFortifyCertificatesCustomEvent } from '@peculiar/fortify-webcomponents-react';
 import { sign } from "../../libs/certificates";
 import { useUI } from "../../hooks/ui";
 
