@@ -1255,11 +1255,10 @@ checksum = "e5ea92a5b6195c6ef2a0295ea818b312502c6fc94dde986c5553242e18fd4ce2"
 [[package]]
 name = "ring"
 version = "0.16.20"
-source = "git+https://github.com/av1ctor/ring-xous.git?branch=0.16.20-cleanup#c225a763d9472f6554374081c82a55090b83132f"
+source = "git+https://github.com/av1ctor/ring.git?branch=b/0.16#4b31af8b5e13ed902864627ba30f5f49c1163b62"
 dependencies = [
  "cc",
  "libc",
- "log",
  "once_cell",
  "spin",
  "untrusted",
