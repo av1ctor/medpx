@@ -1,10 +1,12 @@
 use candid::Principal;
+use ring::signature::{self, RsaPublicKeyComponents};
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
 use crate::utils::vetkd::VetKdUtil;
+use crate::utils::x509::PubKeyValue;
 use super::doctors::DoctorsService;
 
 pub struct PrescriptionsService {}
@@ -41,9 +43,27 @@ impl PrescriptionsService {
         }
 
         // validate the certificate
-        match DoctorsService::validate_cert(&prescription.cert.as_bytes().to_vec(), &doctor) {
-            Ok(_) => (),
+        let cert = match DoctorsService::validate_cert(&prescription.cert.as_bytes().to_vec(), &doctor) {
+            Ok(cert) => cert,
             Err(err) => return Err(err),
+        };
+
+        // validate the signature
+        match cert.pub_key.value {
+            PubKeyValue::RSA(key) => {
+                let rsa = RsaPublicKeyComponents { n: key.n, e: key.e };
+                //FIXME: can't assume it's SHA256
+                if let Err(err) = rsa.verify(
+                    &signature::RSA_PKCS1_2048_8192_SHA256, 
+                    &prescription.hash, 
+                    &prescription.signature
+                ) {
+                    return Err(err.to_string());
+                }
+            },
+            PubKeyValue::Unknown => {
+                return Err("Unsupported public key type".to_string());
+            }
         }
         
         db.prescriptions.borrow_mut()

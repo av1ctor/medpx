@@ -2,13 +2,33 @@
 use std::{vec, collections::HashMap};
 use x509_parser::{prelude::{Pem, X509Certificate, Validity, KeyUsage, GeneralName}, x509::X509Name, time::ASN1Time, oid_registry::Oid};
 
+#[derive(Clone)]
+pub struct RSAPublicKey {
+    pub n: Vec<u8>,
+    pub e: Vec<u8>,
+}
+
+#[derive(Clone)]
+pub enum PubKeyValue {
+    RSA(RSAPublicKey),
+    Unknown,
+}
+
+#[derive(Clone)]
+pub struct PubKey {
+    pub algorithm: String,
+    pub value: PubKeyValue,
+}
+
+#[derive(Clone)]
 pub struct X509Cert{
     pub serial: String,
     pub validity: Validity,
     pub subject: String,
     pub is_ca: bool,
     pub key_usage: Option<KeyUsage>,
-    pub extensions: HashMap<String, Vec<u8>>,
+    pub pub_key: PubKey,
+    pub alt_names: HashMap<String, Vec<u8>>,
 }
 
 impl X509Cert {
@@ -17,7 +37,7 @@ impl X509Cert {
         alt_name_oids: &Vec<Oid<'static>>
     ) -> Self {
 
-        let mut extensions = HashMap::new();
+        let mut alt_names = HashMap::new();
 
         match x509.subject_alternative_name() {
             Ok(alt) => {
@@ -27,7 +47,7 @@ impl X509Cert {
                         for name in &ext.value.general_names {
                             if let GeneralName::OtherName(oid, vec) = name {
                                 if alt_name_oids.contains(&oid) {
-                                    extensions.insert(oid.to_id_string(), vec.to_vec());
+                                    alt_names.insert(oid.to_id_string(), vec.to_vec());
                                 }
                             }
                         }
@@ -36,7 +56,10 @@ impl X509Cert {
             },
             Err(_) => (),
         }
-        
+
+        let pub_key = x509.public_key();
+        let pub_key_parsed = pub_key.parsed().unwrap();
+
         Self { 
             serial: x509.serial.clone().to_str_radix(16),
             validity: x509.validity.clone(),
@@ -49,7 +72,31 @@ impl X509Cert {
                 },
                 Err(_) => None
             },
-            extensions,
+            pub_key: PubKey { 
+                algorithm: pub_key.algorithm.algorithm.to_id_string(),
+                value: match pub_key_parsed {
+                    x509_parser::public_key::PublicKey::RSA(key) => {
+                        PubKeyValue::RSA(RSAPublicKey { 
+                            n: Self::remove_leading_zero(key.modulus), 
+                            e: key.exponent.to_vec()
+                        })
+                    },
+                    //TODO: add support for other public key types
+                    _ => PubKeyValue::Unknown
+                },
+            },
+            alt_names,
+        }
+    }
+
+    fn remove_leading_zero(
+        value: &[u8]
+    ) -> Vec<u8> {
+        if value[0] == 0 {
+            value[1..].to_vec()
+        }
+        else {
+            value.to_vec()
         }
     }
     
