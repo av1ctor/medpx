@@ -1,8 +1,9 @@
 use candid::Principal;
+use ring::digest::{SHA256, Context};
 use ring::signature::{self, RsaPublicKeyComponents};
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
-use crate::models::prescription::{Prescription, PrescriptionId};
+use crate::models::prescription::{Prescription, PrescriptionId, PrescriptionPostRequest, PrescriptionState};
 use crate::models::prescription_auth::PrescriptionAuthTarget;
 use crate::models::user::UserKind;
 use crate::utils::vetkd::VetKdUtil;
@@ -12,7 +13,7 @@ use super::doctors::DoctorsService;
 pub struct PrescriptionsService {}
 
 impl PrescriptionsService {
-    pub fn create(
+    pub fn pre_create(
         prescription: &Prescription,
         db: &mut DB,
         caller: &Principal
@@ -22,7 +23,7 @@ impl PrescriptionsService {
         }
 
         // validations
-        let doctor = match db.users.borrow().find_by_id(&caller) {
+        match db.users.borrow().find_by_id(&caller) {
             None => return Err("Doctor not found".to_string()),
             Some(doctor) => {
                 match doctor.kind.clone() {
@@ -42,40 +43,16 @@ impl PrescriptionsService {
             return Err("Patient not found".to_string());
         }
 
-        // validate the certificate
-        let cert = match DoctorsService::validate_cert(&prescription.cert.as_bytes().to_vec(), &doctor) {
-            Ok(cert) => cert,
-            Err(err) => return Err(err),
-        };
-
-        // validate the signature
-        match cert.pub_key.value {
-            PubKeyValue::RSA(key) => {
-                let rsa = RsaPublicKeyComponents { n: key.n, e: key.e };
-                //FIXME: can't assume it's SHA256
-                if let Err(err) = rsa.verify(
-                    &signature::RSA_PKCS1_2048_8192_SHA256, 
-                    &prescription.hash, 
-                    &prescription.signature
-                ) {
-                    return Err(err.to_string());
-                }
-            },
-            PubKeyValue::Unknown => {
-                return Err("Unsupported public key type".to_string());
-            }
-        }
-        
         db.prescriptions.borrow_mut()
             .insert_and_notify(prescription.id.clone(), prescription.clone())
     }
 
-    pub fn update(
+    pub fn post_create(
         id: &PrescriptionId,
-        req: &Prescription,
+        req: &PrescriptionPostRequest,
         db: &mut DB,
         caller: &Principal
-    ) -> Result<(), String> {
+    ) -> Result<Prescription, String> {
         let mut prescriptions = db.prescriptions.borrow_mut();
 
         let prescription = match prescriptions.find_by_id(id) {
@@ -87,17 +64,95 @@ impl PrescriptionsService {
             return Err("Forbidden".to_string());
         }
 
-        if prescription.contents.is_some() {
-            return Err("A prescription can't be updated after the contents are set".to_string());
+        if prescription.state != PrescriptionState::Created {
+            return Err("Invalid prescription state".to_string());
         }
 
-        prescriptions.update_and_notify(
-            id.to_owned(), 
-            Prescription { 
-                contents: req.contents.clone(), 
-                ..prescription
+        let doctor = match db.users.borrow().find_by_id(&caller) {
+            None => return Err("Doctor not found".to_string()),
+            Some(doctor) => {
+                match doctor.kind.clone() {
+                    UserKind::Doctor(doctor) => doctor,
+                    _ => return Err("User not a doctor".to_string())
+                }
             }
-        )
+        };
+
+        // validate the certificate
+        if let Err(err) = DoctorsService::validate_cert(
+            &req.cert.as_bytes().to_vec(), &doctor) {
+            return Err(err);
+        }
+
+        // calculate the hash of the encrypted content
+        let mut hash = Context::new(&SHA256);
+        hash.update(&req.cipher_text.clone());
+        let cipher_text_hash = hash.finish();
+
+        if req.cipher_text_hash != cipher_text_hash.as_ref() {
+            return Err("The cipher text hash doesn't match".to_string());
+        }
+
+        let cert = match DoctorsService::get_top_cert(&req.cert.as_bytes().to_vec()) {
+            Ok(cert) => cert,
+            Err(err) => return Err(err),
+        };
+
+        // validate the signature
+        let res = match cert.pub_key.value {
+            PubKeyValue::RSA(key) => {
+                let pkey = RsaPublicKeyComponents { n: key.n, e: key.e };
+                //FIXME: can't assume it's SHA256
+                if let Err(err) = pkey.verify(
+                    &signature::RSA_PKCS1_2048_8192_SHA256, 
+                    cipher_text_hash.as_ref(), 
+                    &req.signature
+                ) {
+                    Some(err.to_string())
+                }
+                else {
+                    None
+                }
+            },
+            PubKeyValue::EC(_) => {
+                //FIXME: can't verify EC signatures because ring tries to use assembly: https://github.com/briansmith/ring/issues/918
+                /*let pkey = UnparsedPublicKey::new(&signature::ECDSA_P256_SHA256_FIXED, key.data);
+                if let Err(err) = pkey.verify(
+                    cipher_text_hash.as_ref(), 
+                    &req.signature
+                ) {
+                    return Err(err.to_string());
+                }*/
+                Some("Unsupported public key type".to_string())
+            }
+            PubKeyValue::Unknown => {
+                Some("Unsupported public key type".to_string())
+            }
+        };
+
+        // if signature failed, remove the prescription
+        if let Some(err) = res {
+            _ = prescriptions.delete_and_notify(&prescription.id);
+            return Err(err);
+        }
+
+        let updated_prescription = Prescription { 
+            state: PrescriptionState::Signed,
+            cipher_text: Some(req.cipher_text.clone()), 
+            cipher_text_hash: Some(cipher_text_hash.as_ref().to_vec()),
+            cert: Some(req.cert.clone()),
+            ..prescription
+        };
+        
+        // update content and hash only
+        if let Err(err) = prescriptions.update_and_notify(
+            id.to_owned(), 
+            updated_prescription.clone()
+        ) {
+            return Err(err);
+        }
+
+        Ok(updated_prescription)
     }
 
     pub fn delete(
@@ -150,13 +205,13 @@ impl PrescriptionsService {
     }
 
     pub async fn get_encrypted_symmetric_key(
-        hash: Vec<u8>,
+        prescription: Prescription,
         encryption_public_key: Vec<u8>,
         vetkd: VetKdUtil
     ) -> Result<String, String> {
         vetkd.get_encrypted_symmetric_key(
             vec![Self::DERIVATION_PATH.to_vec()], 
-            hash,
+            prescription.id.as_bytes().to_owned(),
             encryption_public_key
         ).await
     }

@@ -122,22 +122,24 @@ type GroupResponseResult = variant {
     Ok: GroupResponse;
 };
 
-type PrescriptionRequest = record {
+type PrescriptionPreRequest = record {
     patient: principal;
-    hash: vec nat8;
+    plain_text_hash: vec nat8;
+};
+
+type PrescriptionPostRequest = record {
+    cipher_text_hash: vec nat8;
+    cipher_text: vec nat8;
     signature: vec nat8;
     cert: text;
-    contents: opt vec nat8;
 };
 
 type PrescriptionResponse = record {
     id: text;
     doctor: principal;
     patient: principal;
-    hash: vec nat8;
-    signature: vec nat8;
-    cert: text;
-    contents: vec nat8;
+    plain_text_hash: vec nat8;
+    cipher_text: vec nat8;
     created_at: nat64;
 };
 
@@ -241,8 +243,8 @@ service : (InitArgs) -> {
     group_find_by_id: (text) -> (GroupResponseResult) query;
     group_find_all_by_user: (principal, Pagination) -> (FindGroupsResult) query;
 
-    prescription_create: (PrescriptionRequest) -> (PrescriptionResponseResult);
-    prescription_update: (text, PrescriptionRequest) -> (PrescriptionResponseResult);
+    prescription_pre_create: (PrescriptionPreRequest) -> (PrescriptionResponseResult);
+    prescription_post_create: (text, PrescriptionPostRequest) -> (PrescriptionResponseResult);
     prescription_delete: (text) -> (DefaultResponseResult);
     prescription_find_by_id: (text) -> (PrescriptionResponseResult) query;
     prescription_get_public_key: () -> (PrescriptionKeyResult);

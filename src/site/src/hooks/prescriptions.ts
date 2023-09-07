@@ -1,13 +1,13 @@
 import { UseInfiniteQueryResult, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "react-query";
-import { PrescriptionRequest, PrescriptionResponse, UserResponse } from "../../../declarations/main/main.did";
+import { PrescriptionPreRequest, PrescriptionPostRequest, PrescriptionResponse, UserResponse } from "../../../declarations/main/main.did";
 import { useActors } from "./actors";
 import { userFindPrescriptions, userGetPrincipal } from "../libs/users";
-import { prescriptionCreate, prescriptionDelete, prescriptionFindById, prescriptionUpdate } from "../libs/prescriptions";
+import { prescriptionPreCreate, prescriptionPostCreate, prescriptionDelete, prescriptionFindById } from "../libs/prescriptions";
 import { useAuth } from "./auth";
 
 interface PrescriptionMethods {
-    create: (req: PrescriptionRequest) => Promise<PrescriptionResponse>;
-    update: (id: string, req: PrescriptionRequest) => Promise<PrescriptionResponse>;
+    preCreate: (req: PrescriptionPreRequest) => Promise<PrescriptionResponse>;
+    postCreate: (id: string, req: PrescriptionPostRequest) => Promise<PrescriptionResponse>;
     remove: (id: string) => Promise<void>;
 }
 
@@ -16,26 +16,25 @@ export const usePrescription = (
     const queryClient = useQueryClient();
     const {main} = useActors();
 
-    const createMut = useMutation(
-        async (options: {req: PrescriptionRequest}) => {
-            return prescriptionCreate(main, options.req);
+    const preCreateMut = useMutation(
+        async (options: {req: PrescriptionPreRequest}) => {
+            return prescriptionPreCreate(main, options.req);
         },
         {
             onSuccess: () => {
-                queryClient.invalidateQueries(['prescriptions']);
             }   
         }
     );
 
-    const create = (
-        req: PrescriptionRequest
+    const preCreate = (
+        req: PrescriptionPreRequest
     ): Promise<PrescriptionResponse> => {
-        return createMut.mutateAsync({req});
+        return preCreateMut.mutateAsync({req});
     };
 
-    const updateMut = useMutation(
-        async (options: {id: string, req: PrescriptionRequest}) => {
-            return prescriptionUpdate(main, options.id, options.req);
+    const postCreateMut = useMutation(
+        async (options: {id: string, req: PrescriptionPostRequest}) => {
+            return prescriptionPostCreate(main, options.id, options.req);
         },
         {
             onSuccess: () => {
@@ -44,11 +43,11 @@ export const usePrescription = (
         }
     );
 
-    const update = (
+    const postCreate = (
         id: string,
-        req: PrescriptionRequest
+        req: PrescriptionPostRequest
     ): Promise<PrescriptionResponse> => {
-        return updateMut.mutateAsync({id, req});
+        return postCreateMut.mutateAsync({id, req});
     };
 
     const deleteMut = useMutation(
@@ -69,8 +68,8 @@ export const usePrescription = (
     };
 
     return {
-        create,
-        update,
+        preCreate,
+        postCreate,
         remove,
     }
 };

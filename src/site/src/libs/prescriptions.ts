@@ -1,22 +1,22 @@
-import { _SERVICE as Main, PrescriptionRequest, PrescriptionResponse } from "../../../declarations/main/main.did";
+import { _SERVICE as Main, PrescriptionPreRequest, PrescriptionPostRequest, PrescriptionResponse } from "../../../declarations/main/main.did";
 
-export const prescriptionCreate = async (
+export const prescriptionPreCreate = async (
     main: Main,
-    req: PrescriptionRequest
+    req: PrescriptionPreRequest
 ): Promise<PrescriptionResponse> => {
-    const res = await main.prescription_create(req);
+    const res = await main.prescription_pre_create(req);
     if('Err' in res) {
         throw new Error(res.Err);
     }
     return res.Ok; 
 };
 
-export const prescriptionUpdate = async (
+export const prescriptionPostCreate = async (
     main: Main,
     id: string,
-    req: PrescriptionRequest
+    req: PrescriptionPostRequest
 ): Promise<PrescriptionResponse> => {
-    const res = await main.prescription_update(id, req);
+    const res = await main.prescription_post_create(id, req);
     if('Err' in res) {
         throw new Error(res.Err);
     }

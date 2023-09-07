@@ -1,5 +1,4 @@
 import * as vetkd from "ic-vetkd-utils";
-import { Principal } from "@dfinity/principal";
 import { _SERVICE as Main, PrescriptionResponse } from "../../../declarations/main/main.did";
 import { Result } from "../interfaces/result";
 
@@ -40,14 +39,16 @@ export class AES_GCM {
         }
 
         try {
+            const textEncoder = new TextEncoder();
+
             const ek_bytes = hex_decode(res.Ok);
 
             const rawKey = tsk.decrypt_and_hash(
                 ek_bytes,
                 this.pk_bytes,
-                prescription.hash as Uint8Array,
+                textEncoder.encode(prescription.id),
                 32,
-                new TextEncoder().encode("aes-256-gcm")
+                textEncoder.encode("aes-256-gcm")
             );
 
             return {Ok: rawKey};

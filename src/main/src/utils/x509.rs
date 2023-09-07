@@ -9,8 +9,14 @@ pub struct RSAPublicKey {
 }
 
 #[derive(Clone)]
+pub struct ECPublicKey {
+    pub data: Vec<u8>,
+}
+
+#[derive(Clone)]
 pub enum PubKeyValue {
     RSA(RSAPublicKey),
+    EC(ECPublicKey),
     Unknown,
 }
 
@@ -39,22 +45,24 @@ impl X509Cert {
 
         let mut alt_names = HashMap::new();
 
-        match x509.subject_alternative_name() {
-            Ok(alt) => {
-                match alt {
-                    None => (),
-                    Some(ext) => {
-                        for name in &ext.value.general_names {
-                            if let GeneralName::OtherName(oid, vec) = name {
-                                if alt_name_oids.contains(&oid) {
-                                    alt_names.insert(oid.to_id_string(), vec.to_vec());
+        if alt_name_oids.len() > 0 {
+            match x509.subject_alternative_name() {
+                Ok(alt) => {
+                    match alt {
+                        None => (),
+                        Some(ext) => {
+                            for name in &ext.value.general_names {
+                                if let GeneralName::OtherName(oid, vec) = name {
+                                    if alt_name_oids.contains(&oid) {
+                                        alt_names.insert(oid.to_id_string(), vec.to_vec());
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            },
-            Err(_) => (),
+                },
+                Err(_) => (),
+            }
         }
 
         let pub_key = x509.public_key();
@@ -81,6 +89,11 @@ impl X509Cert {
                             e: key.exponent.to_vec()
                         })
                     },
+                    x509_parser::public_key::PublicKey::EC(key) => {
+                        PubKeyValue::EC(ECPublicKey { 
+                            data: key.data().to_vec() 
+                        })
+                    }
                     //TODO: add support for other public key types
                     _ => PubKeyValue::Unknown
                 },
@@ -200,5 +213,17 @@ impl X509CertChain {
         }
 
         Ok(top.unwrap())
+    }
+
+    pub fn get_top(
+        &self
+    ) -> Result<X509Cert, String> {
+        for cert in &self.chain {
+            if cert.check_key_usage().is_ok() {
+                return Ok(cert.clone());
+            }
+        }
+
+        Err("No certificate for digital signature was found".to_string())
     }
 }

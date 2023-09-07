@@ -14,7 +14,7 @@ use db::DB;
 use models::prescription_auth::{PrescriptionAuthRequest, PrescriptionAuthResponse, 
     PrescriptionAuth, PrescriptionAuthId};
 use models::key::{KeyRequest, KeyResponse, Key, KeyId, KeyKind};
-use models::prescription::{PrescriptionRequest, PrescriptionResponse, Prescription, PrescriptionId};
+use models::prescription::{PrescriptionResponse, Prescription, PrescriptionId, PrescriptionPreRequest, PrescriptionPostRequest};
 use models::user::{UserResponse, UserId, UserRequest, User};
 use services::groups::GroupsService;
 use services::{users::UsersService, prescriptions::PrescriptionsService, keys::KeysService, prescription_auths::PrescriptionAuthsService};
@@ -298,8 +298,8 @@ fn key_find_all_by_user(
  * prescriptions facade
  */
 #[ic_cdk::update]
-fn prescription_create(
-    req: PrescriptionRequest
+fn prescription_pre_create(
+    req: PrescriptionPreRequest
 ) -> Result<PrescriptionResponse, String> {
     let caller = caller();
 
@@ -307,7 +307,7 @@ fn prescription_create(
         let id = _gen_id();
         let prescription = Prescription::new(&id, &req, &caller);
 
-        match PrescriptionsService::create(&prescription, &mut db.borrow_mut(), &caller) {
+        match PrescriptionsService::pre_create(&prescription, &mut db.borrow_mut(), &caller) {
             Ok(_) => Ok(prescription.into()),
             Err(msg) => Err(msg)
         }
@@ -315,16 +315,15 @@ fn prescription_create(
 }
 
 #[ic_cdk::update]
-fn prescription_update(
+fn prescription_post_create(
     id: PrescriptionId,
-    req: PrescriptionRequest
+    req: PrescriptionPostRequest
 ) -> Result<PrescriptionResponse, String> {
     let caller = caller();
 
     DB.with(|db| {
-        let prescription = Prescription::new(&id, &req, &caller);
-        match PrescriptionsService::update(&id, &prescription, &mut db.borrow_mut(), &caller) {
-            Ok(()) => Ok(prescription.into()),
+        match PrescriptionsService::post_create(&id, &req, &mut db.borrow_mut(), &caller) {
+            Ok(prescription) => Ok(prescription.into()),
             Err(msg) => Err(msg)
         }
     })
@@ -395,7 +394,7 @@ async fn prescription_get_encrypted_symmetric_key(
 
     STATE.with(move |state| {
         PrescriptionsService::get_encrypted_symmetric_key(
-            prescription.hash.clone(),
+            prescription,
             encryption_public_key,
             state.borrow().vetkd.clone()
         )

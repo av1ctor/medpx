@@ -134,7 +134,10 @@ export const useAuth = (
         main: Main
     ): Promise<Result<AES_GCM, string>> => {
         const aes_gcm = new AES_GCM(main);
-        await aes_gcm.init();
+        const res = await aes_gcm.init();
+        if('Err' in res) {
+            return {Err: res.Err};
+        }
         return {Ok: aes_gcm};
     };
         
@@ -355,9 +358,13 @@ export const useAuth = (
 
         if(!auth.aes_gcm) {
             const aes_gcm = await _createAesGcm(main);
+            if('Err' in aes_gcm) {
+                throw new Error("Create AES-GCM failed");
+            }
+
             authDisp({
                 type: AuthActionType.SET_AES_GCM,
-                payload: aes_gcm
+                payload: aes_gcm.Ok
             });
         }
     };

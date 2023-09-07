@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as yup from 'yup';
-import { Button, Container, Grid, Space, Textarea, Stepper } from "@mantine/core";
+import { Button, Container, Grid, Space, Textarea, Text, Stepper } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import { useUI } from "../../../hooks/ui";
 import { useActors } from "../../../hooks/actors";
@@ -60,12 +60,12 @@ const PrescriptionCreate = (props: Props) => {
     const {principal, aes_gcm} = useAuth();
     const {main} = useActors();
     const {toggleLoading, showError} = useUI();
-    const {create, update} = usePrescription();
+    const {preCreate, postCreate} = usePrescription();
     const [patient, setPatient] = useState<UserResponse|undefined>();
     const [active, setActive] = useState(0);
-    const [hash, setHash] = useState<Uint8Array>(new Uint8Array());
-    const [signature, setSignature] = useState<Uint8Array|undefined>();
-    const [cert, setCert] = useState<string|undefined>();
+    const [prescription, setPrescription] = useState<PrescriptionResponse|undefined>();
+    const [cipherTextHash, setCipherTextHash] = useState<Uint8Array|undefined>();
+    const [cipherText, setCipherText] = useState<Uint8Array|undefined>();
     
     const form = useForm({
         initialValues: {
@@ -82,63 +82,55 @@ const PrescriptionCreate = (props: Props) => {
             created_at: BigInt(Date.now()) * 1000000n,
             doctor: principal || Principal.anonymous(),
             patient: userGetPrincipal(patient),
-            hash: hash,
-            signature: signature || [],
-            cert: '',
-            contents: new TextEncoder().encode(form.values.contents),
+            plain_text_hash: [],
+            cipher_text: new TextEncoder().encode(form.values.contents),
         };
-    }, [form.values.contents, principal, patient, hash, signature]);
+    }, [form.values.contents, principal, patient]);
 
-    const handleSigned = useCallback((cert: string, signature: Uint8Array) => {
-        setCert(cert);
-        setSignature(signature);
-    }, []);
-
-    const handleCreate = useCallback(async (values: any) => {
+    const handlePreCreate = useCallback(async (values: any) => {
         try {
             toggleLoading(true);
 
-            if(!aes_gcm) {
-                throw Error("AES-GCM undefined");
-            }
-
-            if(!hash) {
-                throw Error("Content's hash undefined");
-            }
-
-            if(!cert) {
-                throw Error("Certificate undefined");
-            }
-
-            if(!signature) {
-                throw Error("Signature undefined");
-            }
+            const plainTextHash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(values.contents)));
 
             const principal = userGetPrincipal(patient);
             
-            const prescription = await create({
+            const prescription = await preCreate({
                 patient: principal,
-                contents: [],
-                hash,
-                signature,
-                cert,
+                plain_text_hash: plainTextHash,
             });
-            
-            const rawKey = await aes_gcm.genRawKey(prescription);
-            if('Err' in rawKey || !rawKey.Ok) {
-                throw new Error(`Raw key generation failed: ${rawKey.Err}`);
+
+            setPrescription(prescription);
+        }
+        catch(e: any) {
+            showError(e);
+        }
+        finally {
+            toggleLoading(false);
+        }
+    }, [main, aes_gcm, patient]);
+
+    const handleSigned = useCallback(async (cert: string, signature: Uint8Array) => {
+        try {
+            if(!prescription) {
+                throw Error("Prescription is undefined");
+            }
+
+            if(!cipherText) {
+                throw Error("Cipher text is undefined");
+            }
+
+            if(!cipherTextHash) {
+                throw Error("Cipher text hash is undefined");
             }
             
-            const contents = await aes_gcm.encrypt(values.contents, rawKey.Ok);
-
-            await update(
+            await postCreate(
                 prescription.id,
                 {
-                    patient: principal,
-                    contents: [contents],
-                    hash,
-                    signature,
-                    cert,
+                    cipher_text: cipherText,
+                    cipher_text_hash: cipherTextHash,
+                    signature: signature,
+                    cert: cert,
                 }
             );
 
@@ -147,27 +139,42 @@ const PrescriptionCreate = (props: Props) => {
         catch(e: any) {
             showError(e);
         }
-        finally {
-            toggleLoading(false);
-        }
-    }, [main, aes_gcm, patient, hash, signature]);
+    }, [main, prescription, cipherTextHash, cipherText]);
 
-    const calcHash = useCallback(async () => {
-        const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(form.values.contents)));
-        setHash(hash);
-        setSignature(undefined);
-    }, [form.values.contents]);
+    const encrypt = useCallback(async () =>  {
+        if(!prescription || !!cipherText) {
+            return;
+        }
+
+        if(!aes_gcm) {
+            throw Error("AES-GCM undefined");
+        }
+        
+        const rawKey = await aes_gcm.genRawKey(prescription);
+        if('Err' in rawKey) {
+            showError(`Raw key generation failed: ${rawKey.Err}`);
+        }
+        
+        const _cipherText = await aes_gcm.encrypt(form.values.contents, rawKey.Ok as any);
+        const _cipherTextHash = await crypto.subtle.digest("SHA-256", _cipherText);
+
+        setCipherText(_cipherText);
+        setCipherTextHash(new Uint8Array(_cipherTextHash));
+
+        setActive(3);
+    }, [aes_gcm, prescription, form.values.contents, cipherText]);
+
+    useEffect(() => {
+        encrypt();
+    }, [encrypt]);
 
     const handlePrev = useCallback(() => { 
         setActive(active => active - 1);
     }, []);
 
     const handleNext = useCallback(() => { 
-        if(active === 1) {
-            calcHash();
-        }
         setActive(active + 1);
-    }, [active, calcHash]);
+    }, [active]);
 
     return (
         <>
@@ -199,7 +206,7 @@ const PrescriptionCreate = (props: Props) => {
                     <Stepper.Step 
                         label="Contents" 
                         description="Compose the prescription"
-                        allowStepSelect={!!patient}
+                        allowStepSelect={false}
                     >
                         <UserAvatar user={patient} />
 
@@ -222,36 +229,57 @@ const PrescriptionCreate = (props: Props) => {
                         />
                     </Stepper.Step>
                     <Stepper.Step 
-                        label="Signature" 
-                        description="Sign the prescription"
-                        allowStepSelect={form.values.contents.length >= 16}
+                        label="Preview" 
+                        description="Preview the prescription"
+                        allowStepSelect={false}
                     >
                         <div className="card">
-                            {!signature?
-                                <CertSigner 
-                                    hash={hash}
-                                    onSuccess={handleSigned}
-                                />
-                            :
-                                <PrescriptionView 
-                                    item={mockPrescription}
-                                    isEncrypted={false}
-                                />
-                            }
+                            <PrescriptionView 
+                                item={mockPrescription}
+                                isEncrypted={false}
+                            />
                         </div>
 
                         <Space h="lg"/>
 
-                        <form onSubmit={form.onSubmit(handleCreate)}>
-                            <Button
-                                color="red"
-                                fullWidth
-                                disabled={!signature}
-                                type="submit"
-                            >
-                                Submit
-                            </Button>
-                        </form>
+                        <Grid>
+                            <Grid.Col md={6} sm={12}>
+                                <Button
+                                    color="green"
+                                    fullWidth
+                                    onClick={handlePrev}
+                                >
+                                    Previous
+                                </Button>
+                            </Grid.Col>
+                            <Grid.Col md={6} sm={12}>
+                                <form onSubmit={form.onSubmit(handlePreCreate)}>
+                                    <Button
+                                        color="blue"
+                                        fullWidth
+                                        type="submit"
+                                    >
+                                        Next
+                                    </Button>
+                                </form>
+                            </Grid.Col>
+                        </Grid>
+                    </Stepper.Step>
+                    <Stepper.Step 
+                        label="Sign" 
+                        description="Sign the prescription"
+                        allowStepSelect={false}
+                    >
+                        {cipherTextHash?
+                            <CertSigner 
+                                hash={cipherTextHash}
+                                onSuccess={handleSigned}
+                            />
+                        :
+                            <Text>
+                                Encrypting, please wait...
+                            </Text>
+                        }
                     </Stepper.Step>
                 </Stepper>
             </Container>

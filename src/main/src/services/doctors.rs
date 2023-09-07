@@ -39,4 +39,11 @@ impl DoctorsService {
 
         return Ok(cert.clone())
     }
+
+    pub fn get_top_cert(
+        x509: &Vec<u8>
+    ) -> Result<X509Cert, String> {
+        let chain = X509CertChain::new(x509, &vec![]);
+        chain.get_top()
+    }
 }

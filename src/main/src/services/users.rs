@@ -1,7 +1,7 @@
 use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{Crud, Pagination, CrudSubscribable};
-use crate::models::prescription::Prescription;
+use crate::models::prescription::{Prescription, PrescriptionState};
 use crate::models::user::{User, UserId, UserKind};
 
 use super::doctors::DoctorsService;
@@ -118,8 +118,11 @@ impl UsersService {
             }
         };
 
-        Ok(ids.iter().map(|id| 
-            db.prescriptions.borrow().get(id).clone()
-        ).collect())
+        let prescriptions = db.prescriptions.borrow();
+        let user_prescriptions = ids.iter().map(|id| prescriptions.get(id).clone())
+            .filter(|p| p.state == PrescriptionState::Signed)
+            .collect();
+        
+        Ok(user_prescriptions)
     }
 }

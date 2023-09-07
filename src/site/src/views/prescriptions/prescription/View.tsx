@@ -19,14 +19,14 @@ const PrescriptionView = (props: Props) => {
     const {aes_gcm} = useAuth();
     const doctorq = useUserFindById(props.item.doctor);
     const patientq = useUserFindById(props.item.patient);
-    const [text, setText] = useState<string|undefined>();
+    const [plainText, setPlainText] = useState<string|undefined>();
     const [err, setErr] = useState<string|undefined>();
         
     const decrypt = useCallback(async () => {
-        const contents = props.item.contents as Uint8Array;
+        const cipherText = props.item.cipher_text as Uint8Array;
 
         if(!props.isEncrypted) {
-            setText(new TextDecoder().decode(contents));
+            setPlainText(new TextDecoder().decode(cipherText));
             return;
         }
 
@@ -41,7 +41,7 @@ const PrescriptionView = (props: Props) => {
         }
         
         try {
-            setText(await aes_gcm.decrypt(contents, rawKey.Ok));
+            setPlainText(await aes_gcm.decrypt(cipherText, rawKey.Ok));
         }
         catch(e: any) {
             setErr(e.message || "Call to AES GCM decrypt failed");
@@ -108,9 +108,9 @@ const PrescriptionView = (props: Props) => {
                             Error: {err}
                         </div>
                     :   
-                        text?
+                        plainText?
                             <div>
-                                {text}
+                                {plainText}
                             </div>
                         :
                             <div>
@@ -136,7 +136,7 @@ const PrescriptionView = (props: Props) => {
                             <Text size="sm">
                                 This prescription can be verified at <Anchor href={url} target="_blank">{url}</Anchor><br/>
                                 Digitally created and signed by <b>{doctorq.data?.name}</b>, license <b>{doctor?.license_num}</b>, at <b>{new Date(Number(item.created_at / 1000000n)).toISOString()}</b>,<br/>
-                                Hash: <small><b>{Buffer.from(item.hash).toString('hex')}</b></small><br/>
+                                Hash: <small><b>{Buffer.from(item.plain_text_hash).toString('hex')}</b></small><br/>
                                 <img src="/medpx-logo.svg" />
                             </Text>
                         </Grid.Col>

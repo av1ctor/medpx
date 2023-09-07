@@ -5,7 +5,7 @@ import { useUI } from "../../hooks/ui";
 
 interface Props {
     hash: ArrayBuffer;
-    onSuccess: (cert: string, signature: Uint8Array) => void;
+    onSuccess: (cert: string, signature: Uint8Array) => Promise<void>;
 }
 
 const CertSigner = (props: Props) => {
@@ -16,7 +16,7 @@ const CertSigner = (props: Props) => {
             toggleLoading(true);
             const provider = await event.detail.socketProvider.getCrypto(event.detail.providerId);
             const res = await sign(provider, event.detail.certificateId, event.detail.privateKeyId, props.hash);
-            props.onSuccess(res.cert, new Uint8Array(res.signature));
+            await props.onSuccess(res.cert, new Uint8Array(res.signature));
         }
         catch(e) {
             showError(e);
