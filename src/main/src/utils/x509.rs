@@ -86,7 +86,7 @@ impl X509Cert {
                     x509_parser::public_key::PublicKey::RSA(key) => {
                         PubKeyValue::RSA(RSAPublicKey { 
                             n: Self::remove_leading_zero(key.modulus), 
-                            e: key.exponent.to_vec()
+                            e: Self::remove_leading_zero(key.exponent)
                         })
                     },
                     x509_parser::public_key::PublicKey::EC(key) => {
