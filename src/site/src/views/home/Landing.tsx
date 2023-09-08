@@ -7,7 +7,7 @@ import { useBrowser } from "../../hooks/browser";
 const useStyles = createStyles((theme) => ({
     inner: {
         display: 'flex',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
     },
 
     content: {
@@ -16,6 +16,7 @@ const useStyles = createStyles((theme) => ({
 
         [theme.fn.smallerThan('md')]: {
             marginRight: 0,
+            maxWidth: rem(820),
         },
     },
   
