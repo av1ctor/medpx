@@ -6,7 +6,7 @@ https://66ksk-6iaaa-aaaan-qd7qa-cai.icp0.io/
 ![logo](https://github.com/av1ctor/medpx/assets/35101441/8ef21ee1-563e-4c17-8d5c-26009b20812d)
 
 ## Introduction
-Medpx stores your medical prescriptions in eletronic form, on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
+Medpx stores your medical prescriptions in electronic form, on the blockchain, using cryptography to ensure nobody can access them – unless you allow it.
 
 - Encrypted – leveraging the VetKeys technology, present only on the Internet Computer, nobody can access your prescriptions, not even the host provider
 - Shareable – You can share your prescriptions with other users, for example a Hospital, Drug store or another doctor, or create groups, allowing any users that are members of the group to access your data
@@ -14,6 +14,8 @@ Medpx stores your medical prescriptions in eletronic form, on the blockchain, us
 - Easy to find – You can create keys, like your e-mail, your phone number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
 - On-chain – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
 - Open-source – released under MIT license, anyone can verify the source code and contribute to the app
+
+Medpx was the :1st_place_medal: **first-place** :1st_place_medal: at the **Group Sharing** category in the **vetKeys bounty** that was organized by Dfinity: https://forum.dfinity.org/t/closed-bnt-8-vetkeys-enabling-privacy-preserving-applications-on-the-ic/21294/82 :muscle::muscle::muscle:
 
 ## Installation
 
