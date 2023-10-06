@@ -13,7 +13,7 @@ Medpx stores your medical prescriptions in electronic form, on the blockchain, u
 - Time-locked – When sharing your prescriptions, you can define a date limit to cut the access to your data
 - Easy to find – You can create keys, like your e-mail, your phone number, etc, so you can be found more easily by other users (no need to keep tracking of long and cumbersome wallet addresses)
 - On-chain – Medpx is a decentralized web3 app, running 100% on-chain on the Internet Computer, giving you full control of your prescriptions
-- Open-source – released under MIT license, anyone can verify the source code and contribute to the app
+- Open-source – released under GPL license, anyone can verify the source code and contribute to the app
 
 Medpx was the :1st_place_medal: **first-place** :1st_place_medal: at the **Group Sharing** category in the **vetKeys bounty** that was organized by Dfinity: https://forum.dfinity.org/t/closed-bnt-8-vetkeys-enabling-privacy-preserving-applications-on-the-ic/21294/82 :muscle::muscle::muscle:
 
@@ -50,7 +50,7 @@ $ dfx deploy
 - [ ] Controlled prescriptions (black-box drugs) should be used only-once, so the drug store must be allowed to mark them as used
 
 ## License
-This project is licensed under the MIT license, see LICENSE file for details. 
+This project is licensed under the GPL license, see LICENSE file for details. 
 
 ## References
 - [VetKey primer](https://internetcomputer.org/blog/features/vetkey-primer)
