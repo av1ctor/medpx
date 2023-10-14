@@ -3,7 +3,9 @@
     "main": {
       "candid": "src/main/main.did",
       "package": "main",
-      "type": "rust"
+      "type": "rust",
+      "optimize": "cycles",
+      "gzip": true
     },
     "site": {
       "dependencies": [
