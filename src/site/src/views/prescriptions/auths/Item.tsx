@@ -13,7 +13,7 @@ interface Props {
     onDelete: (item: PrescriptionAuthResponse) => void;
 }
 
-const UserTarget = (
+const UserSubject = (
     props: {to: Principal}
 ) => {
     const user = useUserFindById(props.to);
@@ -25,7 +25,7 @@ const UserTarget = (
     );
 };
 
-const GroupTarget = (
+const GroupSubject = (
     props: {to: string}
 ) => {
     const group = useGroupFindById(props.to);
@@ -48,8 +48,8 @@ const Item = (props: Props) => {
     return (
         <Group position="apart" className="list-item" noWrap spacing="xl">
             <div>
-                {'User' in item.to && <UserTarget to={item.to.User} />}
-                {'Group' in item.to && <GroupTarget to={item.to.Group} />}
+                {'User' in item.to && <UserSubject to={item.to.User} />}
+                {'Group' in item.to && <GroupSubject to={item.to.Group} />}
                 <Text size="xs"><IconClockHour4 size="0.75rem"/> <TimeFromNow date={item.created_at} /></Text>
                 <Text size="xs" color="dimmed">
                     {prescriptionAuthGetKind(item.kind).label} /&nbsp;

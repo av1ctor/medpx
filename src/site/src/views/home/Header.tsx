@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActionIcon, Avatar, Box, Burger, Center, Collapse, Divider, Drawer, Group, Header, HoverCard, ScrollArea, UnstyledButton, createStyles, rem, useMantineColorScheme, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconHome2, IconMoonStars, IconSun, IconUser } from '@tabler/icons-react';
+import { IconChevronDown, IconHome2, IconMoonStars, IconSun } from '@tabler/icons-react';
 import { AuthMenu } from './menus/Auth';
 import { UserMenu } from './menus/User';
 import { useAuth } from '../../hooks/auth';

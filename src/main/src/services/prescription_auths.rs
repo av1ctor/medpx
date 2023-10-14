@@ -2,7 +2,7 @@ use candid::Principal;
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::PrescriptionId;
-use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId, PrescriptionAuthTarget};
+use crate::models::prescription_auth::{PrescriptionAuth, PrescriptionAuthId, PrescriptionAuthSubject};
 
 pub struct PrescriptionAuthsService {}
 
@@ -17,13 +17,13 @@ impl PrescriptionAuthsService {
         }
 
         match &auth.to {
-            PrescriptionAuthTarget::User(to) => 
+            PrescriptionAuthSubject::User(to) => 
                 if db.users.borrow().find_by_id(&to).is_none() {
-                    return Err("Target user not found".to_string());
+                    return Err("Subject user not found".to_string());
                 },
-            PrescriptionAuthTarget::Group(to) => 
+            PrescriptionAuthSubject::Group(to) => 
                 if db.groups.borrow().find_by_id(&to).is_none() {
-                    return Err("Target group not found".to_string());
+                    return Err("Subject group not found".to_string());
                 },
         };
         

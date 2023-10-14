@@ -203,6 +203,8 @@ impl X509CertChain {
                 top = Some(cert);
             }
 
+            //TODO: check if the cert signature is valid (needs the issuer cert)
+
             //TODO: validate the chain (check if CA is trusted and if it was not revoked)
 
             //TODO: check this cert CRL ("offline")

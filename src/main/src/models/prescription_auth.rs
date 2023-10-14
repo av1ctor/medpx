@@ -16,7 +16,7 @@ pub enum PrescriptionAuthKind {
 }
 
 #[derive(CandidType, Clone, Deserialize, Eq, PartialEq, PartialOrd)]
-pub enum PrescriptionAuthTarget {
+pub enum PrescriptionAuthSubject {
     User(UserId),
     Group(GroupId),
 }
@@ -27,7 +27,7 @@ pub struct PrescriptionAuth {
     pub prescription_id: PrescriptionId,
     pub kind: PrescriptionAuthKind,
     pub from: Principal,
-    pub to: PrescriptionAuthTarget,
+    pub to: PrescriptionAuthSubject,
     pub expires_at: Option<u64>,
     pub created_at: u64,
     pub created_by: Principal,
@@ -41,7 +41,7 @@ pub struct PrescriptionAuth {
 pub struct PrescriptionAuthRequest {
     pub prescription_id: PrescriptionId,
     pub kind: PrescriptionAuthKind,
-    pub to: PrescriptionAuthTarget,
+    pub to: PrescriptionAuthSubject,
     pub expires_at: Option<u64>,
 }
 
@@ -51,7 +51,7 @@ pub struct PrescriptionAuthResponse {
     prescription_id: PrescriptionId,
     kind: PrescriptionAuthKind,
     from: Principal,
-    to: PrescriptionAuthTarget,
+    to: PrescriptionAuthSubject,
     expires_at: Option<u64>,
     created_at: u64,
     updated_at: Option<u64>,

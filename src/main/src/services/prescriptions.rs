@@ -4,7 +4,7 @@ use ring::signature::{self, RsaPublicKeyComponents};
 use crate::db::DB;
 use crate::db::traits::crud::{CrudSubscribable, Crud};
 use crate::models::prescription::{Prescription, PrescriptionId, PrescriptionPostRequest, PrescriptionState};
-use crate::models::prescription_auth::PrescriptionAuthTarget;
+use crate::models::prescription_auth::PrescriptionAuthSubject;
 use crate::models::user::UserKind;
 use crate::utils::vetkd::VetKdUtil;
 use crate::utils::x509::PubKeyValue;
@@ -235,11 +235,11 @@ impl PrescriptionsService {
                         }
                         
                         match e.to {
-                            PrescriptionAuthTarget::User(to) => 
+                            PrescriptionAuthSubject::User(to) => 
                                 if to != *user {
                                     return false;
                                 },
-                            PrescriptionAuthTarget::Group(to) => {
+                            PrescriptionAuthSubject::Group(to) => {
                                 match db.groups.borrow().find_by_id(&to) {
                                     None => return false,
                                     Some(group) => return group.members.contains(user)

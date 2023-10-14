@@ -6,7 +6,7 @@ import { DateInput } from "@mantine/dates";
 import { IconUser, IconUsersGroup } from "@tabler/icons-react";
 import { useUI } from "../../../../hooks/ui";
 import { useActors } from "../../../../hooks/actors";
-import { AuthTarget, kinds, prescriptionAuthStringToTarget } from "../../../../libs/prescription_auths";
+import { AuthSubject, kinds, prescriptionAuthStringToSubject } from "../../../../libs/prescription_auths";
 import { usePrescriptionAuth } from "../../../../hooks/prescription_auths";
 import { UserLookup } from "../../../users/user/Lookup";
 import { GroupResponse, UserResponse } from "../../../../../../declarations/main/main.did";
@@ -32,7 +32,7 @@ const PrescriptionAuthCreate = (props: Props) => {
     const {toggleLoading, showError} = useUI();
     const {isMobile} = useBrowser();
     const {create} = usePrescriptionAuth();
-    const [target, setTarget] = useState(AuthTarget.User);
+    const [subject, setSubject] = useState(AuthSubject.User);
     const [user, setUser] = useState<UserResponse|undefined>()
     const [group, setGroup] = useState<GroupResponse|undefined>()
     const [active, setActive] = useState(0);
@@ -48,11 +48,11 @@ const PrescriptionAuthCreate = (props: Props) => {
         validate: yupResolver(schema),
     });
 
-    const handleChangeTarget = useCallback((value: string) => {
+    const handleChangeSubject = useCallback((value: string) => {
         setUser(undefined);
         setGroup(undefined);
-        setTarget(prescriptionAuthStringToTarget(value));
-    }, [setTarget]);
+        setSubject(prescriptionAuthStringToSubject(value));
+    }, [setSubject]);
 
     const handleCreate = useCallback(async (values: any) => {
         try {
@@ -67,7 +67,7 @@ const PrescriptionAuthCreate = (props: Props) => {
             await create({
                 ...values,
                 kind: {[values.kind]: null},
-                to: target === AuthTarget.User? 
+                to: subject === AuthSubject.User? 
                     {User: user?.id}
                 :
                     {Group: group?.id},
@@ -84,19 +84,19 @@ const PrescriptionAuthCreate = (props: Props) => {
         finally {
             toggleLoading(false);
         }
-    }, [main, user, group, target]);
+    }, [main, user, group, subject]);
 
     useEffect(() => {
-        if(target === AuthTarget.User)
+        if(subject === AuthSubject.User)
             setActive(user? 1: 0);
         else
             setActive(group? 1: 0);
-    }, [user, group, target]);
+    }, [user, group, subject]);
 
     const targets = useMemo(() => {
         return [
             {
-                value: AuthTarget[AuthTarget.User],
+                value: AuthSubject[AuthSubject.User],
                 label: (
                     <Center>
                         <IconUser />
@@ -105,7 +105,7 @@ const PrescriptionAuthCreate = (props: Props) => {
                 ),
             },
             {
-                value: AuthTarget[AuthTarget.Group],
+                value: AuthSubject[AuthSubject.Group],
                 label: (
                     <Center>
                         <IconUsersGroup />
@@ -124,8 +124,8 @@ const PrescriptionAuthCreate = (props: Props) => {
                 breakpoint="sm"
             >
                 <Stepper.Step 
-                    label="Target" 
-                    description="Lookup target"
+                    label="Subject" 
+                    description="Lookup subject"
                 >
                     <Container>
                         <SegmentedControl
@@ -133,20 +133,20 @@ const PrescriptionAuthCreate = (props: Props) => {
                             orientation={isMobile? "vertical": "horizontal"}
                             fullWidth
                             color="blue"
-                            value={AuthTarget[target]}
+                            value={AuthSubject[subject]}
                             data={targets}
-                            onChange={handleChangeTarget}
+                            onChange={handleChangeSubject}
                         />
 
                         <Space h="md"/>
 
-                        {target === AuthTarget.User &&
+                        {subject === AuthSubject.User &&
                             <UserLookup
                                 user={user} 
                                 onChange={setUser}
                             />
                         }
-                        {target === AuthTarget.Group &&
+                        {subject === AuthSubject.Group &&
                             <ChooseGroup
                                 onChange={setGroup}
                             />
@@ -158,10 +158,10 @@ const PrescriptionAuthCreate = (props: Props) => {
                     description="Authorization options"
                     allowStepSelect={!!user}
                 >
-                    {target === AuthTarget.User &&
+                    {subject === AuthSubject.User &&
                         <UserAvatar user={user} />
                     }
-                    {target === AuthTarget.Group && 
+                    {subject === AuthSubject.Group && 
                         <Flex direction="column">
                             <div>
                                 Members: <GroupMembers members={group?.members} />

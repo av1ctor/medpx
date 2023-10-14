@@ -1,6 +1,6 @@
 import { _SERVICE as Main, PrescriptionAuthKind, PrescriptionAuthRequest, PrescriptionAuthResponse } from "../../../declarations/main/main.did";
 
-export enum AuthTarget {
+export enum AuthSubject {
     User,
     Group,
 };
@@ -12,14 +12,14 @@ export const kinds = [
     { value: 'All', label: 'All'},
 ];
 
-export const prescriptionAuthStringToTarget = (
+export const prescriptionAuthStringToSubject = (
     kind: string
-): AuthTarget => {
+): AuthSubject => {
     if(kind === 'User') {
-        return AuthTarget.User;
+        return AuthSubject.User;
     }
 
-    return AuthTarget.Group;
+    return AuthSubject.Group;
 };
 
 export const prescriptionAuthGetKind = (
