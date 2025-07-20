@@ -20,10 +20,11 @@
       ],
       "type": "assets"
     },
-    "internet_identity": {
-      "type": "custom",
+    "internet-identity": {
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "type": "custom",
+      "specified_id": "rdmx6-jaaaa-aaaaa-aaadq-cai",
       "remote": {
         "id": {
           "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
@@ -36,10 +37,10 @@
       "type": "rust"
     }
   },
-  "defaults": {
-    "build": {
-      "args": "",
-      "packtool": ""
+  "networks": {
+    "local": {
+      "bind": "localhost:8000",
+      "type": "ephemeral"
     }
   },
   "output_env_file": ".env",
